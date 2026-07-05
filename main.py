@@ -63,7 +63,7 @@ def convert_markdown_bold_to_html(text: str):
     """
     return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", text)
 
-
+ 
 # =========================
 # WEBHOOK CLEAN
 # =========================
