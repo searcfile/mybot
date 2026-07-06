@@ -163,109 +163,116 @@
 
   <div class="container">
 
-    <form method="POST" action="/admin">
-
-      <div class="dashboard-grid">
-
-        <!-- LEFT SETTINGS -->
-        <div class="card">
-          <h3>⚙️ Settings</h3>
-
-          <label>Main Banner URL</label>
-          <input type="text" name="main_banner" value="{{ data.main_banner }}">
-
-          <label>Welcome Text</label>
-          <textarea name="welcome_text">{{ data.welcome_text }}</textarea>
-
-          <label>About Text</label>
-          <textarea name="about_text">{{ data.about_text }}</textarea>
-
-          <label>Register URL</label>
-          <input type="text" name="register_url" value="{{ data.register_url }}">
-
-          <label>Telegram Support</label>
-          <input type="text" name="telegram_support" value="{{ data.telegram_support }}">
-
-          <label>WhatsApp URL</label>
-          <input type="text" name="whatsapp_url" value="{{ data.whatsapp_url }}">
-
-          <label>Manual Today Add</label>
-          <input type="number" name="manual_today_add" value="{{ data.manual_today_add }}">
-
-          <label>Manual Month Add</label>
-          <input type="number" name="manual_month_add" value="{{ data.manual_month_add }}">
-
-          <button type="submit">Save Settings</button>
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <div class="right-grid">
-
-          <div class="card">
-            <h3>🎁 Referral Settings</h3>
-
-            <label>Referral System</label>
-            <select name="referral_enabled">
-              <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
-              <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
-            </select>
-
-            <label>Referral Image URL</label>
-            <input type="text" name="referral_image" value="{{ data.referral_image }}">
-
-            <label>Referral Message Template</label>
-            <textarea name="referral_text" rows="8">{{ data.referral_text }}</textarea>
-
-            <div class="hint">
-              Variables:<br>
-              {ref_code} = referral code<br>
-              {ref_link} = referral link<br>
-              {ref_count} = invited users
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-    </form>
-
-    <!-- UPLOAD BANNER -->
     <div class="dashboard-grid">
-      <div></div>
 
-      <div class="card">
-        <h3>📤 Upload Banner (Cloudinary)</h3>
+      <!-- LEFT SETTINGS -->
+      <form method="POST" action="/admin" class="card">
+        <h3>⚙️ Settings</h3>
 
-        <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data">
-          <div class="upload-box">
-            <input type="file" name="image" required>
+        <label>Main Banner URL</label>
+        <input type="text" name="main_banner" value="{{ data.main_banner }}">
+
+        <label>Welcome Text</label>
+        <textarea name="welcome_text">{{ data.welcome_text }}</textarea>
+
+        <label>About Text</label>
+        <textarea name="about_text">{{ data.about_text }}</textarea>
+
+        <label>Register URL</label>
+        <input type="text" name="register_url" value="{{ data.register_url }}">
+
+        <label>Telegram Support</label>
+        <input type="text" name="telegram_support" value="{{ data.telegram_support }}">
+
+        <label>WhatsApp URL</label>
+        <input type="text" name="whatsapp_url" value="{{ data.whatsapp_url }}">
+
+        <label>Manual Today Add</label>
+        <input type="number" name="manual_today_add" value="{{ data.manual_today_add }}">
+
+        <label>Manual Month Add</label>
+        <input type="number" name="manual_month_add" value="{{ data.manual_month_add }}">
+
+        <input type="hidden" name="referral_enabled" value="{{ data.referral_enabled }}">
+        <input type="hidden" name="referral_image" value="{{ data.referral_image }}">
+        <input type="hidden" name="referral_text" value="{{ data.referral_text }}">
+
+        <button type="submit">Save Settings</button>
+      </form>
+
+      <!-- RIGHT SIDE -->
+      <div class="right-grid">
+
+        <form method="POST" action="/admin" class="card">
+          <h3>🎁 Referral Settings</h3>
+
+          <label>Referral System</label>
+          <select name="referral_enabled">
+            <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
+            <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
+          </select>
+
+          <label>Referral Image URL</label>
+          <input type="text" name="referral_image" value="{{ data.referral_image }}">
+
+          <label>Referral Message Template</label>
+          <textarea name="referral_text" rows="8">{{ data.referral_text }}</textarea>
+
+          <div class="hint">
+            Variables:<br>
+            {ref_code} = referral code<br>
+            {ref_link} = referral link<br>
+            {ref_count} = invited users
           </div>
 
-          <button type="submit">Upload Image</button>
+          <input type="hidden" name="main_banner" value="{{ data.main_banner }}">
+          <input type="hidden" name="welcome_text" value="{{ data.welcome_text }}">
+          <input type="hidden" name="about_text" value="{{ data.about_text }}">
+          <input type="hidden" name="register_url" value="{{ data.register_url }}">
+          <input type="hidden" name="telegram_support" value="{{ data.telegram_support }}">
+          <input type="hidden" name="whatsapp_url" value="{{ data.whatsapp_url }}">
+          <input type="hidden" name="manual_today_add" value="{{ data.manual_today_add }}">
+          <input type="hidden" name="manual_month_add" value="{{ data.manual_month_add }}">
+
+          <button type="submit">Save Referral</button>
         </form>
 
-        {% if uploaded_url %}
-        <div class="success">
-          <h3>✅ Upload Success</h3>
+        <!-- UPLOAD BANNER -->
+        <div class="card">
+          <h3>📤 Upload Banner (Cloudinary)</h3>
 
-          <input type="text" id="urlBox" value="{{ uploaded_url }}" readonly>
+          <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data">
+            <div class="upload-box">
+              <input type="file" name="image" required>
+            </div>
 
-          <button onclick="copyUrl()" style="margin-top:10px;background:#22c55e;color:white;">
-            📋 Copy Link
-          </button>
+            <button type="submit">Upload Image</button>
+          </form>
+
+          {% if uploaded_url %}
+          <div class="success">
+            <h3>✅ Upload Success</h3>
+
+            <input type="text" id="urlBox" value="{{ uploaded_url }}" readonly>
+
+            <button onclick="copyUrl()" style="margin-top:10px;background:#22c55e;color:white;">
+              📋 Copy Link
+            </button>
+          </div>
+
+          <script>
+            function copyUrl() {
+              const input = document.getElementById("urlBox");
+              input.select();
+              document.execCommand("copy");
+              alert("Copied!");
+            }
+          </script>
+          {% endif %}
         </div>
 
-        <script>
-          function copyUrl() {
-            const input = document.getElementById("urlBox");
-            input.select();
-            document.execCommand("copy");
-            alert("Copied!");
-          }
-        </script>
-        {% endif %}
       </div>
+
     </div>
 
   </div>
