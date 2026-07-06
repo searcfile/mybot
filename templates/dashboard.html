@@ -161,9 +161,26 @@
   cursor: pointer;
 }
 
+.select-selected {
+    position: relative;
+    padding-right: 42px;
+}
+
 .select-selected::after {
-  content: "⌄";
-  float: right;
+    content: "";
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translateY(-50%);
+    pointer-events: none;
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 14px 14px;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M23.245 4l-11.245 14.374-11.219-14.374-.781.619 12 15.381 12-15.391-.755-.609z'/%3E%3C/svg%3E");
 }
 
 .select-items {
