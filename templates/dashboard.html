@@ -219,6 +219,36 @@
 .custom-select.open .select-items {
   display: block;
 }
+.btn-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  display: none;
+  animation: spin 0.7s linear infinite;
+}
+
+button.loading {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+button.loading .btn-spinner {
+  display: inline-block;
+}
+
+button .btn-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
     /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 6px; /* nipis */
@@ -337,7 +367,12 @@ html {
             {ref_count} = invited users
           </div>
 
-          <button type="submit" form="settingsForm">Save Settings</button>
+          <button type="submit" form="settingsForm" id="saveSettingsBtn">
+  <span class="btn-content">
+    <span class="btn-spinner"></span>
+    <span class="btn-text">Save Settings</span>
+  </span>
+</button>
         </div>
 
         <!-- UPLOAD BANNER -->
@@ -397,7 +432,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 });
+  const settingsForm = document.getElementById("settingsForm");
+  const saveBtn = document.getElementById("saveSettingsBtn");
 
+  if (settingsForm && saveBtn) {
+    settingsForm.addEventListener("submit", function () {
+      saveBtn.classList.add("loading");
+      saveBtn.querySelector(".btn-text").textContent = "Saving...";
+    });
+  }
 function copyUrl() {
   const input = document.getElementById("urlBox");
   if (!input) return;
