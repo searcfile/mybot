@@ -330,51 +330,61 @@ html {
             <button type="submit">Upload Image</button>
           </form>
 
-          {% if uploaded_url %}
-          <div class="success">
-            <h3>✅ Upload Success</h3>
+{% if uploaded_url %}
+<div class="success">
+  <h3>✅ Upload Success</h3>
 
-            <input type="text" id="urlBox" value="{{ uploaded_url }}" readonly>
+  <input type="text" id="urlBox" value="{{ uploaded_url }}" readonly>
 
-            <button onclick="copyUrl()" style="margin-top:10px;background:#22c55e;color:white;">
-              📋 Copy Link
-            </button>
-          </div>
+  <button onclick="copyUrl()" style="margin-top:10px;background:#22c55e;color:white;">
+    📋 Copy Link
+  </button>
+</div>
+{% endif %}
 
-          <script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
   const customSelect = document.getElementById("referralSelect");
-  const selected = customSelect.querySelector(".select-selected");
-  const items = customSelect.querySelectorAll(".select-items div");
-  const hiddenInput = document.getElementById("referral_enabled");
 
-  selected.addEventListener("click", function () {
-    customSelect.classList.toggle("open");
-  });
+  if (customSelect) {
+    const selected = customSelect.querySelector(".select-selected");
+    const items = customSelect.querySelectorAll(".select-items div");
+    const hiddenInput = document.getElementById("referral_enabled");
 
-  items.forEach(item => {
-    item.addEventListener("click", function () {
-      selected.textContent = this.textContent;
-      hiddenInput.value = this.dataset.value;
+    selected.addEventListener("click", function (e) {
+      e.stopPropagation();
+      customSelect.classList.toggle("open");
+    });
 
-      items.forEach(i => i.classList.remove("active"));
-      this.classList.add("active");
+    items.forEach(item => {
+      item.addEventListener("click", function (e) {
+        e.stopPropagation();
 
+        selected.textContent = this.textContent;
+        hiddenInput.value = this.dataset.value;
+
+        items.forEach(i => i.classList.remove("active"));
+        this.classList.add("active");
+
+        customSelect.classList.remove("open");
+      });
+    });
+
+    document.addEventListener("click", function () {
       customSelect.classList.remove("open");
     });
-  });
+  }
+});
 
-  document.addEventListener("click", function (e) {
-    if (!customSelect.contains(e.target)) {
-      customSelect.classList.remove("open");
-    }
-  });
-            function copyUrl() {
-              const input = document.getElementById("urlBox");
-              input.select();
-              document.execCommand("copy");
-              alert("Copied!");
-            }
-          </script>
+function copyUrl() {
+  const input = document.getElementById("urlBox");
+  if (!input) return;
+
+  input.select();
+  document.execCommand("copy");
+  alert("Copied!");
+}
+</script>
           {% endif %}
         </div>
 
