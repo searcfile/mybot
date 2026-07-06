@@ -249,6 +249,49 @@ button .btn-content {
     transform: rotate(360deg);
   }
 }
+.upload-label{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:170px;
+    border:2px dashed rgba(255,255,255,.2);
+    border-radius:10px;
+    cursor:pointer;
+    font-size:15px;
+    color:#ccc;
+    transition:.2s;
+}
+
+.upload-label:hover{
+    border-color:#3c89e8;
+    color:#fff;
+}
+
+.image-preview{
+    display:none;
+    position:relative;
+}
+
+.image-preview img{
+    width:100%;
+    height:170px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.1);
+}
+
+.remove-image{
+    position:absolute;
+    top:10px;
+    right:10px;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:#ef4444;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+}
     /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 6px; /* nipis */
@@ -380,9 +423,32 @@ html {
           <h3>📤 Upload Banner (Cloudinary)</h3>
 
           <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data" id="uploadForm">
-            <div class="upload-box">
-              <input type="file" name="image" required>
-            </div>
+<div class="upload-box">
+
+    <label for="imageInput" class="upload-label" id="uploadLabel">
+        📂 Choose Image
+    </label>
+
+    <input
+        type="file"
+        id="imageInput"
+        name="image"
+        accept="image/*"
+        hidden
+        required>
+
+    <div class="image-preview" id="imagePreview">
+        <img id="previewImg">
+
+        <button
+            type="button"
+            class="remove-image"
+            id="removeImage">
+            ✕
+        </button>
+    </div>
+
+</div>
 
             <button type="submit" id="uploadImageBtn">
   <span class="btn-content">
@@ -470,7 +536,43 @@ if (uploadForm && uploadBtn) {
   });
 }
 });
+const imageInput=document.getElementById("imageInput");
+const uploadLabel=document.getElementById("uploadLabel");
+const preview=document.getElementById("imagePreview");
+const previewImg=document.getElementById("previewImg");
+const removeBtn=document.getElementById("removeImage");
 
+imageInput.addEventListener("change",function(){
+
+    if(this.files.length){
+
+        const reader=new FileReader();
+
+        reader.onload=function(e){
+
+            previewImg.src=e.target.result;
+
+            preview.style.display="block";
+
+            uploadLabel.style.display="none";
+
+        }
+
+        reader.readAsDataURL(this.files[0]);
+
+    }
+
+});
+
+removeBtn.addEventListener("click",function(){
+
+    imageInput.value="";
+
+    preview.style.display="none";
+
+    uploadLabel.style.display="flex";
+
+});
 function copyUrl() {
   const input = document.getElementById("urlBox");
   if (!input) return;
