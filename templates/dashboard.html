@@ -159,73 +159,64 @@
 
     <div class="dashboard-grid">
 
-      <form method="POST" action="/admin" class="dashboard-grid" style="grid-column: 1 / -1;">
+      <!-- LEFT SETTINGS -->
+      <form method="POST" action="/admin" class="card" id="settingsForm">
+        <h3>⚙️ Settings</h3>
 
-        <!-- LEFT SETTINGS -->
-        <div class="card">
-          <h3>⚙️ Settings</h3>
+        <label>Main Banner URL</label>
+        <input type="text" name="main_banner" value="{{ data.main_banner }}">
 
-          <label>Main Banner URL</label>
-          <input type="text" name="main_banner" value="{{ data.main_banner }}">
+        <label>Welcome Text</label>
+        <textarea name="welcome_text">{{ data.welcome_text }}</textarea>
 
-          <label>Welcome Text</label>
-          <textarea name="welcome_text">{{ data.welcome_text }}</textarea>
+        <label>About Text</label>
+        <textarea name="about_text">{{ data.about_text }}</textarea>
 
-          <label>About Text</label>
-          <textarea name="about_text">{{ data.about_text }}</textarea>
+        <label>Register URL</label>
+        <input type="text" name="register_url" value="{{ data.register_url }}">
 
-          <label>Register URL</label>
-          <input type="text" name="register_url" value="{{ data.register_url }}">
+        <label>Telegram Support</label>
+        <input type="text" name="telegram_support" value="{{ data.telegram_support }}">
 
-          <label>Telegram Support</label>
-          <input type="text" name="telegram_support" value="{{ data.telegram_support }}">
+        <label>WhatsApp URL</label>
+        <input type="text" name="whatsapp_url" value="{{ data.whatsapp_url }}">
 
-          <label>WhatsApp URL</label>
-          <input type="text" name="whatsapp_url" value="{{ data.whatsapp_url }}">
+        <label>Manual Today Add</label>
+        <input type="number" name="manual_today_add" value="{{ data.manual_today_add }}">
 
-          <label>Manual Today Add</label>
-          <input type="number" name="manual_today_add" value="{{ data.manual_today_add }}">
-
-          <label>Manual Month Add</label>
-          <input type="number" name="manual_month_add" value="{{ data.manual_month_add }}">
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <div class="right-grid">
-
-          <div class="card">
-            <h3>🎁 Referral Settings</h3>
-
-            <label>Referral System</label>
-            <select name="referral_enabled">
-              <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
-              <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
-            </select>
-
-            <label>Referral Image URL</label>
-            <input type="text" name="referral_image" value="{{ data.referral_image }}">
-
-            <label>Referral Message Template</label>
-            <textarea name="referral_text" rows="8">{{ data.referral_text }}</textarea>
-
-            <div class="hint">
-              Variables:<br>
-              {ref_code} = referral code<br>
-              {ref_link} = referral link<br>
-              {ref_count} = invited users
-            </div>
-
-            <button type="submit">Save Settings</button>
-          </div>
-
-        </div>
-
+        <label>Manual Month Add</label>
+        <input type="number" name="manual_month_add" value="{{ data.manual_month_add }}">
       </form>
 
-      <!-- RIGHT BOTTOM UPLOAD -->
-      <div></div>
-
+      <!-- RIGHT SIDE -->
       <div class="right-grid">
+
+        <div class="card">
+          <h3>🎁 Referral Settings</h3>
+
+          <label>Referral System</label>
+          <select name="referral_enabled" form="settingsForm">
+            <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
+            <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
+          </select>
+
+          <label>Referral Image URL</label>
+          <input type="text" name="referral_image" value="{{ data.referral_image }}" form="settingsForm">
+
+          <label>Referral Message Template</label>
+          <textarea name="referral_text" rows="8" form="settingsForm">{{ data.referral_text }}</textarea>
+
+          <div class="hint">
+            Variables:<br>
+            {ref_code} = referral code<br>
+            {ref_link} = referral link<br>
+            {ref_count} = invited users
+          </div>
+
+          <button type="submit" form="settingsForm">Save Settings</button>
+        </div>
+
+        <!-- UPLOAD BANNER -->
         <div class="card">
           <h3>📤 Upload Banner (Cloudinary)</h3>
 
@@ -258,6 +249,7 @@
           </script>
           {% endif %}
         </div>
+
       </div>
 
     </div>
