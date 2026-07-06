@@ -401,6 +401,8 @@ html {
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+  // CUSTOM DROPDOWN
   const customSelect = document.getElementById("referralSelect");
 
   if (customSelect) {
@@ -431,16 +433,29 @@ document.addEventListener("DOMContentLoaded", function () {
       customSelect.classList.remove("open");
     });
   }
-});
+
+  // SAVE SETTINGS LOADING
   const settingsForm = document.getElementById("settingsForm");
   const saveBtn = document.getElementById("saveSettingsBtn");
+  let isSubmitting = false;
 
   if (settingsForm && saveBtn) {
-    settingsForm.addEventListener("submit", function () {
+    settingsForm.addEventListener("submit", function (e) {
+      if (isSubmitting) return;
+
+      e.preventDefault();
+      isSubmitting = true;
+
       saveBtn.classList.add("loading");
       saveBtn.querySelector(".btn-text").textContent = "Saving...";
+
+      setTimeout(function () {
+        settingsForm.submit();
+      }, 150);
     });
   }
+});
+
 function copyUrl() {
   const input = document.getElementById("urlBox");
   if (!input) return;
