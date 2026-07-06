@@ -38,11 +38,30 @@
       color: white;
     }
 
-    .container {
-      max-width: 1000px;
-      margin: auto;
-      padding: 20px;
-    }
+.container {
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.right-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
     .card {
       background: rgba(255,255,255,0.05);
@@ -142,9 +161,11 @@
     </div>
   </div>
 
-  <div class="container">
+<div class="container">
 
-    <!-- ================= SETTINGS ================= -->
+  <div class="dashboard-grid">
+
+    <!-- ================= LEFT: SETTINGS ================= -->
     <div class="card">
       <h3>⚙️ Settings</h3>
 
@@ -174,75 +195,86 @@
         <label>Manual Month Add</label>
         <input type="number" name="manual_month_add" value="{{ data.manual_month_add }}">
 
-        <hr>
-
-        <!-- ================= REFERRAL SETTINGS ================= -->
-        <h3>🎁 Referral Settings</h3>
-
-        <label>Referral System</label>
-        <select name="referral_enabled">
-          <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
-          <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
-        </select>
-
-        <label>Referral Image URL</label>
-        <input type="text" name="referral_image" value="{{ data.referral_image }}">
-
-        <label>Referral Message Template</label>
-        <textarea name="referral_text" rows="8">{{ data.referral_text }}</textarea>
-
-        <div class="hint">
-          Variables:<br>
-          {ref_code} = referral code<br>
-          {ref_link} = referral link<br>
-          {ref_count} = invited users
-        </div>
-
         <button type="submit">Save Settings</button>
-
       </form>
     </div>
 
-    <!-- ================= UPLOAD BANNER ================= -->
-    <div class="card">
-      <h3>📤 Upload Banner (Cloudinary)</h3>
+    <!-- ================= RIGHT SIDE ================= -->
+    <div class="right-grid">
 
-      <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data">
+      <!-- ================= REFERRAL SETTINGS ================= -->
+      <div class="card">
+        <h3>🎁 Referral Settings</h3>
 
-        <div class="upload-box">
-          <input type="file" name="image" required>
-        </div>
+        <form method="POST" action="/admin">
 
-        <button type="submit">Upload Image</button>
+          <label>Referral System</label>
+          <select name="referral_enabled">
+            <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
+            <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
+          </select>
 
-      </form>
+          <label>Referral Image URL</label>
+          <input type="text" name="referral_image" value="{{ data.referral_image }}">
 
-      {% if uploaded_url %}
-      <div class="success">
+          <label>Referral Message Template</label>
+          <textarea name="referral_text" rows="8">{{ data.referral_text }}</textarea>
 
-        <h3>✅ Upload Success</h3>
+          <div class="hint">
+            Variables:<br>
+            {ref_code} = referral code<br>
+            {ref_link} = referral link<br>
+            {ref_count} = invited users
+          </div>
 
-        <input type="text" id="urlBox" value="{{ uploaded_url }}" readonly>
-
-        <button onclick="copyUrl()" style="margin-top:10px;background:#22c55e;color:white;">
-          📋 Copy Link
-        </button>
-
+          <button type="submit">Save Referral</button>
+        </form>
       </div>
 
-      <script>
-        function copyUrl() {
-          const input = document.getElementById("urlBox");
-          input.select();
-          document.execCommand("copy");
-          alert("Copied!");
-        }
-      </script>
-      {% endif %}
+      <!-- ================= UPLOAD BANNER ================= -->
+      <div class="card">
+        <h3>📤 Upload Banner (Cloudinary)</h3>
+
+        <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data">
+
+          <div class="upload-box">
+            <input type="file" name="image" required>
+          </div>
+
+          <button type="submit">Upload Image</button>
+
+        </form>
+
+        {% if uploaded_url %}
+        <div class="success">
+
+          <h3>✅ Upload Success</h3>
+
+          <input type="text" id="urlBox" value="{{ uploaded_url }}" readonly>
+
+          <button onclick="copyUrl()" style="margin-top:10px;background:#22c55e;color:white;">
+            📋 Copy Link
+          </button>
+
+        </div>
+
+        <script>
+          function copyUrl() {
+            const input = document.getElementById("urlBox");
+            input.select();
+            document.execCommand("copy");
+            alert("Copied!");
+          }
+        </script>
+        {% endif %}
+
+      </div>
 
     </div>
 
   </div>
+
+</div>
 
 </body>
 </html>
