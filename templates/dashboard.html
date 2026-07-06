@@ -144,6 +144,59 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+.custom-select {
+  position: relative;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.select-selected {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.25);
+  color: white;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.select-selected::after {
+  content: "⌄";
+  float: right;
+}
+
+.select-items {
+  display: none;
+  position: absolute;
+  width: 100%;
+  top: calc(100% + 5px);
+  left: 0;
+  background: #0b2344;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  overflow: hidden;
+  z-index: 99;
+}
+
+.select-items div {
+  padding: 10px;
+  cursor: pointer;
+  color: white;
+}
+
+.select-items div:hover {
+  background: #3c89e8;
+}
+
+.select-items div.active {
+  background: #1668dc;
+  font-weight: bold;
+}
+
+.custom-select.open .select-items {
+  display: block;
+}
     /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 6px; /* nipis */
@@ -235,10 +288,19 @@ html {
           <h3>🎁 Referral Settings</h3>
 
           <label>Referral System</label>
-          <select name="referral_enabled" form="settingsForm">
-            <option value="1" {% if data.referral_enabled == "1" %}selected{% endif %}>Enabled</option>
-            <option value="0" {% if data.referral_enabled == "0" %}selected{% endif %}>Disabled</option>
-          </select>
+<input type="hidden" name="referral_enabled" id="referral_enabled"
+       value="{{ data.referral_enabled }}" form="settingsForm">
+
+<div class="custom-select" id="referralSelect">
+  <div class="select-selected">
+    {% if data.referral_enabled == "1" %}Enabled{% else %}Disabled{% endif %}
+  </div>
+
+  <div class="select-items">
+    <div data-value="1" class="{% if data.referral_enabled == '1' %}active{% endif %}">Enabled</div>
+    <div data-value="0" class="{% if data.referral_enabled == '0' %}active{% endif %}">Disabled</div>
+  </div>
+</div>
 
           <label>Referral Image URL</label>
           <input type="text" name="referral_image" value="{{ data.referral_image }}" form="settingsForm">
@@ -280,6 +342,32 @@ html {
           </div>
 
           <script>
+  const customSelect = document.getElementById("referralSelect");
+  const selected = customSelect.querySelector(".select-selected");
+  const items = customSelect.querySelectorAll(".select-items div");
+  const hiddenInput = document.getElementById("referral_enabled");
+
+  selected.addEventListener("click", function () {
+    customSelect.classList.toggle("open");
+  });
+
+  items.forEach(item => {
+    item.addEventListener("click", function () {
+      selected.textContent = this.textContent;
+      hiddenInput.value = this.dataset.value;
+
+      items.forEach(i => i.classList.remove("active"));
+      this.classList.add("active");
+
+      customSelect.classList.remove("open");
+    });
+  });
+
+  document.addEventListener("click", function (e) {
+    if (!customSelect.contains(e.target)) {
+      customSelect.classList.remove("open");
+    }
+  });
             function copyUrl() {
               const input = document.getElementById("urlBox");
               input.select();
