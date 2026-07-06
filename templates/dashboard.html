@@ -138,6 +138,11 @@
       margin-top: -6px;
       margin-bottom: 14px;
     }
+    .two-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
     /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 6px; /* nipis */
@@ -205,11 +210,21 @@ html {
         <label>WhatsApp URL</label>
         <input type="text" name="whatsapp_url" value="{{ data.whatsapp_url }}">
 
+<div class="two-inputs">
+    <div>
         <label>Manual Today Add</label>
-        <input type="number" name="manual_today_add" value="{{ data.manual_today_add }}">
+        <input type="number"
+               name="manual_today_add"
+               value="{{ data.manual_today_add }}">
+    </div>
 
+    <div>
         <label>Manual Month Add</label>
-        <input type="number" name="manual_month_add" value="{{ data.manual_month_add }}">
+        <input type="number"
+               name="manual_month_add"
+               value="{{ data.manual_month_add }}">
+    </div>
+</div>
       </form>
 
       <!-- RIGHT SIDE -->
