@@ -379,12 +379,17 @@ html {
         <div class="card">
           <h3>📤 Upload Banner (Cloudinary)</h3>
 
-          <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data">
+          <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data" id="uploadForm">
             <div class="upload-box">
               <input type="file" name="image" required>
             </div>
 
-            <button type="submit">Upload Image</button>
+            <button type="submit" id="uploadImageBtn">
+  <span class="btn-content">
+    <span class="btn-spinner"></span>
+    <span class="upload-btn-text">Upload Image</span>
+  </span>
+</button>
           </form>
 
 {% if uploaded_url %}
@@ -454,6 +459,16 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 150);
     });
   }
+  // UPLOAD IMAGE LOADING
+const uploadForm = document.getElementById("uploadForm");
+const uploadBtn = document.getElementById("uploadImageBtn");
+
+if (uploadForm && uploadBtn) {
+  uploadForm.addEventListener("submit", function () {
+    uploadBtn.classList.add("loading");
+    uploadBtn.querySelector(".upload-btn-text").textContent = "Uploading...";
+  });
+}
 });
 
 function copyUrl() {
