@@ -892,15 +892,39 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if msg == "🚀 Register":
-        register_url = get_setting("register_url")
-        keyboard = [[InlineKeyboardButton("🌍 Register", url=register_url)]]
+if msg == "🚀 Register":
 
-        await update.message.reply_text(
-            "🚀 Register Now",
+    register_url = get_setting("register_url")
+    register_banner = get_setting("register_banner")
+    register_caption = get_setting("register_caption")
+
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "🌍 Register Now",
+                url=register_url
+            )
+        ]
+    ]
+
+    if register_banner:
+
+        await update.message.reply_photo(
+            photo=register_banner,
+            caption=convert_markdown_bold_to_html(register_caption),
+            parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
-        return
+
+    else:
+
+        await update.message.reply_text(
+            convert_markdown_bold_to_html(register_caption),
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    return
 
     # ================= REFERRAL =================
     if (
@@ -1016,6 +1040,8 @@ def admin_dashboard():
         set_setting("about_text", request.form.get("about_text", ""))
         set_setting("about_banner", request.form.get("about_banner", ""))
         set_setting("register_url", request.form.get("register_url", ""))
+        set_setting("register_banner", request.form.get("register_banner", ""))
+        set_setting("register_caption", request.form.get("register_caption", ""))
         set_setting("telegram_support", request.form.get("telegram_support", ""))
         set_setting("whatsapp_url", request.form.get("whatsapp_url", ""))
         set_setting("contact_banner", request.form.get("contact_banner", ""))
@@ -1036,6 +1062,8 @@ def admin_dashboard():
         "about_text": get_setting("about_text"),
         "about_banner": get_setting("about_banner"),
         "register_url": get_setting("register_url"),
+        "register_banner": get_setting("register_banner"),
+        "register_caption": get_setting("register_caption"),
         "telegram_support": get_setting("telegram_support"),
         "whatsapp_url": get_setting("whatsapp_url"),
         "contact_banner": get_setting("contact_banner"),
@@ -1334,6 +1362,8 @@ def upload_banner():
                 "about_text": get_setting("about_text"),
                 "about_banner": get_setting("about_banner"),
                 "register_url": get_setting("register_url"),
+                "register_banner": get_setting("register_banner"),
+                "register_caption": get_setting("register_caption"),
                 "telegram_support": get_setting("telegram_support"),
                 "whatsapp_url": get_setting("whatsapp_url"),
                 "contact_banner": get_setting("contact_banner"),
