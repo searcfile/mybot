@@ -307,6 +307,7 @@ def init_db():
         "telegram_support": "https://t.me/your_support",
         "whatsapp_url": "https://wa.me/60139661818",
         "contact_banner": "",
+        "contact_caption": "📞 **Contact Us**",
 
         # manual correction
         "manual_today_add": "0",
@@ -860,36 +861,28 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         telegram_support = get_setting("telegram_support")
         whatsapp_url = get_setting("whatsapp_url")
         contact_banner = get_setting("contact_banner")
+        contact_caption = get_setting("contact_caption")
+        contact_caption = convert_markdown_bold_to_html(contact_caption)
 
         keyboard = [
             [InlineKeyboardButton("💬 Telegram", url=telegram_support)],
             [InlineKeyboardButton("💬 WhatsApp", url=whatsapp_url)]
         ]
 
-        if contact_banner:
-            await update.message.reply_photo(
-                photo=contact_banner,
-                caption="📞 <b>Contact Us</b>",
-                parse_mode="HTML",
-                reply_markup=InlineKeyboardMarkup(keyboard)
-            )
-        else:
-            await update.message.reply_text(
-                "📞 Contact Us",
-                reply_markup=InlineKeyboardMarkup(keyboard)
-            )
+if contact_banner:
+    await update.message.reply_photo(
+        photo=contact_banner,
+        caption=contact_caption,
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+else:
+    await update.message.reply_text(
+        contact_caption,
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
-        return
-
-        keyboard = [
-            [InlineKeyboardButton("💬 Telegram", url=telegram_support)],
-            [InlineKeyboardButton("💬 WhatsApp", url=whatsapp_url)]
-        ]
-
-        await update.message.reply_text(
-            "📞 Contact Us",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
         return
 
     if msg == "🚀 Register":
@@ -1041,6 +1034,7 @@ def admin_dashboard():
         set_setting("telegram_support", request.form.get("telegram_support", ""))
         set_setting("whatsapp_url", request.form.get("whatsapp_url", ""))
         set_setting("contact_banner", request.form.get("contact_banner", ""))
+        set_setting("contact_caption", request.form.get("contact_caption", ""))
 
         set_setting("manual_today_add", request.form.get("manual_today_add", "0"))
         set_setting("manual_month_add", request.form.get("manual_month_add", "0"))
@@ -1063,6 +1057,7 @@ def admin_dashboard():
         "telegram_support": get_setting("telegram_support"),
         "whatsapp_url": get_setting("whatsapp_url"),
         "contact_banner": get_setting("contact_banner"),
+        "contact_caption": get_setting("contact_caption"),
         "manual_today_add": get_setting("manual_today_add"),
         "manual_month_add": get_setting("manual_month_add"),
 
@@ -1363,6 +1358,7 @@ def upload_banner():
                 "telegram_support": get_setting("telegram_support"),
                 "whatsapp_url": get_setting("whatsapp_url"),
                 "contact_banner": get_setting("contact_banner"),
+                "contact_caption": get_setting("contact_caption"),
                 "manual_today_add": get_setting("manual_today_add"),
                 "manual_month_add": get_setting("manual_month_add"),
 "referral_enabled": get_setting("referral_enabled"),
