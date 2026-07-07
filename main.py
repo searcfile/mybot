@@ -300,6 +300,7 @@ def init_db():
             "🗓 This Month: **{month_count}**"
         ),
         "about_text": "📌 **About Us**\n\nFast Withdraw | 24/7 Support",
+        "about_banner": "",
         "register_url": "https://yourwebsite.com",
         "telegram_support": "https://t.me/your_support",
         "whatsapp_url": "https://wa.me/60139661818",
@@ -975,6 +976,7 @@ def admin_dashboard():
 
         set_setting("welcome_text", request.form.get("welcome_text", ""))
         set_setting("about_text", request.form.get("about_text", ""))
+        set_setting("about_banner", request.form.get("about_banner", ""))
         set_setting("register_url", request.form.get("register_url", ""))
         set_setting("telegram_support", request.form.get("telegram_support", ""))
         set_setting("whatsapp_url", request.form.get("whatsapp_url", ""))
@@ -993,6 +995,7 @@ def admin_dashboard():
         "main_banner": get_setting("main_banner"),
         "welcome_text": get_setting("welcome_text"),
         "about_text": get_setting("about_text"),
+        "about_banner": get_setting("about_banner"),
         "register_url": get_setting("register_url"),
         "telegram_support": get_setting("telegram_support"),
         "whatsapp_url": get_setting("whatsapp_url"),
@@ -1289,6 +1292,7 @@ def upload_banner():
                 "main_banner": get_setting("main_banner"),
                 "welcome_text": get_setting("welcome_text"),
                 "about_text": get_setting("about_text"),
+                "about_banner": get_setting("about_banner"),
                 "register_url": get_setting("register_url"),
                 "telegram_support": get_setting("telegram_support"),
                 "whatsapp_url": get_setting("whatsapp_url"),
