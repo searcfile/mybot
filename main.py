@@ -833,11 +833,24 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Menu Closed", reply_markup=base_keyboard())
         return
 
-    if msg == "📌 About":
-        about_text = get_setting("about_text")
-        about_text = convert_markdown_bold_to_html(about_text)
-        await update.message.reply_text(about_text, parse_mode="HTML")
-        return
+if msg == "📌 About":
+    about_text = get_setting("about_text")
+    about_text = convert_markdown_bold_to_html(about_text)
+
+    about_banner = get_setting("about_banner")
+
+    if about_banner:
+        await update.message.reply_photo(
+            photo=about_banner,
+            caption=about_text,
+            parse_mode="HTML"
+        )
+    else:
+        await update.message.reply_text(
+            about_text,
+            parse_mode="HTML"
+        )
+    return
 
     if msg == "📞 Contact":
         telegram_support = get_setting("telegram_support")
