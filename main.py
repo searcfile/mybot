@@ -892,39 +892,35 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-if msg == "🚀 Register":
+    if msg == "🚀 Register":
+        register_url = get_setting("register_url")
+        register_banner = get_setting("register_banner")
+        register_caption = get_setting("register_caption")
 
-    register_url = get_setting("register_url")
-    register_banner = get_setting("register_banner")
-    register_caption = get_setting("register_caption")
-
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "🌍 Register Now",
-                url=register_url
-            )
+        keyboard = [
+            [
+                InlineKeyboardButton(
+                    "🌍 Register Now",
+                    url=register_url
+                )
+            ]
         ]
-    ]
 
-    if register_banner:
+        if register_banner:
+            await update.message.reply_photo(
+                photo=register_banner,
+                caption=convert_markdown_bold_to_html(register_caption),
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+        else:
+            await update.message.reply_text(
+                convert_markdown_bold_to_html(register_caption),
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
 
-        await update.message.reply_photo(
-            photo=register_banner,
-            caption=convert_markdown_bold_to_html(register_caption),
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
-
-    else:
-
-        await update.message.reply_text(
-            convert_markdown_bold_to_html(register_caption),
-            parse_mode="HTML",
-            reply_markup=InlineKeyboardMarkup(keyboard)
-        )
-
-    return
+        return
 
     # ================= REFERRAL =================
     if (
