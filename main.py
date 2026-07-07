@@ -860,6 +860,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if msg == "📞 Contact":
         telegram_support = get_setting("telegram_support")
         whatsapp_url = get_setting("whatsapp_url")
+
         contact_banner = get_setting("contact_banner")
         contact_caption = get_setting("contact_caption")
         contact_caption = convert_markdown_bold_to_html(contact_caption)
@@ -869,19 +870,19 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("💬 WhatsApp", url=whatsapp_url)]
         ]
 
-if contact_banner:
-    await update.message.reply_photo(
-        photo=contact_banner,
-        caption=contact_caption,
-        parse_mode="HTML",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-else:
-    await update.message.reply_text(
-        contact_caption,
-        parse_mode="HTML",
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+        if contact_banner:
+            await update.message.reply_photo(
+                photo=contact_banner,
+                caption=contact_caption,
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+        else:
+            await update.message.reply_text(
+                contact_caption,
+                parse_mode="HTML",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
 
         return
 
