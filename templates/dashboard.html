@@ -162,6 +162,7 @@
   color: white;
   box-sizing: border-box;
   cursor: pointer;
+   transition: all 0.2s;
 }
 
 .select-selected {
@@ -195,19 +196,24 @@
   display: none;
   position: absolute;
   width: 100%;
-  top: calc(100% + 5px);
+  top: calc(100% + 3px);
   left: 0;
   background: #0b2344;
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+  border-radius: 8px;
   overflow: hidden;
   z-index: 99;
+  padding:4px;
+   transition: all 0.2s;
 }
 
 .select-items div {
-  padding: 10px;
+  padding: 5px 12px;
   cursor: pointer;
+  font-size: 14px;
   color: white;
+  border-radius: 4px;
+   transition: all 0.2s;
 }
 
 .select-items div:hover {
