@@ -47,7 +47,16 @@
       padding: 20px;
       box-sizing: border-box;
     }
+.page-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 16px;
+}
 
+.save-btn {
+  min-width: 150px;
+}
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -467,7 +476,16 @@ html {
     </div>
   </div>
 
-  <div class="container">
+<div class="container">
+
+    <div class="page-actions">
+      <button type="submit" form="settingsForm" id="saveSettingsBtn" class="save-btn">
+        <span class="btn-content">
+          <span class="btn-spinner"></span>
+          <span class="btn-text">Save Settings</span>
+        </span>
+      </button>
+    </div>
 
     <div class="dashboard-grid">
 
@@ -567,13 +585,6 @@ html {
            {ref_link} = referral link<br> 
           {ref_count} = invited users 
           </div> -->
-
-          <button type="submit" form="settingsForm" id="saveSettingsBtn">
-  <span class="btn-content">
-    <span class="btn-spinner"></span>
-    <span class="btn-text">Save Settings</span>
-  </span>
-</button>
         </div>
 
         <!-- UPLOAD BANNER -->
