@@ -376,7 +376,7 @@ button .btn-content {
   transform: translateX(-50%) translateY(30px);
   background: #111827;
   color: white;
-  padding: 12px 16px;
+  padding: 12px 14px;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
   display: flex;
@@ -392,16 +392,39 @@ button .btn-content {
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
-.toast-icon {
+.toast.success .toast-icon {
   color: #22c55e;
-  font-size: 18px;
+}
+
+.toast.error .toast-icon {
+  color: #ef4444;
+}
+
+.toast.warning .toast-icon {
+  color: #f59e0b;
 }
 
 .toast-close {
   margin-left: 10px;
-  opacity: .7;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: #b7bcc8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 0;
+}
+
+.toast-close:hover {
+  background: rgba(255,255,255,.08);
+  color: #fff;
 }
     /* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
@@ -594,10 +617,15 @@ stroke-linecap="round"/>
 </div>
 {% endif %}
           
-<div id="toast" class="toast">
-  <span class="toast-icon">✓</span>
+<div id="toast" class="toast success">
+  <span class="toast-icon" id="toastIcon">✓</span>
   <span id="toastText">Copied!</span>
-  <span class="toast-close">×</span>
+
+  <button class="toast-close" id="toastClose" type="button">
+    <svg width="12" height="12" viewBox="0 0 1024 1024" fill="currentColor">
+      <path d="M799.86 166.31c.02 0 .04.02.08.06l57.69 57.7c.04.03.05.05.06.08a.12.12 0 010 .06c0 .03-.02.05-.06.09L569.93 512l287.7 287.7c.04.04.05.06.06.09a.12.12 0 010 .07c0 .02-.02.04-.06.08l-57.7 57.69c-.03.04-.05.05-.07.06a.12.12 0 01-.07 0c-.03 0-.05-.02-.09-.06L512 569.93l-287.7 287.7c-.04.04-.06.05-.09.06a.12.12 0 01-.07 0c-.02 0-.04-.02-.08-.06l-57.69-57.7c-.04-.03-.05-.05-.06-.07a.12.12 0 010-.07c0-.03.02-.05.06-.09L454.07 512l-287.7-287.7c-.04-.04-.05-.06-.06-.09a.12.12 0 010-.07c0-.02.02-.04.06-.08l57.7-57.69c.03-.04.05-.05.07-.06a.12.12 0 01.07 0c.03 0 .05.02.09.06L512 454.07l287.7-287.7c.04-.04.06-.05.09-.06a.12.12 0 01.07 0z"/>
+    </svg>
+  </button>
 </div>
           
 <script>
@@ -686,13 +714,35 @@ document.addEventListener("DOMContentLoaded", function () {
       uploadLabel.style.display = "flex";
     });
   }
-});
+  const toastClose = document.getElementById("toastClose");
+const toast = document.getElementById("toast");
 
-function showToast(message) {
+if (toastClose && toast) {
+  toastClose.addEventListener("click", function () {
+    toast.classList.remove("show");
+  });
+}
+}); //DOMContentLoaded tutop//
+
+function showToast(message, type = "success") {
   const toast = document.getElementById("toast");
   const toastText = document.getElementById("toastText");
+  const toastIcon = document.getElementById("toastIcon");
 
-  if (!toast || !toastText) return;
+  if (!toast || !toastText || !toastIcon) return;
+
+  toast.classList.remove("success", "error", "warning");
+
+  if (type === "error") {
+    toast.classList.add("error");
+    toastIcon.textContent = "✕";
+  } else if (type === "warning") {
+    toast.classList.add("warning");
+    toastIcon.textContent = "!";
+  } else {
+    toast.classList.add("success");
+    toastIcon.textContent = "✓";
+  }
 
   toastText.textContent = message;
   toast.classList.add("show");
