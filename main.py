@@ -999,8 +999,9 @@ def admin_dashboard():
         "manual_today_add": get_setting("manual_today_add"),
         "manual_month_add": get_setting("manual_month_add"),
 
-        "referral_enabled": get_setting("referral_enabled"),
-        "referral_text": get_setting("referral_text")
+"referral_enabled": get_setting("referral_enabled"),
+"referral_image": get_setting("referral_image"),
+"referral_text": get_setting("referral_text")
     }
 
     return render_template("dashboard.html", data=data)
@@ -1293,8 +1294,9 @@ def upload_banner():
                 "whatsapp_url": get_setting("whatsapp_url"),
                 "manual_today_add": get_setting("manual_today_add"),
                 "manual_month_add": get_setting("manual_month_add"),
-                "referral_enabled": get_setting("referral_enabled"),
-                "referral_text": get_setting("referral_text")
+"referral_enabled": get_setting("referral_enabled"),
+"referral_image": get_setting("referral_image"),
+"referral_text": get_setting("referral_text")
             },
             uploaded_url=url
         )
