@@ -29,27 +29,57 @@
       letter-spacing: 0.5px;
     }
 
-    .nav {
+     .nav {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .nav a {
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 13px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: white;
-      transition: 0.2s;
-    }
+.nav a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:8px;
+    text-decoration:none;
+    color:rgba(255,255,255,.85);
+    transition:.25s;
+}
 
-    .nav a:hover {
-      background: rgba(56,189,248,0.2);
-      border-color: rgba(56,189,248,0.4);
-    }
+.nav a:hover{
+    background:rgba(255,255,255,.06);
+    color:#fff;
+}
+
+/* ACTIVE */
+.nav a.active{
+    background:#1668dc;
+    color:#fff;
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.08),
+        0 0 0 1px rgba(255,255,255,.08);
+}
+
+.nav a.active .nav-icon{
+    color:#fff;
+}
+    .nav a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.nav-icon{
+    width:19.2px;
+    height:19.2px;
+    min-width:19.2px;
+    min-height:19.2px;
+    fill:currentColor;
+    flex-shrink:0;
+    display:block;
+    overflow:visible;
+    transition:.25s;
+}
 
     .container {
       max-width: 1300px;
@@ -212,13 +242,32 @@
   <div class="topbar">
     <h2>👥 Users</h2>
 
-    <div class="nav">
-      <a href="/admin">Dashboard</a>
-      <a href="/admin/promos">Promos</a>
-      <a href="/admin/banner_buttons">Banner Buttons</a>
-      <a href="/admin/users">Users</a>
-      <a href="/admin/logout">Logout</a>
-    </div>
+<div class="nav">
+  <a href="/admin">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z"/></svg>
+    Dashboard
+  </a>
+
+  <a href="/admin/promos">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 7h-2.2c.1-.3.2-.7.2-1a3 3 0 0 0-5.3-1.9L12 5l-.7-.9A3 3 0 0 0 6 6c0 .3.1.7.2 1H4a2 2 0 0 0-2 2v3h20V9a2 2 0 0 0-2-2zM8 5a1 1 0 0 1 .8.4L10 7H8a1 1 0 0 1 0-2zm8 0a1 1 0 0 1 0 2h-2l1.2-1.6A1 1 0 0 1 16 5zM3 14v6a2 2 0 0 0 2 2h6v-8H3zm10 0v8h6a2 2 0 0 0 2-2v-6h-8z"/></svg>
+    Promos
+  </a>
+
+  <a href="/admin/banner_buttons">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9z"/></svg>
+    Banner Buttons
+  </a>
+
+  <a href="/admin/users">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>
+    Users
+  </a>
+
+  <a href="/admin/logout">
+    <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 3h9v2H6v14h7v2H4V3zm12.6 5.4L21.2 13l-4.6 4.6-1.4-1.4 2.2-2.2H10v-2h7.4l-2.2-2.2 1.4-1.4z"/></svg>
+    Logout
+  </a>
+</div>
   </div>
 
   <div class="container">
@@ -313,6 +362,18 @@
     </div>
 
   </div>
+<script>
+  const currentPath = window.location.pathname;
 
+document.querySelectorAll(".nav a").forEach(link => {
+  const href = link.getAttribute("href");
+
+  link.classList.remove("active");
+
+  if (href === currentPath) {
+    link.classList.add("active");
+  }
+});
+</script>
 </body>
 </html>
