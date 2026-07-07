@@ -302,6 +302,8 @@ def init_db():
         "about_text": "📌 **About Us**\n\nFast Withdraw | 24/7 Support",
         "about_banner": "",
         "register_url": "https://yourwebsite.com",
+        "register_banner": "",
+        "register_caption": "🎁 Register sekarang dan dapatkan bonus terbaik!",
         "telegram_support": "https://t.me/your_support",
         "whatsapp_url": "https://wa.me/60139661818",
         "contact_banner": "",
