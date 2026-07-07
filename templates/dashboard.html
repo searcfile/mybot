@@ -459,6 +459,67 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
+    .login-loading{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.20);
+  z-index:999999;
+}
+
+.login-loading.show{
+  display:flex;
+}
+
+.loading-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  pointer-events:none;
+}
+
+.loading-dots{
+  width:32px;
+  height:32px;
+  position:relative;
+  animation:loadingRotate 1s linear infinite;
+}
+
+.loading-dots span{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.85);
+  opacity:.25;
+  animation:dotPulse 1s linear infinite;
+}
+
+.loading-dots span:nth-child(1){ top:0; left:50%; transform:translateX(-50%); }
+.loading-dots span:nth-child(2){ right:0; top:50%; transform:translateY(-50%); animation-delay:.25s; }
+.loading-dots span:nth-child(3){ bottom:0; left:50%; transform:translateX(-50%); animation-delay:.5s; }
+.loading-dots span:nth-child(4){ left:0; top:50%; transform:translateY(-50%); animation-delay:.75s; }
+
+.loading-text{
+  color:#fff;
+  font-size:14px;
+  text-align:center;
+}
+
+@keyframes dotPulse{
+  0%{ opacity:.2; }
+  25%{ opacity:1; }
+  50%{ opacity:.4; }
+  100%{ opacity:.2; }
+}
+
+@keyframes loadingRotate{
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}
   </style>
 </head>
 
@@ -662,7 +723,18 @@ stroke-linecap="round"/>
     </svg>
   </button>
 </div>
-          
+
+<div id="pageLoading" class="login-loading">
+  <div class="loading-box">
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="loading-text">Please wait while fetching...</div>
+  </div>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
@@ -797,6 +869,48 @@ function copyUrl() {
 
   showToast("Image link copied!");
 }
+function showPageLoading(){
+  const loading = document.getElementById("pageLoading");
+  if (loading) loading.classList.add("show");
+}
+
+function hidePageLoading(){
+  const loading = document.getElementById("pageLoading");
+  if (loading) loading.classList.remove("show");
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  hidePageLoading();
+
+  document.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", function () {
+      const href = this.getAttribute("href");
+
+      if (
+        href &&
+        !href.startsWith("#") &&
+        !href.startsWith("javascript:") &&
+        this.target !== "_blank"
+      ) {
+        showPageLoading();
+      }
+    });
+  });
+
+  document.querySelectorAll("form").forEach(form => {
+    form.addEventListener("submit", function () {
+      showPageLoading();
+    });
+  });
+});
+
+window.addEventListener("beforeunload", function () {
+  showPageLoading();
+});
+
+window.addEventListener("pageshow", function () {
+  hidePageLoading();
+});
 </script>
         </div>
 
