@@ -512,6 +512,10 @@ select{
 .custom-select.open .select-items {
   display: block;
 }
+.input-error{
+  border-color:#ef4444 !important;
+  box-shadow:0 0 0 2px rgba(239,68,68,.25) !important;
+}
   </style>
 </head>
 
@@ -664,7 +668,7 @@ select{
         Send message to all Telegram users
       </div>
 
-      <form method="POST" action="/admin/broadcast">
+     <form method="POST" action="/admin/broadcast" id="broadcastForm">
 <label>Broadcast Target</label>
 <input type="hidden" name="broadcast_target" id="broadcast_target" value="all">
 
@@ -681,6 +685,7 @@ select{
 <input
   type="text"
   name="target_user_id"
+  id="target_user_id"
   placeholder="Isi Telegram ID jika pilih Single User">
         <label>Banner Image URL</label>
         <input
@@ -704,6 +709,11 @@ select{
       </form>
     </div>
   </div>
+</div>
+<div id="toast" class="toast">
+  <span class="toast-icon">!</span>
+  <span id="toastText">Message</span>
+  <button type="button" class="toast-close" onclick="hideToast()">×</button>
 </div>
 <script>
   const currentPath = window.location.pathname;
@@ -799,6 +809,38 @@ broadcastItems.forEach(item => {
 document.addEventListener("click", function (e) {
   if (!broadcastSelect.contains(e.target)) {
     broadcastSelect.classList.remove("open");
+  }
+});
+const broadcastForm = document.getElementById("broadcastForm");
+const targetInput = document.getElementById("target_user_id");
+
+function showToast(message, type="error"){
+  const toast = document.getElementById("toast");
+  const toastText = document.getElementById("toastText");
+
+  toast.className = "toast show " + type;
+  toastText.textContent = message;
+
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(hideToast, 3000);
+}
+
+function hideToast(){
+  const toast = document.getElementById("toast");
+  toast.classList.remove("show");
+}
+
+broadcastForm.addEventListener("submit", function(e){
+  const target = document.getElementById("broadcast_target").value;
+  const telegramId = targetInput.value.trim();
+
+  targetInput.classList.remove("input-error");
+
+  if(target === "single" && !/^\d+$/.test(telegramId)){
+    e.preventDefault();
+    targetInput.classList.add("input-error");
+    showToast("Telegram ID mesti nombor sahaja.", "error");
+    return false;
   }
 });
 </script>
