@@ -761,10 +761,22 @@ document.querySelectorAll("form").forEach(form => {
     showLoading();
   });
 });
-  const broadcastSelect = document.getElementById("broadcastTargetSelect");
+const broadcastSelect = document.getElementById("broadcastTargetSelect");
 const broadcastSelected = broadcastSelect.querySelector(".select-selected");
 const broadcastItems = broadcastSelect.querySelectorAll(".select-items div");
 const broadcastInput = document.getElementById("broadcast_target");
+
+const savedTarget = localStorage.getItem("broadcast_target") || "all";
+
+broadcastItems.forEach(item => {
+  item.classList.remove("active");
+
+  if (item.dataset.value === savedTarget) {
+    item.classList.add("active");
+    broadcastSelected.textContent = item.textContent;
+    broadcastInput.value = item.dataset.value;
+  }
+});
 
 broadcastSelected.addEventListener("click", function () {
   broadcastSelect.classList.toggle("open");
@@ -774,6 +786,8 @@ broadcastItems.forEach(item => {
   item.addEventListener("click", function () {
     broadcastSelected.textContent = this.textContent;
     broadcastInput.value = this.dataset.value;
+
+    localStorage.setItem("broadcast_target", this.dataset.value);
 
     broadcastItems.forEach(i => i.classList.remove("active"));
     this.classList.add("active");
