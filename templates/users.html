@@ -318,6 +318,42 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
+.user-tools-grid{
+  display:grid;
+  grid-template-columns: 1fr 380px;
+  gap:16px;
+  align-items:start;
+}
+
+.broadcast-box textarea{
+  width:100%;
+  min-height:130px;
+  margin-top:6px;
+  margin-bottom:12px;
+  padding:10px;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,0.15);
+  background:rgba(0,0,0,0.25);
+  color:white;
+  box-sizing:border-box;
+  outline:none;
+}
+
+.broadcast-btn{
+  width:100%;
+  height:36px;
+  background:#1668dc;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+@media(max-width:900px){
+  .user-tools-grid{
+    grid-template-columns:1fr;
+  }
+}
   </style>
 </head>
 
@@ -373,7 +409,8 @@ html {
         <p>{{ month }}</p>
       </div>
     </div>
-
+    
+<div class="user-tools-grid">
     <!-- USERS TABLE -->
     <div class="card">
       <h3>🔍 Search User</h3>
@@ -445,7 +482,44 @@ html {
 
     </div>
 
-  </div>
+    <!-- BROADCAST CARD -->
+    <div class="card broadcast-box">
+
+      <h3>📢 Broadcast</h3>
+
+      <div class="desc">
+        Send message to all Telegram users
+      </div>
+
+      <form method="POST" action="/admin/broadcast">
+
+        <label>Banner Image URL</label>
+        <input
+            type="text"
+            name="broadcast_image"
+            placeholder="https://res.cloudinary.com/...">
+
+        <label>Caption</label>
+
+        <textarea
+            name="broadcast_caption"
+            placeholder="Write broadcast message..."
+            required></textarea>
+
+        <button
+            type="submit"
+            class="broadcast-btn">
+            📤 Send Broadcast
+        </button>
+
+      </form>
+
+    </div>
+
+</div>
+
+</div>
+
 <script>
   const currentPath = window.location.pathname;
 
