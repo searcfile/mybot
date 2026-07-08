@@ -718,7 +718,7 @@ select{
       </div>
 
      <form method="POST" action="/admin/broadcast" id="broadcastForm">
-<label>Broadcast Target</label>
+<label class="label-required">Broadcast Target</label>
 <input type="hidden" name="broadcast_target" id="broadcast_target" value="all">
 
 <div class="custom-select" id="broadcastTargetSelect">
@@ -730,19 +730,19 @@ select{
   </div>
 </div>
 
-<label>Telegram ID</label>
+<label class="label-required">Telegram ID</label>
 <input
   type="text"
   name="target_user_id"
   id="target_user_id"
   placeholder="Isi Telegram ID jika pilih Single User">
-        <label>Banner Image URL</label>
+        <label class="label-required">Banner Image URL</label>
         <input
             type="text"
             name="broadcast_image"
             placeholder="https://res.cloudinary.com/...">
 
-        <label>Caption</label>
+        <label class="label-required">Caption</label>
 
         <textarea
             name="broadcast_caption"
