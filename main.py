@@ -1218,7 +1218,10 @@ def admin_broadcast():
         if not target_user_id:
             return redirect("/admin/users")
 
-        users = [(int(target_user_id),)]
+        try:
+    users = [(int(target_user_id),)]
+except ValueError:
+    return redirect("/admin/users")
     else:
         users, total, total_pages = get_users_paginated(
             page=1,
