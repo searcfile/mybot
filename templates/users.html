@@ -570,7 +570,17 @@ html {
       </div>
 
       <form method="POST" action="/admin/broadcast">
+<label>Broadcast Target</label>
+<select name="broadcast_target">
+  <option value="all">All Users</option>
+  <option value="single">Single User</option>
+</select>
 
+<label>Telegram ID</label>
+<input
+  type="text"
+  name="target_user_id"
+  placeholder="Isi Telegram ID jika pilih Single User">
         <label>Banner Image URL</label>
         <input
             type="text"
