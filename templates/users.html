@@ -421,7 +421,22 @@ html {
 </head>
 
 <body>
+  
+<div id="pageLoading" class="login-loading show">
+  <div class="loading-box">
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
 
+    <div class="loading-text">
+      Please wait while fetching...
+    </div>
+  </div>
+</div>
+  
   <div class="topbar">
     <h2>👥 Users</h2>
 
@@ -578,22 +593,6 @@ html {
       </form>
     </div>
   </div>
-</div>
-<div id="pageLoading" class="login-loading show">
-    <div class="loading-box">
-
-        <div class="loading-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-
-        <div class="loading-text">
-            Please wait while fetching...
-        </div>
-
-    </div>
 </div>
 <script>
   const currentPath = window.location.pathname;
