@@ -45,6 +45,7 @@
     text-decoration:none;
     color:rgba(255,255,255,.85);
     transition:.25s;
+    white-space: nowrap;
 }
 
 .nav a:hover{
@@ -600,13 +601,22 @@ html {
     height: 19.2px;
   }
 }
+.label-required::before {
+    content: "*";
+    display: inline-block;
+    margin-right: 4px;
+    color: #dc4446;
+    font-size: 14px;
+    font-family: SimSun, sans-serif;
+    line-height: 1;
+}
   </style>
 </head>
 
 <body>
 
   <div class="topbar">
-    <h2>⚙️ Admin Dashboard</h2>
+    <h2>Dashboard</h2>
 
 <div class="nav">
   <a href="/admin">
@@ -653,58 +663,58 @@ html {
       <form method="POST" action="/admin" class="card" id="settingsForm">
         <h3>⚙️ Settings</h3>
 
-        <label>Main Banner URL</label>
+        <label class="label-required">Main Banner URL</label>
         <input type="text" name="main_banner" value="{{ data.main_banner }}">
 
-        <label>Welcome Text</label>
+        <label class="label-required">Welcome Text</label>
         <textarea name="welcome_text">{{ data.welcome_text }}</textarea>
         
-        <label>About Banner URL</label>
+        <label class="label-required">About Banner URL</label>
         <input type="text" name="about_banner" value="{{ data.about_banner }}">
-        <label>About Text</label>
+        <label class="label-required">About Text</label>
         <textarea name="about_text">{{ data.about_text }}</textarea>
 
-        <label>Register URL</label>
+        <label class="label-required">Register URL</label>
         <input type="text" name="register_url" value="{{ data.register_url }}">
-        <label>Register Banner URL</label>
+        <label class="label-required">Register Banner URL</label>
 <input type="text"
        name="register_banner"
        value="{{ data.register_banner }}">
 
-<label>Register Caption</label>
+<label class="label-required">Register Caption</label>
 <textarea
         name="register_caption"
         rows="5">{{ data.register_caption }}</textarea>
         
-<label>Contact Banner URL</label>
+<label class="label-required">Contact Banner URL</label>
 <input type="text" name="contact_banner" value="{{ data.contact_banner }}">
-<label>Contact Caption</label>
+<label class="label-required">Contact Caption</label>
 <textarea name="contact_caption" rows="5">{{ data.contact_caption }}</textarea>
         
 
         
 <div class="two-inputs">
   <div>
-    <label>Telegram Support</label>
+    <label class="label-required">Telegram Support</label>
     <input type="text" name="telegram_support" value="{{ data.telegram_support }}">
   </div>
 
   <div>
-    <label>WhatsApp URL</label>
+    <label class="label-required">WhatsApp URL</label>
     <input type="text" name="whatsapp_url" value="{{ data.whatsapp_url }}">
   </div>
 </div>
 
 <div class="two-inputs">
     <div>
-        <label>Manual Today Add</label>
+        <label class="label-required">Manual Today Add</label>
         <input type="number"
                name="manual_today_add"
                value="{{ data.manual_today_add }}">
     </div>
 
     <div>
-        <label>Manual Month Add</label>
+        <label class="label-required">Manual Month Add</label>
         <input type="number"
                name="manual_month_add"
                value="{{ data.manual_month_add }}">
@@ -718,7 +728,7 @@ html {
         <div class="card">
           <h3>🎁 Referral Settings</h3>
 
-          <label>Referral System</label>
+          <label class="label-required">Referral System</label>
 <input type="hidden" name="referral_enabled" id="referral_enabled"
        value="{{ data.referral_enabled }}" form="settingsForm">
 
@@ -733,10 +743,10 @@ html {
   </div>
 </div>
 
-          <label>Referral Image URL</label>
+          <label class="label-required">Referral Image URL</label>
           <input type="text" name="referral_image" value="{{ data.referral_image }}" form="settingsForm">
 
-          <label>Referral Message Template</label>
+          <label class="label-required">Referral Message Template</label>
           <textarea name="referral_text" rows="8" form="settingsForm">{{ data.referral_text }}</textarea>
 
       <!--  <div class="hint">
