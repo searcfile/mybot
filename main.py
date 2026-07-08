@@ -1208,12 +1208,19 @@ def admin_broadcast():
 
     image_url = request.form.get("broadcast_image", "").strip()
     caption = request.form.get("broadcast_caption", "").strip()
+    target = request.form.get("broadcast_target", "all")
+    target_user_id = request.form.get("target_user_id", "").strip()
 
     if not caption:
         return redirect("/admin/users")
 
-    users, total, total_pages = get_users_paginated(page=1, per_page=100000)
+    if target == "single":
+    if not target_user_id:
+        return redirect("/admin/users")
 
+    users = [(int(target_user_id),)]
+else:
+    users, total, total_pages = get_users_paginated(page=1, per_page=100000)
     async def send_all():
         bot_app = Application.builder().token(BOT_TOKEN).build()
         bot = bot_app.bot
