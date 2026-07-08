@@ -515,13 +515,25 @@ html {
         </button>
 
       </form>
+    </div>
+  </div>
+</div>
+<div id="pageLoading" class="login-loading">
+    <div class="loading-box">
+
+        <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="loading-text">
+            Please wait while fetching...
+        </div>
 
     </div>
-
 </div>
-
-</div>
-
 <script>
   const currentPath = window.location.pathname;
 
@@ -533,6 +545,36 @@ document.querySelectorAll(".nav a").forEach(link => {
   if (href === currentPath) {
     link.classList.add("active");
   }
+});
+const loading = document.getElementById("pageLoading");
+
+function showLoading(){
+    loading.classList.add("show");
+}
+
+window.addEventListener("load",()=>{
+    loading.classList.remove("show");
+});
+document.querySelectorAll("a").forEach(a=>{
+
+    a.addEventListener("click",function(e){
+
+        if(
+            this.target==="_blank" ||
+            this.href.startsWith("javascript:")
+        ){
+            return;
+        }
+
+        showLoading();
+    });
+});
+  document.querySelectorAll("form").forEach(form=>{
+
+    form.addEventListener("submit",()=>{
+
+        showLoading();
+    });
 });
 </script>
 </body>
