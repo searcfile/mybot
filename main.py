@@ -1201,6 +1201,51 @@ def admin_users():
     )
 
 
+@flask_app.route("/admin/broadcast", methods=["POST"])
+def admin_broadcast():
+    if not require_login():
+        return redirect("/admin/login")
+
+    image_url = request.form.get("broadcast_image", "").strip()
+    caption = request.form.get("broadcast_caption", "").strip()
+
+    if not caption:
+        return redirect("/admin/users")
+
+    users, total, total_pages = get_users_paginated(page=1, per_page=100000)
+
+    async def send_all():
+        bot_app = Application.builder().token(BOT_TOKEN).build()
+        bot = bot_app.bot
+
+        text = convert_markdown_bold_to_html(caption)
+
+        for u in users:
+            telegram_id = u[0]
+            try:
+                if image_url:
+                    await bot.send_photo(
+                        chat_id=telegram_id,
+                        photo=image_url,
+                        caption=text,
+                        parse_mode="HTML"
+                    )
+                else:
+                    await bot.send_message(
+                        chat_id=telegram_id,
+                        text=text,
+                        parse_mode="HTML"
+                    )
+            except Exception as e:
+                print("Broadcast failed:", telegram_id, e)
+
+    threading.Thread(
+        target=lambda: asyncio.run(send_all()),
+        daemon=True
+    ).start()
+
+    return redirect("/admin/users")
+
 # =========================
 # PROMO EDIT + BUTTONS
 # =========================
