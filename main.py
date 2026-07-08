@@ -1211,45 +1211,53 @@ def admin_broadcast():
     target = request.form.get("broadcast_target", "all")
     target_user_id = request.form.get("target_user_id", "").strip()
 
-if target == "single":
-
-    if not target_user_id:
+    if not caption:
         return redirect("/admin/users")
 
-    users = [(int(target_user_id),)]
+    if target == "single":
+        if not target_user_id:
+            return redirect("/admin/users")
 
-else:
+        users = [(int(target_user_id),)]
+    else:
+        users, total, total_pages = get_users_paginated(
+            page=1,
+            per_page=100000
+        )
 
-    users, total, total_pages = get_users_paginated(
-        page=1,
-        per_page=100000
-    )
-async def send_all():
-    bot_app = Application.builder().token(BOT_TOKEN).build()
-    bot = bot_app.bot
+    async def send_all():
+        bot_app = Application.builder().token(BOT_TOKEN).build()
+        bot = bot_app.bot
 
-    text = convert_markdown_bold_to_html(caption)
+        text = convert_markdown_bold_to_html(caption)
 
-    for u in users:
-        telegram_id = u[0]
+        for u in users:
+            telegram_id = u[0]
 
-        try:
-            if image_url:
-                await bot.send_photo(
-                    chat_id=telegram_id,
-                    photo=image_url,
-                    caption=text,
-                    parse_mode="HTML"
-                )
-            else:
-                await bot.send_message(
-                    chat_id=telegram_id,
-                    text=text,
-                    parse_mode="HTML"
-                )
+            try:
+                if image_url:
+                    await bot.send_photo(
+                        chat_id=telegram_id,
+                        photo=image_url,
+                        caption=text,
+                        parse_mode="HTML"
+                    )
+                else:
+                    await bot.send_message(
+                        chat_id=telegram_id,
+                        text=text,
+                        parse_mode="HTML"
+                    )
 
-        except Exception as e:
-            print("Broadcast failed:", telegram_id, e)
+            except Exception as e:
+                print("Broadcast failed:", telegram_id, e)
+
+    threading.Thread(
+        target=lambda: asyncio.run(send_all()),
+        daemon=True
+    ).start()
+
+    return redirect("/admin/users")
 
 # =========================
 # PROMO EDIT + BUTTONS
