@@ -430,6 +430,88 @@ select{
     box-sizing:border-box;
     outline:none;
 }
+  .custom-select {
+  position: relative;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+.select-selected {
+  width: 100%;
+  padding: 4px 11px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.25);
+  color: white;
+  box-sizing: border-box;
+  cursor: pointer;
+   transition: all 0.2s;
+  height:32px;
+}
+
+.select-selected {
+    position: relative;
+    padding-right: 36px;
+}
+
+.select-selected::after {
+    content: "";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 12px 12px;
+
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M23.245 4l-11.245 14.374-11.219-14.374-.781.619 12 15.381 12-15.391-.755-.609z'/%3E%3C/svg%3E");
+
+    transition: transform .25s ease;
+}
+
+.custom-select.open .select-selected::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+.select-items {
+  display: none;
+  position: absolute;
+  width: 100%;
+  top: calc(100% + 3px);
+  left: 0;
+  background: #0b2344;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .35);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 99;
+  padding:4px;
+   transition: all 0.2s;
+}
+
+.select-items div {
+  padding: 5px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  border-radius: 4px;
+   transition: all 0.2s;
+}
+
+.select-items div:hover {
+  background: #3c89e8;
+}
+
+.select-items div.active {
+  background: #1668dc;
+  font-weight: bold;
+}
+
+.custom-select.open .select-items {
+  display: block;
+}
   </style>
 </head>
 
@@ -584,10 +666,16 @@ select{
 
       <form method="POST" action="/admin/broadcast">
 <label>Broadcast Target</label>
-<select name="broadcast_target">
-  <option value="all">All Users</option>
-  <option value="single">Single User</option>
-</select>
+<input type="hidden" name="broadcast_target" id="broadcast_target" value="all">
+
+<div class="custom-select" id="broadcastTargetSelect">
+  <div class="select-selected">All Users</div>
+
+  <div class="select-items">
+    <div data-value="all" class="active">All Users</div>
+    <div data-value="single">Single User</div>
+  </div>
+</div>
 
 <label>Telegram ID</label>
 <input
@@ -672,6 +760,32 @@ document.querySelectorAll("form").forEach(form => {
   form.addEventListener("submit", () => {
     showLoading();
   });
+});
+  const broadcastSelect = document.getElementById("broadcastTargetSelect");
+const broadcastSelected = broadcastSelect.querySelector(".select-selected");
+const broadcastItems = broadcastSelect.querySelectorAll(".select-items div");
+const broadcastInput = document.getElementById("broadcast_target");
+
+broadcastSelected.addEventListener("click", function () {
+  broadcastSelect.classList.toggle("open");
+});
+
+broadcastItems.forEach(item => {
+  item.addEventListener("click", function () {
+    broadcastSelected.textContent = this.textContent;
+    broadcastInput.value = this.dataset.value;
+
+    broadcastItems.forEach(i => i.classList.remove("active"));
+    this.classList.add("active");
+
+    broadcastSelect.classList.remove("open");
+  });
+});
+
+document.addEventListener("click", function (e) {
+  if (!broadcastSelect.contains(e.target)) {
+    broadcastSelect.classList.remove("open");
+  }
 });
 </script>
 </body>
