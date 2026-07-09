@@ -1383,14 +1383,23 @@ function todayStr(){
 }
 
 if(!startInput.value || !endInput.value){
-  startInput.value = todayStr();
-  endInput.value = todayStr();
+  const now = new Date();
+
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const today = new Date();
+
+  startInput.value = fmt(firstDay);
+  endInput.value = fmt(today);
 }
 
 dateRange.value = `${startInput.value} → ${endInput.value}`;
+  
 if (performance.navigation.type === 1) {
-  const today = todayStr();
-  window.location.href = `/admin/users?start_date=${today}&end_date=${today}`;
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  const today = new Date();
+
+  window.location.href = `/admin/users?start_date=${fmt(firstDay)}&end_date=${fmt(today)}`;
 }
 const usersTableScroll = document.getElementById("usersTableScroll");
 
