@@ -1190,28 +1190,27 @@ def admin_users():
     today = get_today_count()
     month = get_month_count()
 
-users, total_filtered, total_pages = get_users_paginated(
-    search=q if q else None,
-    start_date=start_date if start_date else None,
-    end_date=end_date if end_date else None,
-    page=page,
-    per_page=per_page
-)
+    users, total_filtered, total_pages = get_users_paginated(
+        search=q if q else None,
+        start_date=start_date if start_date else None,
+        end_date=end_date if end_date else None,
+        page=page,
+        per_page=per_page
+    )
 
-return render_template(
-    "users.html",
-    total=total_users,
-    today=today,
-    month=month,
-    users=users,
-    q=q,
-    page=page,
-    total_pages=total_pages,
-    total_filtered=total_filtered,
-    start_date=start_date,
-    end_date=end_date
-)
-
+    return render_template(
+        "users.html",
+        total=total_users,
+        today=today,
+        month=month,
+        users=users,
+        q=q,
+        page=page,
+        total_pages=total_pages,
+        total_filtered=total_filtered,
+        start_date=start_date,
+        end_date=end_date
+    )
 
 @flask_app.route("/admin/broadcast", methods=["POST"])
 def admin_broadcast():
