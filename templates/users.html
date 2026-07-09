@@ -161,18 +161,22 @@
     select:hover {
       border-color: #16b7ff !important;
       box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+      transition: 0.2s;
     }
     select:focus {
       border-color: #38bdf8 !important;
       box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+      transition: 0.2s;
     }
     input:hover {
       border-color: #16b7ff !important;
+      transition: 0.2s;
     }
    /* #159edb */
     input:focus {
       border-color: #38bdf8 !important;
       box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+      transition: 0.2s;
     }
 
     table {
@@ -458,8 +462,9 @@ select{
     color:#fff;
     box-sizing:border-box;
     outline:none;
+    transition: 0.2s;
 }
-  .custom-select {
+.custom-select {
   position: relative;
   margin-top: 6px;
   margin-bottom: 12px;
@@ -626,6 +631,7 @@ select{
   background:rgba(0,0,0,0.25);
   box-sizing:border-box;
   outline:none;
+  transition: 0.2s;
 }
 
 .search-btn{
@@ -642,6 +648,7 @@ select{
   justify-content:center;
   cursor:pointer;
   box-sizing:border-box;
+  transition: 0.2s;
 }
 .search-btn:hover{ 
   color:#16b7ff;
@@ -687,8 +694,12 @@ select{
   cursor:pointer;
   position:relative;
   font-size:0;
+  transition: 0.2s;
 }
-
+.date-toggle:hover{ 
+  color:#16b7ff;
+  border:1px solid #16b7ff;
+}
 .date-toggle::after{
   content:"";
   position:absolute;
@@ -1150,9 +1161,9 @@ searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
 
   searchBtn.classList.add("loading");
+
   searchTimer = setTimeout(() => {
-    window.isSearchSubmit = true;
-    searchForm.submit();
+    searchBtn.classList.remove("loading");
   }, 700);
 });
 const dateFilter = document.getElementById("dateFilter");
