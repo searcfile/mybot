@@ -454,7 +454,13 @@ def ensure_user(user_id: int, username: str):
     conn.close()
 
 
-def get_users_paginated(search=None, page=1, per_page=50):
+def get_users_paginated(
+    search=None,
+    start_date=None,
+    end_date=None,
+    page=1,
+    per_page=50
+):
     offset = (page - 1) * per_page
 
     conn = get_db_connection()
@@ -1192,17 +1198,19 @@ users, total_filtered, total_pages = get_users_paginated(
     per_page=per_page
 )
 
-    return render_template(
-        "users.html",
-        total=total_users,
-        today=today,
-        month=month,
-        users=users,
-        q=q,
-        page=page,
-        total_pages=total_pages,
-        total_filtered=total_filtered
-    )
+return render_template(
+    "users.html",
+    total=total_users,
+    today=today,
+    month=month,
+    users=users,
+    q=q,
+    page=page,
+    total_pages=total_pages,
+    total_filtered=total_filtered,
+    start_date=start_date,
+    end_date=end_date
+)
 
 
 @flask_app.route("/admin/broadcast", methods=["POST"])
