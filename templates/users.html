@@ -1032,12 +1032,6 @@ document.querySelectorAll("a").forEach(a => {
   });
 });
 
-document.querySelectorAll("form").forEach(form => {
-  form.addEventListener("submit", () => {
-    if (form.id === "searchUserForm") return;
-    showLoading();
-  });
-});
 const broadcastSelect = document.getElementById("broadcastTargetSelect");
 const broadcastSelected = broadcastSelect.querySelector(".select-selected");
 const broadcastItems = broadcastSelect.querySelectorAll(".select-items div");
@@ -1114,6 +1108,19 @@ broadcastForm.addEventListener("submit", function(e){
 const searchInput = document.querySelector('input[name="q"]');
 const searchForm = document.getElementById("searchUserForm");
 const searchBtn = document.querySelector(".search-btn");
+
+document.querySelectorAll("form").forEach(form => {
+  form.addEventListener("submit", () => {
+
+    if (form.id === "searchUserForm") {
+      window.isSearchSubmit = true;
+      searchBtn.classList.add("loading");
+      return;
+    }
+    showLoading();
+  });
+});
+  
 const navType = performance.getEntriesByType("navigation")[0]?.type;
 if (navType === "reload") {
   searchBtn.classList.add("loading");
