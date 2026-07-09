@@ -1011,6 +1011,7 @@ window.addEventListener("load", hideLoading);
 window.addEventListener("pageshow", hideLoading);
 
 window.addEventListener("beforeunload", () => {
+  if (window.isSearchSubmit) return;
   showLoading();
 });
 
@@ -1118,8 +1119,10 @@ const searchBtn = document.querySelector(".search-btn");
 let searchTimer;
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
+
   searchBtn.classList.add("loading");
   searchTimer = setTimeout(() => {
+    window.isSearchSubmit = true;
     searchForm.submit();
   }, 700);
 });
@@ -1141,6 +1144,9 @@ function setRange(start, end){
   startInput.value = fmt(start);
   endInput.value = fmt(end);
   dateRange.value = `${fmt(start)} → ${fmt(end)}`;
+
+  window.isSearchSubmit = true;
+  searchBtn.classList.add("loading");
   document.getElementById("searchUserForm").submit();
 }
 
