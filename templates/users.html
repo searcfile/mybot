@@ -395,7 +395,15 @@ html {
 
 @media(max-width:900px){
   .user-tools-grid{
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(0, 1fr);
+  }
+
+  .container{
+    padding:12px;
+  }
+
+  .card{
+    padding:14px;
   }
 }
     .login-loading{
@@ -828,6 +836,27 @@ select{
   .table-scroll{
     max-height:480px;
   }
+}
+html, body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.card,
+.user-tools-grid,
+.container{
+  min-width:0;
+}
+
+.table-scroll{
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:auto;
+}
+
+.table-scroll table{
+  width:max-content;
+  min-width:850px;
 }
   </style>
 </head>
