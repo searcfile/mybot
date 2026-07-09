@@ -1205,7 +1205,32 @@ def admin_users():
         start_date=start_date,
         end_date=end_date
     )
+    
+from flask import jsonify
 
+@flask_app.route("/admin/users/search")
+def admin_users_search():
+    if not require_login():
+        return jsonify({"error": "unauthorized"}), 401
+
+    q = request.args.get("q", "").strip()
+    start_date = request.args.get("start_date", "").strip()
+    end_date = request.args.get("end_date", "").strip()
+
+    users, total_filtered, total_pages = get_users_paginated(
+        search=q if q else None,
+        start_date=start_date if start_date else None,
+        end_date=end_date if end_date else None,
+        page=1,
+        per_page=50
+    )
+
+    return jsonify({
+        "users": users,
+        "total_filtered": total_filtered,
+        "total_pages": total_pages
+    })
+    
 @flask_app.route("/admin/broadcast", methods=["POST"])
 def admin_broadcast():
     if not require_login():
