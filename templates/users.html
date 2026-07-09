@@ -570,6 +570,30 @@ select{
   background: rgba(255,255,255,.08);
   color: #fff;
 }
+.search-topbar{
+  margin-bottom:12px;
+  display:flex;
+  justify-content:flex-start;
+}
+
+.search-wrap{
+  width:420px;
+  max-width:100%;
+  display:flex;
+}
+
+.search-wrap .search{
+  width:100%;
+  min-width:0;
+  height:32px;
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:6px;
+  padding:4px 11px;
+  font-size:14px;
+  color:white;
+  background:rgba(0,0,0,0.25);
+  box-sizing:border-box;
+}
   </style>
 </head>
 
@@ -640,22 +664,22 @@ select{
         <p>{{ month }}</p>
       </div>
     </div>
-    
+
+  <div class="search-topbar">
+  <form method="GET" id="searchUserForm" action="/admin/users" class="search-wrap">
+    <input
+      class="search"
+      type="text"
+      name="q"
+      value="{{ q }}"
+      placeholder="Search"
+      onkeydown="if(event.key==='Enter'){ this.form.submit(); }">
+  </form>
+</div>
 <div class="user-tools-grid">
     <!-- USERS TABLE -->
     <div class="card">
       <h3>🔍 Search User</h3>
-      <div class="desc">Search by Telegram ID or Username</div>
-
-<form method="GET" id="searchUserForm" action="/admin/users">
-  <input
-    type="text"
-    name="q"
-    value="{{ q }}"
-    placeholder="Example: 123456789 or username"
-    onkeydown="if(event.key==='Enter'){ this.form.submit(); }">
-</form>
-
       <table>
         <thead>
           <tr>
