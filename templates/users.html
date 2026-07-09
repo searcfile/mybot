@@ -728,6 +728,24 @@ select{
     width:100%;
   }
 }
+.search-btn.loading svg{
+  display:none;
+}
+
+.search-btn.loading::after{
+  content:"";
+  width:14px;
+  height:14px;
+  border:2px solid rgba(255,255,255,.25);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:searchSpin .7s linear infinite;
+}
+
+@keyframes searchSpin{
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}
   </style>
 </head>
 
@@ -1015,6 +1033,7 @@ document.querySelectorAll("a").forEach(a => {
 
 document.querySelectorAll("form").forEach(form => {
   form.addEventListener("submit", () => {
+    if (form.id === "searchUserForm") return;
     showLoading();
   });
 });
@@ -1094,9 +1113,12 @@ broadcastForm.addEventListener("submit", function(e){
 const searchInput = document.querySelector('input[name="q"]');
 const searchForm = document.getElementById("searchUserForm");
 
+const searchBtn = document.querySelector(".search-btn");
+
 let searchTimer;
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
+  searchBtn.classList.add("loading");
   searchTimer = setTimeout(() => {
     searchForm.submit();
   }, 700);
