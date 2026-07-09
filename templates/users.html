@@ -1150,8 +1150,20 @@ document.querySelectorAll(".date-presets button").forEach(btn => {
   });
 });
 
-if(startInput.value && endInput.value){
-  dateRange.value = `${startInput.value} → ${endInput.value}`;
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+
+if(!startInput.value || !endInput.value){
+  startInput.value = todayStr();
+  endInput.value = todayStr();
+}
+
+dateRange.value = `${startInput.value} → ${endInput.value}`;
+if (performance.navigation.type === 1) {
+  const today = todayStr();
+  window.location.href = `/admin/users?start_date=${today}&end_date=${today}`;
 }
 </script>
 </body>
