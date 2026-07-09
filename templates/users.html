@@ -794,6 +794,13 @@ select{
         transform:rotate(360deg);
     }
 }
+  #target_user_id:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.45);
+  border-color:rgba(255,255,255,.08) !important;
+}
   </style>
 </head>
 
@@ -1084,7 +1091,15 @@ const broadcastSelect = document.getElementById("broadcastTargetSelect");
 const broadcastSelected = broadcastSelect.querySelector(".select-selected");
 const broadcastItems = broadcastSelect.querySelectorAll(".select-items div");
 const broadcastInput = document.getElementById("broadcast_target");
-
+  
+function updateTargetInputState(){
+  if(broadcastInput.value === "all"){
+    targetInput.value = "";
+    targetInput.disabled = true;
+  }else{
+    targetInput.disabled = false;
+  }
+}
 const savedTarget = localStorage.getItem("broadcast_target") || "all";
 
 broadcastItems.forEach(item => {
@@ -1096,7 +1111,8 @@ broadcastItems.forEach(item => {
     broadcastInput.value = item.dataset.value;
   }
 });
-
+updateTargetInputState();
+  
 broadcastSelected.addEventListener("click", function () {
   broadcastSelect.classList.toggle("open");
 });
@@ -1114,7 +1130,8 @@ broadcastItems.forEach(item => {
     broadcastSelect.classList.remove("open");
   });
 });
-
+updateTargetInputState();
+  
 document.addEventListener("click", function (e) {
   if (!broadcastSelect.contains(e.target)) {
     broadcastSelect.classList.remove("open");
