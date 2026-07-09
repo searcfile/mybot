@@ -647,7 +647,7 @@ select{
       <h3>🔍 Search User</h3>
       <div class="desc">Search by Telegram ID or Username</div>
 
-<form method="GET" id="searchUserForm">
+<form method="GET" id="searchUserForm" action="/admin/users">
   <input
     type="text"
     name="q"
@@ -691,7 +691,13 @@ select{
 
             <td>{{ u[4] }}</td>
           </tr>
-          {% endfor %}
+          {% else %}
+<tr>
+  <td colspan="5" style="text-align:center;padding:26px;opacity:.65;">
+    No data found
+  </td>
+</tr>
+{% endfor %}
         </tbody>
       </table>
 
@@ -800,13 +806,8 @@ function hideLoading(){
   if (loading) loading.classList.remove("show");
 }
 
-window.addEventListener("load", () => {
-  setTimeout(hideLoading, 300);
-});
-
-window.addEventListener("pageshow", () => {
-  setTimeout(hideLoading, 300);
-});
+window.addEventListener("load", hideLoading);
+window.addEventListener("pageshow", hideLoading);
 
 window.addEventListener("beforeunload", () => {
   showLoading();
