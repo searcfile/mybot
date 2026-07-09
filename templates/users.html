@@ -769,20 +769,30 @@ select{
 .search-btn.loading svg{
   display:none;
 }
-
+.search-btn.loading{
+    pointer-events:none;
+}
+    
 .search-btn.loading::after{
-  content:"";
-  width:10px;
-  height:10px;
-  border:2px solid rgba(255,255,255,.25);
-  border-top-color:#fff;
-  border-radius:50%;
-  animation:searchSpin .7s linear infinite;
+    content:"";
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    border:1px solid transparent;
+    border-top-color:#ffffff;
+    border-right-color:#38bdf8;
+    border-bottom-color:#2563eb;
+
+    animation:searchSpin .6s cubic-bezier(.4,0,.2,1) infinite;
 }
 
 @keyframes searchSpin{
-  from{ transform:rotate(0deg); }
-  to{ transform:rotate(360deg); }
+    0%{
+        transform:rotate(0deg);
+    }
+    100%{
+        transform:rotate(360deg);
+    }
 }
   </style>
 </head>
