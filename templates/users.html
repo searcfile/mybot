@@ -1113,7 +1113,7 @@ broadcastForm.addEventListener("submit", function(e){
 });
 const searchInput = document.querySelector('input[name="q"]');
 const searchForm = document.getElementById("searchUserForm");
-
+const searchBtn = document.querySelector(".search-btn");
 const navType = performance.getEntriesByType("navigation")[0]?.type;
 if (navType === "reload") {
   searchBtn.classList.add("loading");
