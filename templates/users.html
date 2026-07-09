@@ -1163,7 +1163,8 @@ searchInput.addEventListener("input", () => {
   searchBtn.classList.add("loading");
 
   searchTimer = setTimeout(() => {
-    searchBtn.classList.remove("loading");
+    window.isSearchSubmit = true;
+    searchForm.submit();
   }, 700);
 });
 const dateFilter = document.getElementById("dateFilter");
