@@ -1169,50 +1169,58 @@ const navType = performance.getEntriesByType("navigation")[0]?.type;
 if (navType === "reload") {
   searchBtn.classList.add("loading");
 }
-  
+  async function refreshUsersTable(showSpinner = false){
+  if(showSpinner){
+    searchBtn.classList.add("loading");
+  }
+
+  const q = encodeURIComponent(searchInput.value.trim());
+  const start = encodeURIComponent(startInput.value);
+  const end = encodeURIComponent(endInput.value);
+
+  const res = await fetch(`/admin/users/search?q=${q}&start_date=${start}&end_date=${end}`);
+  const data = await res.json();
+
+  const tbody = document.querySelector("tbody");
+  tbody.innerHTML = "";
+
+  if (!data.users.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;padding:26px;opacity:.65;">
+          No data found
+        </td>
+      </tr>`;
+  } else {
+    data.users.forEach(u => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${u[0]}</td>
+          <td>${u[1] || ""}</td>
+          <td>${u[2] ? `<span class="code">${u[2]}</span>` : `<span class="small">-</span>`}</td>
+          <td>${u[3] || `<span class="small">-</span>`}</td>
+          <td>${u[4]}</td>
+        </tr>`;
+    });
+  }
+
+  document.querySelector(".pagination-info").textContent =
+    `Page 1 / ${data.total_pages} | Results: ${data.total_filtered}`;
+
+  searchBtn.classList.remove("loading");
+}
 let searchTimer;
 
 searchInput.addEventListener("input", () => {
   clearTimeout(searchTimer);
-  searchBtn.classList.add("loading");
 
-  searchTimer = setTimeout(async () => {
-    const q = encodeURIComponent(searchInput.value.trim());
-    const start = encodeURIComponent(startInput.value);
-    const end = encodeURIComponent(endInput.value);
-
-    const res = await fetch(`/admin/users/search?q=${q}&start_date=${start}&end_date=${end}`);
-    const data = await res.json();
-
-    const tbody = document.querySelector("tbody");
-    tbody.innerHTML = "";
-
-    if (!data.users.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="5" style="text-align:center;padding:26px;opacity:.65;">
-            No data found
-          </td>
-        </tr>`;
-    } else {
-      data.users.forEach(u => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${u[0]}</td>
-            <td>${u[1] || ""}</td>
-            <td>${u[2] ? `<span class="code">${u[2]}</span>` : `<span class="small">-</span>`}</td>
-            <td>${u[3] || `<span class="small">-</span>`}</td>
-            <td>${u[4]}</td>
-          </tr>`;
-      });
-    }
-
-    document.querySelector(".pagination-info").textContent =
-      `Page 1 / ${data.total_pages} | Results: ${data.total_filtered}`;
-
-    searchBtn.classList.remove("loading");
+  searchTimer = setTimeout(() => {
+    refreshUsersTable(true);
   }, 700);
 });
+setInterval(() => {
+  refreshUsersTable(false);
+}, 5000);
 const dateFilter = document.getElementById("dateFilter");
 const dateToggle = document.getElementById("dateToggle");
 const dateRange = document.getElementById("dateRange");
