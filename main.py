@@ -454,64 +454,50 @@ def ensure_user(user_id: int, username: str):
     conn.close()
 
 
-def get_users_paginated(
-    search=None,
-    start_date=None,
-    end_date=None,
-    page=1,
-    per_page=50
-):
+def get_users_paginated(search=None, start_date=None, end_date=None, page=1, per_page=50):
     offset = (page - 1) * per_page
-
     conn = get_db_connection()
     cur = conn.cursor()
 
+    where = []
+    params = []
+
     if search:
-        cur.execute("""
-            SELECT COUNT(*)
-            FROM users
-            WHERE CAST(telegram_id AS TEXT) ILIKE %s
-               OR username ILIKE %s
-               OR referral_code ILIKE %s
-        """, (f"%{search}%", f"%{search}%", f"%{search}%"))
-        total = cur.fetchone()[0]
+        where.append("""
+            (
+                CAST(telegram_id AS TEXT) ILIKE %s
+                OR username ILIKE %s
+                OR referral_code ILIKE %s
+            )
+        """)
+        params += [f"%{search}%", f"%{search}%", f"%{search}%"]
 
-        cur.execute("""
-            SELECT telegram_id,
-                   username,
-                   referral_code,
-                   referred_by,
-                   TO_CHAR(first_seen, 'DD Mon YYYY, HH12:MI AM') AS first_seen_fmt
-            FROM users
-            WHERE CAST(telegram_id AS TEXT) ILIKE %s
-               OR username ILIKE %s
-               OR referral_code ILIKE %s
-            ORDER BY first_seen DESC
-            LIMIT %s OFFSET %s
-        """, (f"%{search}%", f"%{search}%", f"%{search}%", per_page, offset))
-        rows = cur.fetchall()
+    if start_date and end_date:
+        where.append("DATE(first_seen) BETWEEN %s AND %s")
+        params += [start_date, end_date]
 
-    else:
-        cur.execute("SELECT COUNT(*) FROM users")
-        total = cur.fetchone()[0]
+    where_sql = "WHERE " + " AND ".join(where) if where else ""
 
-        cur.execute("""
-            SELECT telegram_id,
-                   username,
-                   referral_code,
-                   referred_by,
-                   TO_CHAR(first_seen, 'DD Mon YYYY, HH12:MI AM') AS first_seen_fmt
-            FROM users
-            ORDER BY first_seen DESC
-            LIMIT %s OFFSET %s
-        """, (per_page, offset))
-        rows = cur.fetchall()
+    cur.execute(f"SELECT COUNT(*) FROM users {where_sql}", params)
+    total = cur.fetchone()[0]
 
+    cur.execute(f"""
+        SELECT telegram_id,
+               username,
+               referral_code,
+               referred_by,
+               TO_CHAR(first_seen, 'DD Mon YYYY, HH12:MI AM') AS first_seen_fmt
+        FROM users
+        {where_sql}
+        ORDER BY first_seen DESC
+        LIMIT %s OFFSET %s
+    """, params + [per_page, offset])
+
+    rows = cur.fetchall()
     cur.close()
     conn.close()
 
-    total_pages = (total + per_page - 1) // per_page
-
+    total_pages = max(1, (total + per_page - 1) // per_page)
     return rows, total, total_pages
 
 
