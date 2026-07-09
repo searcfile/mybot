@@ -801,6 +801,34 @@ select{
   color:rgba(255,255,255,.45);
   border-color:rgba(255,255,255,.08) !important;
 }
+  .table-scroll{
+  width:100%;
+  max-height:520px; /* lebih kurang 10 baris */
+  overflow:auto;
+  border-radius:12px;
+}
+
+.table-scroll table{
+  min-width:850px;
+  margin-top:14px;
+}
+
+.table-scroll th,
+.table-scroll td{
+  white-space:nowrap;
+}
+
+.table-scroll thead th{
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+
+@media(max-width:768px){
+  .table-scroll{
+    max-height:480px;
+  }
+}
   </style>
 </head>
 
@@ -909,6 +937,7 @@ select{
     <!-- USERS TABLE -->
     <div class="card">
       <h3>🔍 Search User</h3>
+      <div class="table-scroll" id="usersTableScroll">
       <table>
         <thead>
           <tr>
@@ -953,7 +982,7 @@ select{
 {% endfor %}
         </tbody>
       </table>
-
+   </div>
       <!-- PAGINATION -->
       <div class="pagination">
 
@@ -1333,6 +1362,14 @@ if (performance.navigation.type === 1) {
   const today = todayStr();
   window.location.href = `/admin/users?start_date=${today}&end_date=${today}`;
 }
+const usersTableScroll = document.getElementById("usersTableScroll");
+
+usersTableScroll.addEventListener("wheel", function(e){
+  if(e.shiftKey){
+    e.preventDefault();
+    usersTableScroll.scrollLeft += e.deltaY;
+  }
+}, { passive:false });
 </script>
 </body>
 </html>
