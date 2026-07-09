@@ -672,8 +672,19 @@ select{
   color:white;
   border-radius:0 6px 6px 0;
   cursor:pointer;
-
+  position:relative;
   font-size:0;
+}
+
+.date-toggle::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:18px;
+  height:18px;
+  transform:translate(-50%,-50%) rotate(0deg);
+  transition:transform .25s ease;
   background-repeat:no-repeat;
   background-position:center;
   background-size:18px 18px;
@@ -690,7 +701,9 @@ select{
 .date-filter-wrap.open .date-presets{
   display:grid;
 }
-
+.date-filter-wrap.open .date-toggle::after{
+  transform:translate(-50%,-50%) rotate(180deg);
+}
 .date-presets button{
   height:28px;
   border:1px solid rgba(255,255,255,.18);
