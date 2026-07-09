@@ -1091,6 +1091,8 @@ const broadcastSelect = document.getElementById("broadcastTargetSelect");
 const broadcastSelected = broadcastSelect.querySelector(".select-selected");
 const broadcastItems = broadcastSelect.querySelectorAll(".select-items div");
 const broadcastInput = document.getElementById("broadcast_target");
+const broadcastForm = document.getElementById("broadcastForm");
+const targetInput = document.getElementById("target_user_id");
   
 function updateTargetInputState(){
   if(broadcastInput.value === "all"){
@@ -1128,18 +1130,17 @@ broadcastItems.forEach(item => {
     this.classList.add("active");
 
     broadcastSelect.classList.remove("open");
+
+    updateTargetInputState();
   });
 });
-updateTargetInputState();
   
 document.addEventListener("click", function (e) {
   if (!broadcastSelect.contains(e.target)) {
     broadcastSelect.classList.remove("open");
   }
 });
-const broadcastForm = document.getElementById("broadcastForm");
-const targetInput = document.getElementById("target_user_id");
-
+  
 function showToast(message, type="error"){
   const toast = document.getElementById("toast");
   const toastText = document.getElementById("toastText");
