@@ -647,9 +647,14 @@ select{
       <h3>🔍 Search User</h3>
       <div class="desc">Search by Telegram ID or Username</div>
 
-      <form method="GET">
-        <input type="text" name="q" value="{{ q }}" placeholder="Example: 123456789 or username">
-      </form>
+<form method="GET" id="searchUserForm">
+  <input
+    type="text"
+    name="q"
+    value="{{ q }}"
+    placeholder="Example: 123456789 or username"
+    onkeydown="if(event.key==='Enter'){ this.form.submit(); }">
+</form>
 
       <table>
         <thead>
@@ -894,20 +899,23 @@ broadcastForm.addEventListener("submit", function(e){
   const telegramId = targetInput.value.trim();
 
   targetInput.classList.remove("input-error");
-
   if(target === "single" && !/^\d+$/.test(telegramId)){
-
     e.preventDefault();
-
     hideLoading();   // <-- TAMBAH BARIS INI
-
     targetInput.classList.add("input-error");
-
     showToast("Telegram ID mesti nombor sahaja.", "error");
-
     return false;
   }
+});
+const searchInput = document.querySelector('input[name="q"]');
+const searchForm = document.getElementById("searchUserForm");
 
+let searchTimer;
+searchInput.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    searchForm.submit();
+  }, 700);
 });
 </script>
 </body>
