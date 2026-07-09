@@ -372,7 +372,15 @@ html {
   box-sizing:border-box;
   outline:none;
   resize:vertical;
+  transition: all 0.3s;
 }
+.broadcast-box textarea:hover{
+  border-color: #16b7ff !important;
+}
+  .broadcast-box textarea:focus{
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important:
+    }
 
 .broadcast-btn{
   width:100%;
@@ -482,7 +490,9 @@ select{
    transition: all 0.3s;
   height:32px;
 }
-
+.select-selected:hover{
+  border-color: #16b7ff !important;
+}
 .select-selected {
     position: relative;
     padding-right: 36px;
