@@ -158,10 +158,18 @@
       transition: all 0.2s;
       height:32px;
     }
-      input:hover {
-      border-color: #2fbfff !important;
+    select:hover {
+      border-color: #16b7ff !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
     }
-
+    select:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+    }
+    input:hover {
+      border-color: #16b7ff !important;
+    }
+   /* #159edb */
     input:focus {
       border-color: #38bdf8 !important;
       box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
@@ -1110,7 +1118,13 @@ broadcastForm.addEventListener("submit", function(e){
 const searchInput = document.querySelector('input[name="q"]');
 const searchForm = document.getElementById("searchUserForm");
 const searchBtn = document.querySelector(".search-btn");
-
+  
+if (searchInput && searchInput.value.trim() !== "") {
+  searchInput.focus();
+  const len = searchInput.value.length;
+  searchInput.setSelectionRange(len, len);
+}
+  
 document.querySelectorAll("form").forEach(form => {
   form.addEventListener("submit", () => {
 
