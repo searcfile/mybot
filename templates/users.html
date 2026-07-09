@@ -1361,16 +1361,27 @@ document.querySelectorAll(".date-presets button").forEach(btn => {
       end.setDate(now.getDate() - 1);
     }
 
-    if(btn.dataset.range === "this_week"){
-      const day = now.getDay() || 7;
-      start.setDate(now.getDate() - day + 1);
-    }
+if(btn.dataset.range === "this_week"){
+  const day = now.getDay() || 7;
 
-    if(btn.dataset.range === "last_week"){
-      const day = now.getDay() || 7;
-      start.setDate(now.getDate() - day - 6);
-      end.setDate(now.getDate() - day);
-    }
+  // Monday
+  start = new Date(now);
+  start.setDate(now.getDate() - day + 1);
+
+  // Sunday
+  end = new Date(start);
+  end.setDate(start.getDate() + 6);
+}
+
+if(btn.dataset.range === "last_week"){
+  const day = now.getDay() || 7;
+
+  end = new Date(now);
+  end.setDate(now.getDate() - day);
+
+  start = new Date(end);
+  start.setDate(end.getDate() - 6);
+}
 
 if(btn.dataset.range === "this_month"){
   start = new Date(now.getFullYear(), now.getMonth(), 1);
