@@ -1250,9 +1250,7 @@ function setRange(start, end){
   endInput.value = fmt(end);
   dateRange.value = `${fmt(start)} → ${fmt(end)}`;
 
-  window.isSearchSubmit = true;
-  searchBtn.classList.add("loading");
-  document.getElementById("searchUserForm").submit();
+  refreshUsersTable(true);
 }
 
 flatpickr(dateRange, {
