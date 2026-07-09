@@ -1166,15 +1166,17 @@ def admin_users():
     if not require_login():
         return redirect("/admin/login")
 
+    from datetime import datetime
+
     q = request.args.get("q", "").strip()
     start_date = request.args.get("start_date", "").strip()
     end_date = request.args.get("end_date", "").strip()
-    from datetime import datetime
 
-if not start_date and not end_date:
-    today_str = datetime.now().strftime("%Y-%m-%d")
-    start_date = today_str
-    end_date = today_str
+    if not start_date and not end_date:
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        start_date = today_str
+        end_date = today_str
+
     page = int(request.args.get("page", 1))
     per_page = 50
 
