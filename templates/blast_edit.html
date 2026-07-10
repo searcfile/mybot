@@ -177,6 +177,22 @@
         font-size:17px;
       }
     }
+  .time-row{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  margin-bottom:10px;
+}
+
+.time-row input{
+  flex:1;
+  margin-bottom:0;
+}
+
+.time-row .remove-time{
+  flex-shrink:0;
+  height:36px;
+}
   </style>
 </head>
 
@@ -222,12 +238,53 @@
         </option>
       </select>
 
-      <label>Daily Send Time</label>
-      <input
-        type="time"
-        name="send_time"
-        value="{{ vault[3] }}"
-        required>
+<label>Daily Send Times</label>
+
+<div id="timesWrap">
+
+  {% for schedule in blast_times %}
+  <div class="time-row">
+    <input
+      type="time"
+      name="send_time[]"
+      value="{{ schedule[1] }}"
+      required>
+
+    <button
+      type="button"
+      class="btn btn-remove remove-time"
+      {% if blast_times|length <= 1 %}style="display:none;"{% endif %}>
+      Remove
+    </button>
+  </div>
+
+  {% else %}
+  <div class="time-row">
+    <input
+      type="time"
+      name="send_time[]"
+      value="{{ vault[3] }}"
+      required>
+
+    <button
+      type="button"
+      class="btn btn-remove remove-time"
+      style="display:none;">
+      Remove
+    </button>
+  </div>
+  {% endfor %}
+
+</div>
+
+<button
+  type="button"
+  class="btn btn-add"
+  id="addTimeBtn">
+  + Add Send Time
+</button>
+
+<br><br>
 
       <div id="itemsWrap">
 
@@ -302,6 +359,57 @@
 const modeSelect = document.getElementById("mode");
 const itemsWrap = document.getElementById("itemsWrap");
 const addItemBtn = document.getElementById("addItemBtn");
+const timesWrap = document.getElementById("timesWrap");
+const addTimeBtn = document.getElementById("addTimeBtn");
+
+function updateTimeRemoveButtons(){
+  const rows = timesWrap.querySelectorAll(".time-row");
+
+  rows.forEach(row => {
+    const btn = row.querySelector(".remove-time");
+
+    btn.style.display =
+      rows.length > 1 ? "inline-block" : "none";
+  });
+}
+
+function bindTimeRemoveButtons(){
+  timesWrap.querySelectorAll(".remove-time").forEach(btn => {
+    btn.onclick = function(){
+      const rows = timesWrap.querySelectorAll(".time-row");
+
+      if(rows.length <= 1){
+        return;
+      }
+
+      this.closest(".time-row").remove();
+      updateTimeRemoveButtons();
+    };
+  });
+}
+
+addTimeBtn.addEventListener("click", function(){
+  const row = document.createElement("div");
+  row.className = "time-row";
+
+  row.innerHTML = `
+    <input
+      type="time"
+      name="send_time[]"
+      required>
+
+    <button
+      type="button"
+      class="btn btn-remove remove-time">
+      Remove
+    </button>
+  `;
+
+  timesWrap.appendChild(row);
+
+  bindTimeRemoveButtons();
+  updateTimeRemoveButtons();
+});
 
 function bindRemoveButtons(){
   document.querySelectorAll(".remove-item").forEach(btn => {
@@ -366,7 +474,8 @@ addItemBtn.addEventListener("click", function(){
 });
 
 modeSelect.addEventListener("change", updateModeState);
-
+bindTimeRemoveButtons();
+updateTimeRemoveButtons();
 bindRemoveButtons();
 updateModeState();
 </script>
