@@ -1,20 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" type="image/svg+xml" href="/static/logo.svg">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Edit Blast Vault</title>
 
   <style>
-    body{
-      margin:0;
-      background:#021a3c;
-      color:#fff;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+      background: #021a3c;
+      color: white;
       font-size:14px;
     }
+:where(button, a, .btn, .select-selected,[tabindex]):focus-visible{
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+   .select-selected:hover {
+      border-color: #16b7ff !important;
+     transition: all 0.3s;
+    }
+   /* #159edb */
+   .select-selected:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+     transition: all 0.3s;
+    }
+    input:hover {
+      border-color: #16b7ff !important;
+     transition: all 0.3s;
+    }
+   /* #159edb */
+   input:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+     transition: all 0.3s;
+    }
+      textarea:hover {
+      border-color: #16b7ff !important;
+     transition: all 0.3s;
+    }
+   /* #159edb */
+    textarea:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+     transition: all 0.3s;
+    }
+ label {
+   font-size:12px;
+   color: rgba(255,255,255,0.85);
+   display:block;
+   margin-bottom:4px;
+ }
+    .topbar {
+      padding:0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      height:64px;
+      padding-inline: 16px;
+    }
 
+.nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.nav a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:8px;
+    text-decoration:none;
+    color:rgba(255,255,255,.85);
+    transition:.25s;
+    white-space: nowrap;
+}
+
+.nav a:hover{
+    background:rgba(255,255,255,.06);
+    color:#fff;
+}
+
+/* ACTIVE */
+.nav a.active{
+    background:#1668dc;
+    color:#fff;
+    box-shadow:
+        inset 0 1px rgba(255,255,255,.08),
+        0 0 0 1px rgba(255,255,255,.08);
+}
+
+.nav a.active .nav-icon{
+    color:#fff;
+}
+    .nav a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.nav-icon{
+    width:19.2px;
+    height:19.2px;
+    min-width:19.2px;
+    min-height:19.2px;
+    fill:currentColor;
+    flex-shrink:0;
+    display:block;
+    overflow:visible;
+    transition:.25s;
+}
     .topbar{
       height:64px;
       padding:0 18px;
@@ -60,12 +164,6 @@
       color:#38bdf8;
     }
 
-    label{
-      display:block;
-      margin-bottom:4px;
-      font-size:12px;
-      color:rgba(255,255,255,.85);
-    }
 
     input,
     select,
@@ -193,11 +291,87 @@
   flex-shrink:0;
   height:36px;
 }
+    .login-loading{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.20);
+  z-index:999999;
+}
+
+.login-loading.show{
+  display:flex;
+}
+
+.loading-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  pointer-events:none;
+}
+
+.loading-dots{
+  width:32px;
+  height:32px;
+  position:relative;
+  animation:loadingRotate 1s linear infinite;
+}
+
+.loading-dots span{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.85);
+  opacity:.25;
+  animation:dotPulse 1s linear infinite;
+}
+
+.loading-dots span:nth-child(1){ top:0; left:50%; transform:translateX(-50%); }
+.loading-dots span:nth-child(2){ right:0; top:50%; transform:translateY(-50%); animation-delay:.25s; }
+.loading-dots span:nth-child(3){ bottom:0; left:50%; transform:translateX(-50%); animation-delay:.5s; }
+.loading-dots span:nth-child(4){ left:0; top:50%; transform:translateY(-50%); animation-delay:.75s; }
+
+.loading-text{
+  color:#fff;
+  font-size:14px;
+  text-align:center;
+}
+
+@keyframes dotPulse{
+  0%{ opacity:.2; }
+  25%{ opacity:1; }
+  50%{ opacity:.4; }
+  100%{ opacity:.2; }
+}
+
+@keyframes loadingRotate{
+  from{ transform:rotate(0deg); }
+  to{ transform:rotate(360deg); }
+}
   </style>
 </head>
 
 <body>
+  
+<div id="pageLoading" class="login-loading show">
+  <div class="loading-box">
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
 
+    <div class="loading-text">
+      Please wait while fetching...
+    </div>
+  </div>
+</div>
+  
 <div class="topbar">
   <h2>✏️ Edit Blast Vault</h2>
 
@@ -356,6 +530,62 @@
 </div>
 
 <script>
+const currentPath = window.location.pathname;
+
+document.querySelectorAll(".nav a").forEach(link => {
+  const href = link.getAttribute("href");
+
+  link.classList.remove("active");
+
+  if (href === currentPath) {
+    link.classList.add("active");
+  }
+});
+
+const loading = document.getElementById("pageLoading");
+
+function showLoading(){
+  if (loading) loading.classList.add("show");
+}
+
+function hideLoading(){
+  if (loading) loading.classList.remove("show");
+}
+
+window.addEventListener("load", () => {
+  setTimeout(hideLoading, 300);
+});
+
+window.addEventListener("pageshow", () => {
+  setTimeout(hideLoading, 300);
+});
+
+window.addEventListener("beforeunload", () => {
+  showLoading();
+});
+
+document.querySelectorAll("a").forEach(a => {
+  a.addEventListener("click", function () {
+    const href = this.getAttribute("href");
+
+    if (
+      !href ||
+      href.startsWith("#") ||
+      href.startsWith("javascript:") ||
+      this.target === "_blank"
+    ) {
+      return;
+    }
+
+    showLoading();
+  });
+});
+
+document.querySelectorAll("form").forEach(form => {
+  form.addEventListener("submit", () => {
+    showLoading();
+  });
+});
 const modeSelect = document.getElementById("mode");
 const itemsWrap = document.getElementById("itemsWrap");
 const addItemBtn = document.getElementById("addItemBtn");
