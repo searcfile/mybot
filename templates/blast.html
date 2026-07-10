@@ -189,9 +189,10 @@ body{
     overflow:visible;
   }
 
-  .items-scroll{
-    max-height:520px;
-  }
+.items-scroll{
+  flex:none;
+  max-height:520px;
+}
 }
     @media (max-width: 768px) {
   .topbar {
@@ -774,11 +775,10 @@ body.modal-open{
 .create-vault-card{
   display:flex;
   flex-direction:column;
-  height:auto;
+  height:calc(100vh - 105px);
   min-height:0;
-  overflow:visible;
+  overflow:hidden;
 }
-
 .create-vault-card > h3{
   flex-shrink:0;
 }
@@ -786,10 +786,12 @@ body.modal-open{
 .create-vault-card form{
   display:flex;
   flex-direction:column;
+  flex:1;
+  min-height:0;
 }
 .items-scroll{
+  flex:1;
   min-height:0;
-  max-height:430px;
   overflow-y:auto;
   overflow-x:hidden;
   padding-right:6px;
