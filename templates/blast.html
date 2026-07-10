@@ -135,6 +135,47 @@
     .preview-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
     .muted{opacity:.65;font-size:12px}
     @media(max-width:900px){.grid{grid-template-columns:1fr}.container{padding:12px}.nav a{margin-left:4px;padding:8px}}
+    @media (max-width: 768px) {
+  .topbar {
+    height: 64px;
+    padding-inline: 10px;
+    gap: 8px;
+  }
+
+  .topbar h2 {
+    font-size: 17px;
+    line-height: 1;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .nav {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 7px;
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .nav a {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  .nav a .nav-text {
+    display: none;
+  }
+
+  .nav-icon {
+    width: 19.2px;
+    height: 19.2px;
+  }
+}
   </style>
 </head>
 <body>
