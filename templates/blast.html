@@ -153,9 +153,11 @@ body{
     .btn-small{transition: all 0.3s;padding:7px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-size:12px;cursor: pointer;}
     .btn-small:hover{
       color:#16b7ff;
+      border:1px solid #16b7ff;
     }
     .btn-small:active{
       color:#159edb;
+      border:1px solid #159edb;
     }
     .item-box{border:1px dashed rgba(255,255,255,.2);padding:10px;border-radius:10px;margin-bottom:10px}
     .vault{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:12px;background:rgba(0,0,0,.18)}
@@ -1244,7 +1246,7 @@ body.confirm-open{
 <div class="save-vault-space"></div>
 
 <button class="btn" type="submit">
-  💾 Save Vault
+  Save Vault
 </button>
 
       </form>
@@ -1294,7 +1296,7 @@ body.confirm-open{
             <a
               class="btn-small"
               href="/admin/blast/edit/{{ v[0] }}">
-              ✏️ Edit
+              Edit
             </a>
 
             <a
