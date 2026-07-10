@@ -393,13 +393,13 @@ html {
       <h3>📝 Promo Details</h3>
 
       <form method="POST">
-        <label>Title</label>
+        <label class="label-required">Title</label>
         <input type="text" name="title" value="{{ promo[1] }}">
 
-        <label>Image URL</label>
+        <label class="label-required">Image URL</label>
         <input type="text" name="image_url" value="{{ promo[2] }}">
 
-        <label>Caption</label>
+        <label class="label-required">Caption</label>
         <textarea name="caption">{{ promo[3] }}</textarea>
 
         <button class="btn" type="submit">💾 Save Changes</button>
