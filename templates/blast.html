@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Blast</title>
+  <style>
+    body{margin:0;background:#021a3c;color:#fff;font-family:Arial;font-size:14px}
+    .topbar{height:64px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.08)}
+    .nav a{color:#fff;text-decoration:none;margin-left:14px;padding:8px 12px;border-radius:8px}
+    .nav a.active,.nav a:hover{background:#1668dc}
+    .container{padding:20px}
+    .grid{display:grid;grid-template-columns:420px 1fr;gap:16px}
+    .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+    h3{margin-top:0;color:#38bdf8}
+    label{font-size:12px;opacity:.85}
+    input,textarea,select{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:8px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
+    textarea{min-height:90px;resize:vertical}
+    .btn{width:100%;height:36px;border:0;border-radius:6px;background:#1668dc;color:#fff;font-weight:bold;cursor:pointer}
+    .btn-small{padding:7px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-size:12px}
+    .item-box{border:1px dashed rgba(255,255,255,.2);padding:10px;border-radius:10px;margin-bottom:10px}
+    .vault{border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px;margin-bottom:12px;background:rgba(0,0,0,.18)}
+    .vault-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;background:#1668dc}
+    .off{background:#6b7280}
+    .preview{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+    .preview-card{background:rgba(0,0,0,.22);border-radius:10px;padding:8px}
+    .preview-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
+    .muted{opacity:.65;font-size:12px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}.container{padding:12px}.nav a{margin-left:4px;padding:8px}}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <h2>📣 Auto Blast</h2>
+  <div class="nav">
+    <a href="/admin">Dashboard</a>
+    <a href="/admin/promos">Promos</a>
+    <a href="/admin/banner_buttons">Banner Buttons</a>
+    <a href="/admin/users">Users</a>
+    <a class="active" href="/admin/blast">Blast</a>
+    <a href="/admin/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid">
+
+    <div class="card">
+      <h3>➕ Create Blast Vault</h3>
+
+      <form method="POST" action="/admin/blast" id="blastForm">
+        <label>Vault Name</label>
+        <input type="text" name="name" placeholder="Example: Daily Promo Random" required>
+
+        <label>Mode</label>
+        <select name="mode" id="mode">
+          <option value="random">Random Auto Blast</option>
+          <option value="fixed">Fixed Auto Blast</option>
+        </select>
+
+        <label>Daily Send Time</label>
+        <input type="time" name="send_time" required>
+
+        <div id="itemsWrap">
+          <div class="item-box">
+            <label>Banner Image URL</label>
+            <input type="text" name="image_url[]" placeholder="https://res.cloudinary.com/...">
+
+            <label>Caption</label>
+            <textarea name="caption[]" placeholder="Write caption..." required></textarea>
+          </div>
+        </div>
+
+        <button type="button" class="btn-small" id="addItemBtn">+ Add Banner/Caption</button>
+        <br><br>
+        <button class="btn" type="submit">💾 Save Vault</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h3>📋 Saved Blast Vaults</h3>
+
+      {% for v in vaults %}
+      <div class="vault">
+        <div class="vault-head">
+          <div>
+            <b>{{ v[1] }}</b>
+            <div class="muted">
+              Mode: {{ v[2] }} | Time: {{ v[3] }} | Last sent: {{ v[5] or "-" }}
+            </div>
+          </div>
+
+          <div>
+            {% if v[4] %}
+              <span class="badge">Enabled</span>
+            {% else %}
+              <span class="badge off">Disabled</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <br>
+
+        <a class="btn-small" href="/admin/blast/toggle/{{ v[0] }}">Enable / Disable</a>
+        <a class="btn-small" href="/admin/blast/delete/{{ v[0] }}" onclick="return confirm('Delete this vault?')">Delete</a>
+
+        <div class="preview">
+          {% for it in items %}
+            {% if it[1] == v[0] %}
+              <div class="preview-card">
+                {% if it[2] %}
+                  <img src="{{ it[2] }}">
+                {% endif %}
+                <div class="muted">{{ it[3][:80] }}...</div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+        <p class="muted">No blast vault yet.</p>
+      {% endfor %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+const mode = document.getElementById("mode");
+const itemsWrap = document.getElementById("itemsWrap");
+const addItemBtn = document.getElementById("addItemBtn");
+
+function refreshMode(){
+  if(mode.value === "fixed"){
+    addItemBtn.style.display = "none";
+
+    const boxes = itemsWrap.querySelectorAll(".item-box");
+    boxes.forEach((box, index) => {
+      if(index > 0) box.remove();
+    });
+  }else{
+    addItemBtn.style.display = "inline-block";
+  }
+}
+
+mode.addEventListener("change", refreshMode);
+
+addItemBtn.addEventListener("click", () => {
+  const div = document.createElement("div");
+  div.className = "item-box";
+  div.innerHTML = `
+    <label>Banner Image URL</label>
+    <input type="text" name="image_url[]" placeholder="https://res.cloudinary.com/...">
+
+    <label>Caption</label>
+    <textarea name="caption[]" placeholder="Write caption..." required></textarea>
+
+    <button type="button" class="btn-small remove-item">Remove</button>
+  `;
+
+  itemsWrap.appendChild(div);
+
+  div.querySelector(".remove-item").addEventListener("click", () => {
+    div.remove();
+  });
+});
+
+refreshMode();
+</script>
+
+</body>
+</html>
