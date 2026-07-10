@@ -493,13 +493,85 @@
             value="{{ item[1] or '' }}"
             placeholder="https://res.cloudinary.com/...">
 
-          <label>Caption</label>
-          <textarea
-            name="caption[]"
-            required>{{ item[2] }}</textarea>
+<label>Caption</label>
+<textarea
+    name="caption[]"
+    required>{{ item[2] }}</textarea>
+
+<!-- INLINE BUTTONS START -->
+
+<input
+    type="hidden"
+    name="buttons_json[]"
+    class="buttons-json"
+    value='{{ buttons_by_item.get(item[0], []) | tojson }}'>
+
+<div class="item-buttons-section">
+
+    <div class="item-buttons-title">
+        Inline Buttons
+    </div>
+
+    <div class="item-buttons-wrap">
+
+        {% for button in buttons_by_item.get(item[0], []) %}
+
+        <div class="item-button-row">
+
+            <input
+                type="text"
+                class="item-button-text"
+                value="{{ button.text }}"
+                placeholder="Button Name">
+
+            <select class="item-button-type">
+
+                <option
+                    value="url"
+                    {% if button.type=="url" %}selected{% endif %}>
+                    Open Link
+                </option>
+
+                <option
+                    value="menu"
+                    {% if button.type=="menu" %}selected{% endif %}>
+                    Open Menu
+                </option>
+
+            </select>
+
+            <input
+                type="text"
+                class="item-button-value"
+                value="{{ button.value or '' }}"
+                placeholder="https://domain.com">
+
+            <button
+                type="button"
+                class="btn btn-remove remove-item-button">
+                Remove
+            </button>
 
         </div>
+
         {% endfor %}
+
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-add add-item-button">
+
+        + Add Button
+
+    </button>
+
+</div>
+
+<!-- INLINE BUTTONS END -->
+
+</div>
+{% endfor %}
 
       </div>
 
@@ -697,6 +769,29 @@ addItemBtn.addEventListener("click", function(){
       name="caption[]"
       placeholder="Write caption..."
       required></textarea>
+      <input
+    type="hidden"
+    name="buttons_json[]"
+    class="buttons-json"
+    value="[]">
+
+<div class="item-buttons-section">
+
+    <div class="item-buttons-title">
+        Inline Buttons
+    </div>
+
+    <div class="item-buttons-wrap"></div>
+
+    <button
+        type="button"
+        class="btn btn-add add-item-button">
+
+        + Add Button
+
+    </button>
+
+</div>
   `;
 
   itemsWrap.appendChild(div);
