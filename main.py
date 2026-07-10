@@ -1813,7 +1813,7 @@ def blast_scheduler():
         except Exception as e:
             print("Blast scheduler error:", e)
 
-        time.sleep(60)
+        time.sleep(15)
 
 @flask_app.route("/admin/blast/upload", methods=["POST"])
 def admin_blast_upload():
