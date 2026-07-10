@@ -2259,9 +2259,9 @@ def blast_scheduler():
                     continue
 
                 if mode == "random":
-                    image_url, caption = random.choice(items)
-                else:
-                    image_url, caption = items[0]
+    item_id, image_url, caption = random.choice(items)
+else:
+    item_id, image_url, caption = items[0]
 
                 print(
                     f"[BLAST SEND] "
