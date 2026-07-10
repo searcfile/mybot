@@ -949,6 +949,109 @@ body.confirm-open{
     grid-template-columns:1fr;
   }
 }
+.custom-select{
+  position:relative;
+  width:100%;
+  min-width:0;
+  margin:6px 0 12px;
+  box-sizing:border-box;
+}
+
+.select-selected{
+  position:relative;
+  width:100%;
+  height:34px;
+  padding:4px 36px 4px 11px;
+  display:flex;
+  align-items:center;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(0,0,0,.25);
+  color:#fff;
+  box-sizing:border-box;
+  cursor:pointer;
+  user-select:none;
+  transition:.25s;
+}
+
+.select-selected:hover{
+  border-color:#16b7ff;
+}
+
+.select-selected:focus-visible{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 2px rgba(56,189,248,.25);
+}
+
+.select-selected::after{
+  content:"";
+  position:absolute;
+  right:11px;
+  top:50%;
+  width:14px;
+  height:14px;
+  transform:translateY(-50%);
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:14px;
+  pointer-events:none;
+  transition:transform .25s ease;
+
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M16.59 8.59L12 13.17L7.41 8.59L6 10l6 6l6-6z'/%3E%3C/svg%3E");
+}
+
+.custom-select.open .select-selected::after{
+  transform:translateY(-50%) rotate(180deg);
+}
+
+.select-items{
+  position:absolute;
+  left:0;
+  top:calc(100% + 4px);
+  z-index:1000;
+  display:none;
+  width:100%;
+  padding:4px;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  background:#0b2344;
+  box-shadow:0 10px 28px rgba(0,0,0,.4);
+}
+
+.custom-select.open .select-items{
+  display:block;
+}
+
+.select-items div{
+  padding:7px 10px;
+  border-radius:5px;
+  color:#fff;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.select-items div:hover{
+  background:#3c89e8;
+}
+
+.select-items div.active{
+  background:#1668dc;
+  font-weight:600;
+}
+
+/* Custom dropdown dalam baris Inline Button */
+.item-button-row .custom-select{
+  margin:0;
+}
+
+.item-button-row .select-selected{
+  height:34px;
+}
+
+.item-button-row .select-items{
+  z-index:2000;
+}
   </style>
 </head>
 <body>
@@ -1023,11 +1126,36 @@ body.confirm-open{
           placeholder="Example: Daily Promo Random"
           required>
 
-        <label class="label-required">Mode</label>
-        <select name="mode" id="mode">
-          <option value="random">Random Auto Blast</option>
-          <option value="fixed">Fixed Auto Blast</option>
-        </select>
+<label class="label-required">Mode</label>
+
+<input
+  type="hidden"
+  name="mode"
+  id="mode"
+  value="random">
+
+<div
+  class="custom-select"
+  id="modeCustomSelect">
+
+  <div
+    class="select-selected"
+    tabindex="0">
+    Random Auto Blast
+  </div>
+
+  <div class="select-items">
+    <div
+      class="active"
+      data-value="random">
+      Random Auto Blast
+    </div>
+
+    <div data-value="fixed">
+      Fixed Auto Blast
+    </div>
+  </div>
+</div>
 
         <label class="label-required">Daily Send Times</label>
 
@@ -1351,7 +1479,12 @@ document.querySelectorAll("form").forEach(form => {
 });
   
 const mode = document.getElementById("mode");
-const itemsWrap = document.getElementById("itemsWrap");
+
+const modeCustomSelect =
+  document.getElementById("modeCustomSelect");
+
+const itemsWrap =
+  document.getElementById("itemsWrap");
 const addItemBtn = document.getElementById("addItemBtn");
   const timesWrap = document.getElementById("timesWrap");
 const addTimeBtn = document.getElementById("addTimeBtn");
@@ -1422,6 +1555,13 @@ function refreshMode(){
 }
 
 mode.addEventListener("change", refreshMode);
+  setupCustomSelect(
+  modeCustomSelect,
+  mode,
+  function(){
+    refreshMode();
+  }
+);
 
 addItemBtn.addEventListener("click", () => {
   const div = document.createElement("div");
@@ -1487,7 +1627,88 @@ function escapeAttribute(value){
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
 }
+function setupCustomSelect(
+  customSelect,
+  hiddenInput,
+  onChange
+){
+  if(!customSelect || !hiddenInput){
+    return;
+  }
 
+  const selected =
+    customSelect.querySelector(".select-selected");
+
+  const options =
+    customSelect.querySelectorAll(
+      ".select-items div"
+    );
+
+  selected.onclick = function(event){
+    event.stopPropagation();
+
+    document
+      .querySelectorAll(".custom-select.open")
+      .forEach(openSelect => {
+        if(openSelect !== customSelect){
+          openSelect.classList.remove("open");
+        }
+      });
+
+    customSelect.classList.toggle("open");
+  };
+
+  selected.onkeydown = function(event){
+    if(
+      event.key === "Enter" ||
+      event.key === " "
+    ){
+      event.preventDefault();
+      selected.click();
+    }
+
+    if(event.key === "Escape"){
+      customSelect.classList.remove("open");
+    }
+  };
+
+  options.forEach(option => {
+    option.onclick = function(event){
+      event.stopPropagation();
+
+      const newValue =
+        this.dataset.value || "";
+
+      hiddenInput.value = newValue;
+      selected.textContent =
+        this.textContent.trim();
+
+      options.forEach(item => {
+        item.classList.remove("active");
+      });
+
+      this.classList.add("active");
+      customSelect.classList.remove("open");
+
+      hiddenInput.dispatchEvent(
+        new Event("change", {
+          bubbles:true
+        })
+      );
+
+      if(typeof onChange === "function"){
+        onChange(newValue);
+      }
+    };
+  });
+}
+document.addEventListener("click", function(){
+  document
+    .querySelectorAll(".custom-select.open")
+    .forEach(customSelect => {
+      customSelect.classList.remove("open");
+    });
+});
 function createItemButtonRow(buttonData = {}){
   const row = document.createElement("div");
   row.className = "item-button-row";
@@ -1503,10 +1724,35 @@ function createItemButtonRow(buttonData = {}){
       placeholder="Button name"
       value="${escapeAttribute(savedText)}">
 
-    <select class="item-button-type">
-      <option value="url">Open Link</option>
-      <option value="menu">Open Menu</option>
-    </select>
+<input
+  type="hidden"
+  class="item-button-type"
+  value="${escapeAttribute(savedType)}">
+
+<div class="custom-select item-type-custom-select">
+
+  <div
+    class="select-selected"
+    tabindex="0">
+    ${savedType === "menu" ? "Open Menu" : "Open Link"}
+  </div>
+
+  <div class="select-items">
+
+    <div
+      data-value="url"
+      class="${savedType === "url" ? "active" : ""}">
+      Open Link
+    </div>
+
+    <div
+      data-value="menu"
+      class="${savedType === "menu" ? "active" : ""}">
+      Open Menu
+    </div>
+
+  </div>
+</div>
 
     <input
       type="text"
@@ -1521,12 +1767,30 @@ function createItemButtonRow(buttonData = {}){
     </button>
   `;
 
-  row.querySelector(".item-button-type").value =
-    savedType;
+const typeInput =
+  row.querySelector(".item-button-type");
 
-  updateItemButtonType(row);
+const typeCustomSelect =
+  row.querySelector(".item-type-custom-select");
 
-  return row;
+setupCustomSelect(
+  typeCustomSelect,
+  typeInput,
+  function(){
+    updateItemButtonType(row);
+
+    const itemBox =
+      row.closest(".item-box");
+
+    if(itemBox){
+      saveItemButtons(itemBox);
+    }
+  }
+);
+
+updateItemButtonType(row);
+
+return row;
 }
 
 function updateItemButtonType(row){
