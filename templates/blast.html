@@ -274,6 +274,16 @@
 </div>
 
 <script>
+const currentPath = window.location.pathname;
+
+document.querySelectorAll(".nav a").forEach(link => {
+  const href = link.getAttribute("href");
+  link.classList.remove("active");
+
+  if (href === currentPath) {
+    link.classList.add("active");
+  }
+});
 const mode = document.getElementById("mode");
 const itemsWrap = document.getElementById("itemsWrap");
 const addItemBtn = document.getElementById("addItemBtn");
