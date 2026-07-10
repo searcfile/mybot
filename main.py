@@ -296,32 +296,33 @@ def init_db():
     """)
 
     # multiple blast send times
-cur.execute("""
-    CREATE TABLE IF NOT EXISTS blast_times (
-        id SERIAL PRIMARY KEY,
-        vault_id INT REFERENCES blast_vaults(id) ON DELETE CASCADE,
-        send_time TEXT NOT NULL,
-        last_sent_date TEXT,
-        UNIQUE(vault_id, send_time)
-    )
-""")
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS blast_times (
+            id SERIAL PRIMARY KEY,
+            vault_id INT REFERENCES blast_vaults(id) ON DELETE CASCADE,
+            send_time TEXT NOT NULL,
+            last_sent_date TEXT,
+            UNIQUE(vault_id, send_time)
+        )
+    """)
 
-# migrate old single send_time into blast_times
-cur.execute("""
-    INSERT INTO blast_times (
-        vault_id,
-        send_time,
-        last_sent_date
-    )
-    SELECT
-        id,
-        send_time,
-        last_sent_date
-    FROM blast_vaults
-    WHERE send_time IS NOT NULL
-      AND send_time <> ''
-    ON CONFLICT (vault_id, send_time) DO NOTHING
-""")
+    # pindahkan waktu lama ke table blast_times
+    cur.execute("""
+        INSERT INTO blast_times (
+            vault_id,
+            send_time,
+            last_sent_date
+        )
+        SELECT
+            id,
+            send_time,
+            last_sent_date
+        FROM blast_vaults
+        WHERE send_time IS NOT NULL
+          AND send_time <> ''
+        ON CONFLICT (vault_id, send_time) DO NOTHING
+    """)
+
     conn.commit()
 
     # =========================
