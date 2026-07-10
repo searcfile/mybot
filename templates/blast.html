@@ -774,9 +774,9 @@ body.modal-open{
 .create-vault-card{
   display:flex;
   flex-direction:column;
-  height:calc(100vh - 105px);
-  min-height:560px;
-  overflow:hidden;
+  height:auto;
+  min-height:0;
+  overflow:visible;
 }
 
 .create-vault-card > h3{
@@ -786,13 +786,9 @@ body.modal-open{
 .create-vault-card form{
   display:flex;
   flex-direction:column;
-  flex:1;
-  min-height:0;
 }
-
 .items-scroll{
-  flex:1;
-  min-height:180px;
+  min-height:0;
   max-height:430px;
   overflow-y:auto;
   overflow-x:hidden;
@@ -801,7 +797,6 @@ body.modal-open{
   overscroll-behavior:contain;
   scrollbar-gutter:stable;
 }
-
 .items-scroll::-webkit-scrollbar{
   width:6px;
 }
@@ -831,6 +826,9 @@ body.modal-open{
 
 .create-vault-card .btn[type="submit"]{
   flex-shrink:0;
+}
+.save-vault-space{
+  height:10px;
 }
   </style>
 </head>
@@ -984,18 +982,18 @@ body.modal-open{
         </div>
       </div>
 
-        <button
-          type="button"
-          class="btn-small"
-          id="addItemBtn">
-          + Add Banner/Caption
-        </button>
+<button
+  type="button"
+  class="btn-small"
+  id="addItemBtn">
+  + Add Banner/Caption
+</button>
 
-        <br><br>
+<div class="save-vault-space"></div>
 
-        <button class="btn" type="submit">
-          💾 Save Vault
-        </button>
+<button class="btn" type="submit">
+  💾 Save Vault
+</button>
 
       </form>
     </div>
