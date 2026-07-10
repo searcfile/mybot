@@ -1369,57 +1369,92 @@ def admin_blast():
 
         captions = request.form.getlist("caption[]")
         images = request.form.getlist("image_url[]")
+
         valid_items = []
 
-for image_url, caption in zip(images, captions):
-    image_url = image_url.strip()
-    caption = caption.strip()
+        for image_url, caption in zip(images, captions):
+            image_url = image_url.strip()
+            caption = caption.strip()
 
-    if caption:
-        valid_items.append((image_url, caption))
+            if caption:
+                valid_items.append((image_url, caption))
 
-if not name or not send_time or not valid_items:
-    cur.close()
-    conn.close()
-    return redirect("/admin/blast")
+        if not name or not send_time or not valid_items:
+            cur.close()
+            conn.close()
+            return redirect("/admin/blast")
 
         cur.execute("""
-            INSERT INTO blast_vaults (name, mode, send_time, is_active)
+            INSERT INTO blast_vaults (
+                name,
+                mode,
+                send_time,
+                is_active
+            )
             VALUES (%s, %s, %s, TRUE)
             RETURNING id
-        """, (name, mode, send_time))
+        """, (
+            name,
+            mode,
+            send_time
+        ))
 
         vault_id = cur.fetchone()[0]
 
-for image_url, caption in valid_items:
-    cur.execute("""
-        INSERT INTO blast_items (vault_id, image_url, caption)
-        VALUES (%s, %s, %s)
-    """, (vault_id, image_url, caption))
+        for image_url, caption in valid_items:
+            cur.execute("""
+                INSERT INTO blast_items (
+                    vault_id,
+                    image_url,
+                    caption
+                )
+                VALUES (%s, %s, %s)
+            """, (
+                vault_id,
+                image_url,
+                caption
+            ))
 
         conn.commit()
         cur.close()
         conn.close()
+
         return redirect("/admin/blast")
 
     cur.execute("""
-        SELECT id, name, mode, send_time, is_active, last_sent_date
+        SELECT
+            id,
+            name,
+            mode,
+            send_time,
+            is_active,
+            last_sent_date
         FROM blast_vaults
         ORDER BY id DESC
     """)
+
     vaults = cur.fetchall()
 
     cur.execute("""
-        SELECT id, vault_id, image_url, caption
+        SELECT
+            id,
+            vault_id,
+            image_url,
+            caption
         FROM blast_items
         ORDER BY id ASC
     """)
+
     items = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    return render_template("blast.html", vaults=vaults, items=items)
+    return render_template(
+        "blast.html",
+        vaults=vaults,
+        items=items
+    )
 
 
 @flask_app.route("/admin/blast/delete/<int:vault_id>")
@@ -1818,22 +1853,25 @@ init_db()
 clear_webhook()
 
 BOT_STARTED = False
+BLAST_SCHEDULER_STARTED = False
+
 
 def start_bot_once():
     global BOT_STARTED
+
     if BOT_STARTED:
         return
+
     BOT_STARTED = True
 
-    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    bot_thread = threading.Thread(
+        target=run_bot,
+        daemon=True
+    )
     bot_thread.start()
 
+    print("Bot thread running...")
 
-if os.getenv("BOT_DISABLE") != "1":
-    start_bot_once()
-    start_blast_scheduler_once()
-    
-BLAST_SCHEDULER_STARTED = False
 
 def start_blast_scheduler_once():
     global BLAST_SCHEDULER_STARTED
@@ -1851,6 +1889,17 @@ def start_blast_scheduler_once():
 
     print("Blast scheduler running...")
 
+
+if os.getenv("BOT_DISABLE") != "1":
+    start_bot_once()
+
+start_blast_scheduler_once()
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    flask_app.run(host="0.0.0.0", port=port)
+
+    flask_app.run(
+        host="0.0.0.0",
+        port=port
+    )
