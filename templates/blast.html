@@ -530,6 +530,156 @@ body{
   overflow:hidden;
   text-overflow:ellipsis;
 }
+.preview-card{
+  position:relative;
+  cursor:pointer;
+}
+
+.preview-card img{
+  transition:transform .25s ease, filter .25s ease;
+}
+
+.preview-hover{
+  position:absolute;
+  inset:8px 8px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border-radius:8px;
+  background:rgba(0,0,0,.62);
+  color:#fff;
+  opacity:0;
+  transform:scale(.97);
+  transition:all .25s ease;
+  pointer-events:none;
+}
+
+.preview-hover svg{
+  width:20px;
+  height:20px;
+  fill:currentColor;
+}
+
+.preview-hover span{
+  font-size:13px;
+  font-weight:600;
+}
+
+.preview-card:hover .preview-hover{
+  opacity:1;
+  transform:scale(1);
+}
+
+.preview-card:hover img{
+  transform:scale(1.03);
+  filter:brightness(.75);
+}
+
+.preview-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:999999;
+}
+
+.preview-modal.show{
+  display:flex;
+}
+
+.preview-modal-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);
+}
+
+.preview-modal-content{
+  position:relative;
+  z-index:1;
+  width:min(760px, 100%);
+  max-height:90vh;
+  overflow:auto;
+  border-radius:16px;
+  background:#0b2344;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 24px 70px rgba(0,0,0,.55);
+}
+
+.preview-modal-close{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:8px;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:2;
+}
+
+.preview-modal-close:hover{
+  background:rgba(239,68,68,.85);
+}
+
+.preview-modal-close svg{
+  width:18px;
+  height:18px;
+  fill:currentColor;
+}
+
+.preview-modal-image-wrap{
+  width:100%;
+  background:#07182f;
+}
+
+.preview-modal-image{
+  display:block;
+  width:100%;
+  max-height:520px;
+  object-fit:contain;
+}
+
+.preview-modal-body{
+  padding:18px;
+}
+
+.preview-modal-body h3{
+  margin:0 0 12px;
+}
+
+.preview-modal-caption{
+  white-space:pre-wrap;
+  word-break:break-word;
+  line-height:1.6;
+  color:rgba(255,255,255,.9);
+}
+
+body.modal-open{
+  overflow:hidden;
+}
+
+@media(max-width:600px){
+  .preview-modal{
+    padding:10px;
+  }
+
+  .preview-modal-content{
+    max-height:94vh;
+  }
+
+  .preview-modal-body{
+    padding:14px;
+  }
+}
   </style>
 </head>
 <body>
@@ -741,17 +891,30 @@ body{
           <div class="preview">
             {% for it in items %}
               {% if it[1] == v[0] %}
-                <div class="preview-card">
+<div
+  class="preview-card"
+  data-image="{{ it[2] or '' }}"
+  data-caption="{{ it[3] | e }}">
 
-                  {% if it[2] %}
-                    <img
-                      src="{{ it[2] }}"
-                      alt="Blast banner">
-                  {% endif %}
+  {% if it[2] %}
+    <img
+      src="{{ it[2] }}"
+      alt="Blast banner">
+  {% endif %}
 
-                  <div class="muted">
-                    {{ it[3][:80] }}...
-                  </div>
+  <div class="preview-hover">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+    </svg>
+
+    <span>Preview</span>
+  </div>
+
+  <div class="muted preview-caption">
+    {{ it[3][:80] }}...
+  </div>
+
+</div>
 
                 </div>
               {% endif %}
@@ -773,7 +936,38 @@ body{
 
   </div>
 </div>
+<div class="preview-modal" id="previewModal">
+  <div class="preview-modal-backdrop" data-close-preview></div>
 
+  <div class="preview-modal-content">
+    <button
+      type="button"
+      class="preview-modal-close"
+      data-close-preview
+      aria-label="Close">
+
+      <svg viewBox="0 0 24 24">
+        <path d="M18.3 5.7 12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/>
+      </svg>
+    </button>
+
+    <div class="preview-modal-image-wrap">
+      <img
+        id="previewModalImage"
+        class="preview-modal-image"
+        alt="Blast preview">
+    </div>
+
+    <div class="preview-modal-body">
+      <h3>Preview Caption</h3>
+
+      <div
+        id="previewModalCaption"
+        class="preview-modal-caption">
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 const currentPath = window.location.pathname;
 
@@ -924,6 +1118,48 @@ addItemBtn.addEventListener("click", () => {
 });
 
 refreshMode();
+const previewModal = document.getElementById("previewModal");
+const previewModalImage = document.getElementById("previewModalImage");
+const previewModalCaption = document.getElementById("previewModalCaption");
+
+function openPreviewModal(imageUrl, caption){
+  if(imageUrl){
+    previewModalImage.src = imageUrl;
+    previewModalImage.style.display = "block";
+  }else{
+    previewModalImage.removeAttribute("src");
+    previewModalImage.style.display = "none";
+  }
+
+  previewModalCaption.textContent = caption || "No caption";
+
+  previewModal.classList.add("show");
+  document.body.classList.add("modal-open");
+}
+
+function closePreviewModal(){
+  previewModal.classList.remove("show");
+  document.body.classList.remove("modal-open");
+}
+
+document.querySelectorAll(".preview-card").forEach(card => {
+  card.addEventListener("click", function(){
+    openPreviewModal(
+      this.dataset.image,
+      this.dataset.caption
+    );
+  });
+});
+
+document.querySelectorAll("[data-close-preview]").forEach(el => {
+  el.addEventListener("click", closePreviewModal);
+});
+
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape"){
+    closePreviewModal();
+  }
+});
 </script>
 
 </body>
