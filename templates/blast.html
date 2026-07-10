@@ -147,7 +147,9 @@ body{
   padding:16px;
 }
     h3{margin-top:0;color:#38bdf8}
-    input,textarea,select{width:100%;box-sizing:border-box;margin:6px 0 12px;padding:8px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
+    textarea{height:32px;width:100%;box-sizing:border-box;margin:6px 0 12px;padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
+    input{height:32px;width:100%;box-sizing:border-box;margin:6px 0 12px;padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
+    select{height:32px;width:100%;box-sizing:border-box;margin:6px 0 12px;padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
     textarea{min-height:180px;resize:vertical}
     .btn{width:100%;height:32px;border:0;border-radius:6px;background:#1668dc;color:#fff;cursor:pointer}
     .btn-small{transition: all 0.3s;padding:7px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-size:12px;cursor: pointer;}
@@ -392,7 +394,7 @@ body{
 .time-badge{
   padding:4px 8px;
   border-radius:999px;
-  background:rgba(22,104,220,.22);
+  background:transparent;
   border:1px solid rgba(56,189,248,.28);
   color:#38bdf8;
   font-size:12px;
@@ -968,7 +970,7 @@ body.confirm-open{
 .select-selected{
   position:relative;
   width:100%;
-  height:34px;
+  height:32px;
   padding:4px 36px 4px 11px;
   display:flex;
   align-items:center;
@@ -1015,7 +1017,7 @@ body.confirm-open{
 .select-items{
   position:absolute;
   left:0;
-  top:calc(100% + 4px);
+  top:calc(100% + 3px);
   z-index:1000;
   display:none;
   width:100%;
@@ -1032,8 +1034,8 @@ body.confirm-open{
 }
 
 .select-items div{
-  padding:7px 10px;
-  border-radius:5px;
+  padding:5px 12px;
+  border-radius:4px;
   color:#fff;
   cursor:pointer;
   transition:.2s;
