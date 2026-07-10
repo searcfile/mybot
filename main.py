@@ -2240,11 +2240,14 @@ def blast_scheduler():
                     continue
 
                 cur.execute("""
-                    SELECT image_url, caption
-                    FROM blast_items
-                    WHERE vault_id=%s
-                    ORDER BY id ASC
-                """, (vault_id,))
+    SELECT
+        id,
+        image_url,
+        caption
+    FROM blast_items
+    WHERE vault_id=%s
+    ORDER BY id ASC
+""", (vault_id,))
 
                 items = cur.fetchall()
 
