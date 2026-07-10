@@ -693,6 +693,59 @@ body.modal-open{
   overflow:hidden;
   text-overflow:ellipsis;
 }
+    .item-buttons-section{
+  margin-top:12px;
+  padding:10px;
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:8px;
+  background:rgba(0,0,0,.1);
+}
+
+.item-buttons-title{
+  margin-bottom:8px;
+  color:#38bdf8;
+  font-size:12px;
+  font-weight:600;
+}
+
+.item-button-row{
+  display:grid;
+  grid-template-columns:
+    minmax(90px,1fr)
+    110px
+    minmax(120px,1fr)
+    auto;
+  gap:7px;
+  align-items:start;
+  margin-bottom:8px;
+}
+
+.item-button-row input,
+.item-button-row select{
+  height:34px;
+  margin:0;
+}
+
+.item-button-row .remove-item-button{
+  height:34px;
+  white-space:nowrap;
+}
+
+.item-button-value:read-only{
+  opacity:.45;
+  cursor:not-allowed;
+  background:rgba(255,255,255,.06);
+}
+
+@media(max-width:700px){
+  .item-button-row{
+    grid-template-columns:1fr;
+  }
+
+  .item-button-row .remove-item-button{
+    width:100%;
+  }
+}
   </style>
 </head>
 <body>
@@ -820,6 +873,25 @@ body.modal-open{
               name="caption[]"
               placeholder="Write caption..."
               required></textarea>
+            <input
+  type="hidden"
+  name="buttons_json[]"
+  class="buttons-json"
+  value="[]">
+
+<div class="item-buttons-section">
+  <div class="item-buttons-title">
+    Inline Buttons
+  </div>
+
+  <div class="item-buttons-wrap"></div>
+
+  <button
+    type="button"
+    class="btn-small add-item-button">
+    + Add Button
+  </button>
+</div>
 
           </div>
         </div>
@@ -1119,23 +1191,230 @@ mode.addEventListener("change", refreshMode);
 addItemBtn.addEventListener("click", () => {
   const div = document.createElement("div");
   div.className = "item-box";
+
   div.innerHTML = `
     <label>Banner Image URL</label>
-    <input type="text" name="image_url[]" placeholder="https://res.cloudinary.com/...">
+
+    <input
+      type="text"
+      name="image_url[]"
+      placeholder="https://res.cloudinary.com/...">
 
     <label>Caption</label>
-    <textarea name="caption[]" placeholder="Write caption..." required></textarea>
 
-    <button type="button" class="btn-small remove-item">Remove</button>
+    <textarea
+      name="caption[]"
+      placeholder="Write caption..."
+      required></textarea>
+
+    <input
+      type="hidden"
+      name="buttons_json[]"
+      class="buttons-json"
+      value="[]">
+
+    <div class="item-buttons-section">
+      <div class="item-buttons-title">
+        Inline Buttons
+      </div>
+
+      <div class="item-buttons-wrap"></div>
+
+      <button
+        type="button"
+        class="btn-small add-item-button">
+        + Add Button
+      </button>
+    </div>
+
+    <br>
+
+    <button
+      type="button"
+      class="btn-small remove-item">
+      Remove Banner/Caption
+    </button>
   `;
 
   itemsWrap.appendChild(div);
 
-  div.querySelector(".remove-item").addEventListener("click", () => {
-    div.remove();
-  });
-});
+  div.querySelector(".remove-item")
+    .addEventListener("click", () => {
+      div.remove();
+    });
 
+  bindItemButtonSections();
+});
+function escapeAttribute(value){
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function createItemButtonRow(buttonData = {}){
+  const row = document.createElement("div");
+  row.className = "item-button-row";
+
+  const savedText = buttonData.text || "";
+  const savedType = buttonData.type || "url";
+  const savedValue = buttonData.value || "";
+
+  row.innerHTML = `
+    <input
+      type="text"
+      class="item-button-text"
+      placeholder="Button name"
+      value="${escapeAttribute(savedText)}">
+
+    <select class="item-button-type">
+      <option value="url">Open Link</option>
+      <option value="menu">Open Menu</option>
+    </select>
+
+    <input
+      type="text"
+      class="item-button-value"
+      placeholder="https://yourdomain.com"
+      value="${escapeAttribute(savedValue)}">
+
+    <button
+      type="button"
+      class="btn-small remove-item-button">
+      Remove
+    </button>
+  `;
+
+  row.querySelector(".item-button-type").value =
+    savedType;
+
+  updateItemButtonType(row);
+
+  return row;
+}
+
+function updateItemButtonType(row){
+  const type =
+    row.querySelector(".item-button-type").value;
+
+  const valueInput =
+    row.querySelector(".item-button-value");
+
+  if(type === "menu"){
+    valueInput.value = "open_menu";
+    valueInput.readOnly = true;
+    valueInput.placeholder = "Open bot menu";
+  }else{
+    if(valueInput.value === "open_menu"){
+      valueInput.value = "";
+    }
+
+    valueInput.readOnly = false;
+    valueInput.placeholder =
+      "https://yourdomain.com";
+  }
+}
+
+function saveItemButtons(itemBox){
+  const buttons = [];
+
+  itemBox
+    .querySelectorAll(".item-button-row")
+    .forEach(row => {
+      const text = row
+        .querySelector(".item-button-text")
+        .value
+        .trim();
+
+      const type = row
+        .querySelector(".item-button-type")
+        .value;
+
+      const value = row
+        .querySelector(".item-button-value")
+        .value
+        .trim();
+
+      if(!text){
+        return;
+      }
+
+      buttons.push({
+        text,
+        type,
+        value:
+          type === "menu"
+            ? "open_menu"
+            : value
+      });
+    });
+
+  itemBox.querySelector(".buttons-json").value =
+    JSON.stringify(buttons);
+}
+
+function bindItemButtonSections(){
+  document.querySelectorAll(".item-box").forEach(
+    itemBox => {
+      const addButton =
+        itemBox.querySelector(".add-item-button");
+
+      const buttonsWrap =
+        itemBox.querySelector(".item-buttons-wrap");
+
+      if(!addButton || !buttonsWrap){
+        return;
+      }
+
+      addButton.onclick = function(){
+        const row = createItemButtonRow();
+        buttonsWrap.appendChild(row);
+        saveItemButtons(itemBox);
+      };
+
+      buttonsWrap.oninput = function(){
+        saveItemButtons(itemBox);
+      };
+
+      buttonsWrap.onchange = function(event){
+        const row =
+          event.target.closest(".item-button-row");
+
+        if(row){
+          updateItemButtonType(row);
+        }
+
+        saveItemButtons(itemBox);
+      };
+
+      buttonsWrap.onclick = function(event){
+        const removeButton =
+          event.target.closest(".remove-item-button");
+
+        if(!removeButton){
+          return;
+        }
+
+        removeButton
+          .closest(".item-button-row")
+          .remove();
+
+        saveItemButtons(itemBox);
+      };
+    }
+  );
+}
+
+document
+  .getElementById("blastForm")
+  .addEventListener("submit", function(){
+    document
+      .querySelectorAll(".item-box")
+      .forEach(saveItemButtons);
+  });
+
+bindItemButtonSections();
 refreshMode();
 const previewModal = document.getElementById("previewModal");
 const previewModalImage = document.getElementById("previewModalImage");
