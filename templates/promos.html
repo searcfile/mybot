@@ -436,13 +436,13 @@ html {
       <h3>➕ Add New Promo</h3>
 
       <form method="POST" action="/admin/promos/add">
-        <label>Title</label>
+        <label class="label-required">Title</label>
         <input type="text" name="title" required>
 
-        <label>Image URL</label>
+        <label class="label-required">Image URL</label>
         <input type="text" name="image_url" required>
 
-        <label>Caption</label>
+        <label class="label-required">Caption</label>
         <textarea name="caption" required></textarea>
 
         <button type="submit">Add Promo</button>
@@ -451,7 +451,7 @@ html {
 
     <!-- PROMO LIST -->
     <div class="card">
-      <h3>📋 Promo List</h3>
+      <h3>Promo List</h3>
 
       <table>
         <tr>
@@ -515,10 +515,10 @@ html {
 
       <form method="POST" action="/admin/menu_layout">
 
-        <label>Base Menu Layout</label>
+        <label class="label-required">Base Menu Layout</label>
         <textarea name="base_menu_layout" required>{{ base_layout }}</textarea>
 
-        <label>Promo Menu Layout</label>
+        <label class="label-required">Promo Menu Layout</label>
         <textarea name="promo_menu_layout" required>{{ promo_layout }}</textarea>
 
         <button type="submit">💾 Save Layout</button>
