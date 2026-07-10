@@ -271,6 +271,27 @@ def init_db():
         )
     """)
 
+        # blast vaults
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS blast_vaults (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            mode TEXT NOT NULL DEFAULT 'random',
+            send_time TEXT NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            last_sent_date TEXT
+        )
+    """)
+
+    # blast items
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS blast_items (
+            id SERIAL PRIMARY KEY,
+            vault_id INT REFERENCES blast_vaults(id) ON DELETE CASCADE,
+            image_url TEXT,
+            caption TEXT NOT NULL
+        )
+    """)
     conn.commit()
 
     # =========================
