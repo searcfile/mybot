@@ -13,6 +13,7 @@ from urllib.request import urlopen
 from flask import Flask, render_template, request, redirect, session
 
 from telegram import (
+    Bot,
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -1324,28 +1325,34 @@ def get_all_user_ids():
 
 
 async def send_blast_to_all(image_url, caption):
-    bot_app = Application.builder().token(BOT_TOKEN).build()
-    bot = bot_app.bot
     users = get_all_user_ids()
     text = convert_markdown_bold_to_html(caption)
 
-    for u in users:
-        try:
-            if image_url:
-                await bot.send_photo(
-                    chat_id=u[0],
-                    photo=image_url,
-                    caption=text,
-                    parse_mode="HTML"
+    async with Bot(token=BOT_TOKEN) as bot:
+        for user in users:
+            telegram_id = user[0]
+
+            try:
+                if image_url:
+                    await bot.send_photo(
+                        chat_id=telegram_id,
+                        photo=image_url,
+                        caption=text,
+                        parse_mode="HTML"
+                    )
+                else:
+                    await bot.send_message(
+                        chat_id=telegram_id,
+                        text=text,
+                        parse_mode="HTML"
+                    )
+
+            except Exception as e:
+                print(
+                    "Auto blast failed:",
+                    telegram_id,
+                    e
                 )
-            else:
-                await bot.send_message(
-                    chat_id=u[0],
-                    text=text,
-                    parse_mode="HTML"
-                )
-        except Exception as e:
-            print("Auto blast failed:", u[0], e)
 
 @flask_app.route("/admin/blast", methods=["GET", "POST"])
 def admin_blast():
@@ -1362,9 +1369,19 @@ def admin_blast():
 
         captions = request.form.getlist("caption[]")
         images = request.form.getlist("image_url[]")
+        valid_items = []
 
-        if not name or not send_time:
-            return redirect("/admin/blast")
+for image_url, caption in zip(images, captions):
+    image_url = image_url.strip()
+    caption = caption.strip()
+
+    if caption:
+        valid_items.append((image_url, caption))
+
+if not name or not send_time or not valid_items:
+    cur.close()
+    conn.close()
+    return redirect("/admin/blast")
 
         cur.execute("""
             INSERT INTO blast_vaults (name, mode, send_time, is_active)
@@ -1374,15 +1391,11 @@ def admin_blast():
 
         vault_id = cur.fetchone()[0]
 
-        for image_url, caption in zip(images, captions):
-            image_url = image_url.strip()
-            caption = caption.strip()
-
-            if caption:
-                cur.execute("""
-                    INSERT INTO blast_items (vault_id, image_url, caption)
-                    VALUES (%s, %s, %s)
-                """, (vault_id, image_url, caption))
+for image_url, caption in valid_items:
+    cur.execute("""
+        INSERT INTO blast_items (vault_id, image_url, caption)
+        VALUES (%s, %s, %s)
+    """, (vault_id, image_url, caption))
 
         conn.commit()
         cur.close()
@@ -1437,6 +1450,104 @@ def admin_blast_toggle(vault_id):
     conn.close()
 
     return redirect("/admin/blast")
+
+@flask_app.route("/admin/blast/edit/<int:vault_id>", methods=["GET", "POST"])
+def admin_blast_edit(vault_id):
+    if not require_login():
+        return redirect("/admin/login")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        mode = request.form.get("mode", "random").strip()
+        send_time = request.form.get("send_time", "").strip()
+
+        images = request.form.getlist("image_url[]")
+        captions = request.form.getlist("caption[]")
+
+        valid_items = []
+
+        for image_url, caption in zip(images, captions):
+            image_url = image_url.strip()
+            caption = caption.strip()
+
+            if caption:
+                valid_items.append((image_url, caption))
+
+        if not name or not send_time or not valid_items:
+            cur.close()
+            conn.close()
+            return redirect(f"/admin/blast/edit/{vault_id}")
+
+        cur.execute("""
+            UPDATE blast_vaults
+            SET name=%s,
+                mode=%s,
+                send_time=%s,
+                last_sent_date=NULL
+            WHERE id=%s
+        """, (
+            name,
+            mode,
+            send_time,
+            vault_id
+        ))
+
+        cur.execute("""
+            DELETE FROM blast_items
+            WHERE vault_id=%s
+        """, (vault_id,))
+
+        for image_url, caption in valid_items:
+            cur.execute("""
+                INSERT INTO blast_items (
+                    vault_id,
+                    image_url,
+                    caption
+                )
+                VALUES (%s, %s, %s)
+            """, (
+                vault_id,
+                image_url,
+                caption
+            ))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        return redirect("/admin/blast")
+
+    cur.execute("""
+        SELECT id, name, mode, send_time, is_active
+        FROM blast_vaults
+        WHERE id=%s
+    """, (vault_id,))
+
+    vault = cur.fetchone()
+
+    cur.execute("""
+        SELECT id, image_url, caption
+        FROM blast_items
+        WHERE vault_id=%s
+        ORDER BY id ASC
+    """, (vault_id,))
+
+    items = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    if not vault:
+        return redirect("/admin/blast")
+
+    return render_template(
+        "blast_edit.html",
+        vault=vault,
+        items=items
+    )
 # =========================
 # PROMO EDIT + BUTTONS
 # =========================
@@ -1668,6 +1779,38 @@ def blast_scheduler():
             print("Blast scheduler error:", e)
 
         time.sleep(60)
+
+@flask_app.route("/admin/blast/upload", methods=["POST"])
+def admin_blast_upload():
+    if not require_login():
+        return jsonify({
+            "success": False,
+            "message": "Unauthorized"
+        }), 401
+
+    file = request.files.get("image")
+
+    if not file or not file.filename:
+        return jsonify({
+            "success": False,
+            "message": "No image selected"
+        }), 400
+
+    try:
+        image_url = upload_to_cloudinary(file)
+
+        return jsonify({
+            "success": True,
+            "url": image_url
+        })
+
+    except Exception as e:
+        print("Blast upload error:", e)
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 # =========================
 # START SYSTEM
 # =========================
@@ -1688,9 +1831,25 @@ def start_bot_once():
 
 if os.getenv("BOT_DISABLE") != "1":
     start_bot_once()
+    start_blast_scheduler_once()
     
-blast_thread = threading.Thread(target=blast_scheduler, daemon=True)
-blast_thread.start()
+BLAST_SCHEDULER_STARTED = False
+
+def start_blast_scheduler_once():
+    global BLAST_SCHEDULER_STARTED
+
+    if BLAST_SCHEDULER_STARTED:
+        return
+
+    BLAST_SCHEDULER_STARTED = True
+
+    blast_thread = threading.Thread(
+        target=blast_scheduler,
+        daemon=True
+    )
+    blast_thread.start()
+
+    print("Blast scheduler running...")
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
