@@ -1365,9 +1365,11 @@ def get_all_user_ids():
     return rows
 
 
-async def send_blast_to_all(image_url, caption):
+async def send_blast_to_all(item_id, image_url, caption):
     users = get_all_user_ids()
     text = convert_markdown_bold_to_html(caption)
+
+    reply_markup = get_blast_item_keyboard(item_id)
 
     print(f"[BLAST USERS] Total target users: {len(users)}")
 
@@ -1384,13 +1386,15 @@ async def send_blast_to_all(image_url, caption):
                         chat_id=telegram_id,
                         photo=image_url,
                         caption=text,
-                        parse_mode="HTML"
+                        parse_mode="HTML",
+                        reply_markup=reply_markup
                     )
                 else:
                     await bot.send_message(
                         chat_id=telegram_id,
                         text=text,
-                        parse_mode="HTML"
+                        parse_mode="HTML",
+                        reply_markup=reply_markup
                     )
 
                 success_count += 1
@@ -1398,6 +1402,7 @@ async def send_blast_to_all(image_url, caption):
 
             except Exception as e:
                 failed_count += 1
+
                 print(
                     f"[BLAST USER FAILED] {telegram_id}: "
                     f"{type(e).__name__}: {e}"
