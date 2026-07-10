@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Edit Blast Vault</title>
+
+  <style>
+    body{
+      margin:0;
+      background:#021a3c;
+      color:#fff;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+      font-size:14px;
+    }
+
+    .topbar{
+      height:64px;
+      padding:0 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      background:rgba(255,255,255,.05);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .topbar h2{
+      margin:0;
+      font-size:20px;
+    }
+
+    .back-link{
+      color:#fff;
+      text-decoration:none;
+      padding:8px 12px;
+      border-radius:8px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+    }
+
+    .container{
+      width:100%;
+      padding:20px;
+      box-sizing:border-box;
+    }
+
+    .card{
+      max-width:900px;
+      margin:0 auto;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 12px 30px rgba(0,0,0,.25);
+    }
+
+    h3{
+      margin:0 0 18px;
+      color:#38bdf8;
+    }
+
+    label{
+      display:block;
+      margin-bottom:4px;
+      font-size:12px;
+      color:rgba(255,255,255,.85);
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      box-sizing:border-box;
+      margin-bottom:14px;
+      padding:8px 11px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      outline:none;
+    }
+
+    input,
+    select{
+      height:36px;
+    }
+
+    textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+      border-color:#38bdf8;
+      box-shadow:0 0 0 2px rgba(56,189,248,.18);
+    }
+
+    .item-box{
+      border:1px dashed rgba(255,255,255,.22);
+      border-radius:12px;
+      padding:14px;
+      margin-bottom:14px;
+      background:rgba(0,0,0,.12);
+    }
+
+    .item-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:12px;
+    }
+
+    .item-title{
+      font-weight:700;
+      color:#38bdf8;
+    }
+
+    .preview{
+      margin:0 0 12px;
+      width:180px;
+      max-width:100%;
+      border-radius:10px;
+      display:block;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .btn{
+      border:0;
+      border-radius:7px;
+      padding:9px 14px;
+      color:#fff;
+      cursor:pointer;
+      font-weight:600;
+      text-decoration:none;
+    }
+
+    .btn-primary{
+      background:#1668dc;
+      flex:1;
+      min-width:180px;
+    }
+
+    .btn-add{
+      background:#1554ad;
+    }
+
+    .btn-remove{
+      background:#b91c1c;
+      padding:6px 10px;
+      font-size:12px;
+    }
+
+    .btn-cancel{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+    }
+
+    @media(max-width:768px){
+      .container{
+        padding:12px;
+      }
+
+      .card{
+        padding:14px;
+      }
+
+      .topbar h2{
+        font-size:17px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <h2>✏️ Edit Blast Vault</h2>
+
+  <a class="back-link" href="/admin/blast">
+    ← Back
+  </a>
+</div>
+
+<div class="container">
+  <div class="card">
+
+    <h3>Edit Vault</h3>
+
+    <form
+      method="POST"
+      action="/admin/blast/edit/{{ vault[0] }}"
+      id="editBlastForm">
+
+      <label>Vault Name</label>
+      <input
+        type="text"
+        name="name"
+        value="{{ vault[1] }}"
+        required>
+
+      <label>Mode</label>
+      <select name="mode" id="mode">
+        <option
+          value="random"
+          {% if vault[2] == "random" %}selected{% endif %}>
+          Random Auto Blast
+        </option>
+
+        <option
+          value="fixed"
+          {% if vault[2] == "fixed" %}selected{% endif %}>
+          Fixed Auto Blast
+        </option>
+      </select>
+
+      <label>Daily Send Time</label>
+      <input
+        type="time"
+        name="send_time"
+        value="{{ vault[3] }}"
+        required>
+
+      <div id="itemsWrap">
+
+        {% for item in items %}
+        <div class="item-box">
+
+          <div class="item-head">
+            <div class="item-title">
+              Banner / Caption {{ loop.index }}
+            </div>
+
+            {% if not loop.first %}
+            <button
+              type="button"
+              class="btn btn-remove remove-item">
+              Remove
+            </button>
+            {% endif %}
+          </div>
+
+          {% if item[1] %}
+          <img
+            class="preview"
+            src="{{ item[1] }}"
+            alt="Banner Preview">
+          {% endif %}
+
+          <label>Banner Image URL</label>
+          <input
+            type="text"
+            name="image_url[]"
+            value="{{ item[1] or '' }}"
+            placeholder="https://res.cloudinary.com/...">
+
+          <label>Caption</label>
+          <textarea
+            name="caption[]"
+            required>{{ item[2] }}</textarea>
+
+        </div>
+        {% endfor %}
+
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="btn btn-add"
+          id="addItemBtn">
+          + Add Banner/Caption
+        </button>
+
+        <a
+          href="/admin/blast"
+          class="btn btn-cancel">
+          Cancel
+        </a>
+
+        <button
+          type="submit"
+          class="btn btn-primary">
+          💾 Save Changes
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script>
+const modeSelect = document.getElementById("mode");
+const itemsWrap = document.getElementById("itemsWrap");
+const addItemBtn = document.getElementById("addItemBtn");
+
+function bindRemoveButtons(){
+  document.querySelectorAll(".remove-item").forEach(btn => {
+    btn.onclick = function(){
+      const boxes = document.querySelectorAll(".item-box");
+
+      if(boxes.length <= 1){
+        return;
+      }
+
+      this.closest(".item-box").remove();
+    };
+  });
+}
+
+function updateModeState(){
+  if(modeSelect.value === "fixed"){
+    addItemBtn.style.display = "none";
+
+    const boxes = itemsWrap.querySelectorAll(".item-box");
+
+    boxes.forEach((box, index) => {
+      if(index > 0){
+        box.remove();
+      }
+    });
+  }else{
+    addItemBtn.style.display = "inline-block";
+  }
+}
+
+addItemBtn.addEventListener("click", function(){
+  const div = document.createElement("div");
+  div.className = "item-box";
+
+  div.innerHTML = `
+    <div class="item-head">
+      <div class="item-title">New Banner / Caption</div>
+
+      <button
+        type="button"
+        class="btn btn-remove remove-item">
+        Remove
+      </button>
+    </div>
+
+    <label>Banner Image URL</label>
+    <input
+      type="text"
+      name="image_url[]"
+      placeholder="https://res.cloudinary.com/...">
+
+    <label>Caption</label>
+    <textarea
+      name="caption[]"
+      placeholder="Write caption..."
+      required></textarea>
+  `;
+
+  itemsWrap.appendChild(div);
+  bindRemoveButtons();
+});
+
+modeSelect.addEventListener("change", updateModeState);
+
+bindRemoveButtons();
+updateModeState();
+</script>
+
+</body>
+</html>
