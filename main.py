@@ -1497,20 +1497,78 @@ def admin_blast():
             if value.strip()
         ]
 
-        # remove duplicate times, keep order
         send_times = list(dict.fromkeys(send_times))
 
-        captions = request.form.getlist("caption[]")
         images = request.form.getlist("image_url[]")
+        captions = request.form.getlist("caption[]")
+        buttons_json_list = request.form.getlist("buttons_json[]")
 
         valid_items = []
 
-        for image_url, caption in zip(images, captions):
-            image_url = image_url.strip()
-            caption = caption.strip()
+        max_items = max(
+            len(images),
+            len(captions),
+            len(buttons_json_list),
+            0
+        )
+
+        for index in range(max_items):
+            image_url = (
+                images[index].strip()
+                if index < len(images)
+                else ""
+            )
+
+            caption = (
+                captions[index].strip()
+                if index < len(captions)
+                else ""
+            )
+
+            raw_buttons = (
+                buttons_json_list[index]
+                if index < len(buttons_json_list)
+                else "[]"
+            )
+
+            try:
+                submitted_buttons = json.loads(raw_buttons)
+            except (json.JSONDecodeError, TypeError):
+                submitted_buttons = []
+
+            clean_buttons = []
+
+            for button in submitted_buttons:
+                text = str(button.get("text", "")).strip()
+                button_type = str(button.get("type", "")).strip()
+                value = str(button.get("value", "")).strip()
+
+                if not text:
+                    continue
+
+                if button_type == "url":
+                    if not value.startswith(("https://", "http://")):
+                        continue
+
+                    clean_buttons.append({
+                        "text": text,
+                        "type": "url",
+                        "value": value
+                    })
+
+                elif button_type == "menu":
+                    clean_buttons.append({
+                        "text": text,
+                        "type": "menu",
+                        "value": "open_menu"
+                    })
 
             if caption:
-                valid_items.append((image_url, caption))
+                valid_items.append({
+                    "image_url": image_url,
+                    "caption": caption,
+                    "buttons": clean_buttons
+                })
 
         if (
             not name
@@ -1522,7 +1580,6 @@ def admin_blast():
             conn.close()
             return redirect("/admin/blast")
 
-        # keep first time in old column for compatibility
         first_time = send_times[0]
 
         cur.execute("""
@@ -1557,7 +1614,7 @@ def admin_blast():
                 send_time
             ))
 
-        for image_url, caption in valid_items:
+        for item in valid_items:
             cur.execute("""
                 INSERT INTO blast_items (
                     vault_id,
@@ -1565,11 +1622,35 @@ def admin_blast():
                     caption
                 )
                 VALUES (%s, %s, %s)
+                RETURNING id
             """, (
                 vault_id,
-                image_url,
-                caption
+                item["image_url"],
+                item["caption"]
             ))
+
+            item_id = cur.fetchone()[0]
+
+            for sort_order, button in enumerate(
+                item["buttons"],
+                start=1
+            ):
+                cur.execute("""
+                    INSERT INTO blast_item_buttons (
+                        item_id,
+                        text,
+                        button_type,
+                        button_value,
+                        sort_order
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    item_id,
+                    button["text"],
+                    button["type"],
+                    button["value"],
+                    sort_order
+                ))
 
         conn.commit()
         cur.close()
@@ -1685,15 +1766,74 @@ def admin_blast_edit(vault_id):
 
         images = request.form.getlist("image_url[]")
         captions = request.form.getlist("caption[]")
+        buttons_json_list = request.form.getlist("buttons_json[]")
 
         valid_items = []
 
-        for image_url, caption in zip(images, captions):
-            image_url = image_url.strip()
-            caption = caption.strip()
+        max_items = max(
+            len(images),
+            len(captions),
+            len(buttons_json_list),
+            0
+        )
+
+        for index in range(max_items):
+            image_url = (
+                images[index].strip()
+                if index < len(images)
+                else ""
+            )
+
+            caption = (
+                captions[index].strip()
+                if index < len(captions)
+                else ""
+            )
+
+            raw_buttons = (
+                buttons_json_list[index]
+                if index < len(buttons_json_list)
+                else "[]"
+            )
+
+            try:
+                submitted_buttons = json.loads(raw_buttons)
+            except (json.JSONDecodeError, TypeError):
+                submitted_buttons = []
+
+            clean_buttons = []
+
+            for button in submitted_buttons:
+                text = str(button.get("text", "")).strip()
+                button_type = str(button.get("type", "")).strip()
+                value = str(button.get("value", "")).strip()
+
+                if not text:
+                    continue
+
+                if button_type == "url":
+                    if not value.startswith(("https://", "http://")):
+                        continue
+
+                    clean_buttons.append({
+                        "text": text,
+                        "type": "url",
+                        "value": value
+                    })
+
+                elif button_type == "menu":
+                    clean_buttons.append({
+                        "text": text,
+                        "type": "menu",
+                        "value": "open_menu"
+                    })
 
             if caption:
-                valid_items.append((image_url, caption))
+                valid_items.append({
+                    "image_url": image_url,
+                    "caption": caption,
+                    "buttons": clean_buttons
+                })
 
         if (
             not name
@@ -1722,7 +1862,6 @@ def admin_blast_edit(vault_id):
             vault_id
         ))
 
-        # replace all scheduled times
         cur.execute("""
             DELETE FROM blast_times
             WHERE vault_id=%s
@@ -1741,13 +1880,13 @@ def admin_blast_edit(vault_id):
                 send_time
             ))
 
-        # replace all banner/caption items
+        # blast_item_buttons ikut terhapus kerana ON DELETE CASCADE
         cur.execute("""
             DELETE FROM blast_items
             WHERE vault_id=%s
         """, (vault_id,))
 
-        for image_url, caption in valid_items:
+        for item in valid_items:
             cur.execute("""
                 INSERT INTO blast_items (
                     vault_id,
@@ -1755,11 +1894,35 @@ def admin_blast_edit(vault_id):
                     caption
                 )
                 VALUES (%s, %s, %s)
+                RETURNING id
             """, (
                 vault_id,
-                image_url,
-                caption
+                item["image_url"],
+                item["caption"]
             ))
+
+            item_id = cur.fetchone()[0]
+
+            for sort_order, button in enumerate(
+                item["buttons"],
+                start=1
+            ):
+                cur.execute("""
+                    INSERT INTO blast_item_buttons (
+                        item_id,
+                        text,
+                        button_type,
+                        button_value,
+                        sort_order
+                    )
+                    VALUES (%s, %s, %s, %s, %s)
+                """, (
+                    item_id,
+                    button["text"],
+                    button["type"],
+                    button["value"],
+                    sort_order
+                ))
 
         conn.commit()
         cur.close()
@@ -1777,6 +1940,7 @@ def admin_blast_edit(vault_id):
         FROM blast_vaults
         WHERE id=%s
     """, (vault_id,))
+
     vault = cur.fetchone()
 
     if not vault:
@@ -1793,7 +1957,39 @@ def admin_blast_edit(vault_id):
         WHERE vault_id=%s
         ORDER BY id ASC
     """, (vault_id,))
+
     items = cur.fetchall()
+
+    item_ids = [item[0] for item in items]
+    buttons_by_item = {}
+
+    if item_ids:
+        cur.execute("""
+            SELECT
+                item_id,
+                text,
+                button_type,
+                button_value,
+                sort_order
+            FROM blast_item_buttons
+            WHERE item_id = ANY(%s)
+            ORDER BY item_id ASC, sort_order ASC, id ASC
+        """, (item_ids,))
+
+        button_rows = cur.fetchall()
+
+        for (
+            item_id,
+            text,
+            button_type,
+            button_value,
+            sort_order
+        ) in button_rows:
+            buttons_by_item.setdefault(item_id, []).append({
+                "text": text,
+                "type": button_type,
+                "value": button_value
+            })
 
     cur.execute("""
         SELECT
@@ -1804,6 +2000,7 @@ def admin_blast_edit(vault_id):
         WHERE vault_id=%s
         ORDER BY send_time ASC
     """, (vault_id,))
+
     blast_times = cur.fetchall()
 
     cur.close()
@@ -1813,7 +2010,8 @@ def admin_blast_edit(vault_id):
         "blast_edit.html",
         vault=vault,
         items=items,
-        blast_times=blast_times
+        blast_times=blast_times,
+        buttons_by_item=buttons_by_item
     )
 # =========================
 # PROMO EDIT + BUTTONS
