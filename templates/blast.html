@@ -245,6 +245,38 @@
   from{ transform:rotate(0deg); }
   to{ transform:rotate(360deg); }
 }
+.time-row{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  margin-bottom:8px;
+}
+
+.time-row input{
+  flex:1;
+  margin:0;
+}
+
+.time-row .remove-time{
+  flex-shrink:0;
+  height:36px;
+}
+
+.time-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:5px;
+}
+
+.time-badge{
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(22,104,220,.22);
+  border:1px solid rgba(56,189,248,.28);
+  color:#38bdf8;
+  font-size:12px;
+}
   </style>
 </head>
 <body>
@@ -319,8 +351,32 @@
           <option value="fixed">Fixed Auto Blast</option>
         </select>
 
-        <label class="label-required">Daily Send Time</label>
-        <input type="time" name="send_time" required>
+<label class="label-required">Daily Send Times</label>
+
+<div id="timesWrap">
+  <div class="time-row">
+    <input
+      type="time"
+      name="send_time[]"
+      required>
+
+    <button
+      type="button"
+      class="btn-small remove-time"
+      style="display:none;">
+      Remove
+    </button>
+  </div>
+</div>
+
+<button
+  type="button"
+  class="btn-small"
+  id="addTimeBtn">
+  + Add Send Time
+</button>
+
+<br><br>
 
         <div id="itemsWrap">
           <div class="item-box">
@@ -346,9 +402,21 @@
         <div class="vault-head">
           <div>
             <b>{{ v[1] }}</b>
-            <div class="muted">
-              Mode: {{ v[2] }} | Time: {{ v[3] }} | Last sent: {{ v[5] or "-" }}
-            </div>
+<div class="muted">
+  Mode: {{ v[2] }}
+</div>
+
+<div class="time-list">
+  {% for schedule in times_by_vault.get(v[0], []) %}
+    <span class="time-badge">
+      {{ schedule.send_time }}
+    </span>
+  {% else %}
+    <span class="time-badge">
+      {{ v[3] }}
+    </span>
+  {% endfor %}
+</div>
           </div>
 
           <div>
@@ -457,6 +525,60 @@ document.querySelectorAll("form").forEach(form => {
 const mode = document.getElementById("mode");
 const itemsWrap = document.getElementById("itemsWrap");
 const addItemBtn = document.getElementById("addItemBtn");
+  const timesWrap = document.getElementById("timesWrap");
+const addTimeBtn = document.getElementById("addTimeBtn");
+
+function updateTimeRemoveButtons(){
+  const rows = timesWrap.querySelectorAll(".time-row");
+
+  rows.forEach(row => {
+    const removeBtn = row.querySelector(".remove-time");
+
+    removeBtn.style.display =
+      rows.length > 1 ? "inline-block" : "none";
+  });
+}
+
+function bindTimeRemoveButtons(){
+  timesWrap.querySelectorAll(".remove-time").forEach(btn => {
+    btn.onclick = function(){
+      const rows = timesWrap.querySelectorAll(".time-row");
+
+      if(rows.length <= 1){
+        return;
+      }
+
+      this.closest(".time-row").remove();
+      updateTimeRemoveButtons();
+    };
+  });
+}
+
+addTimeBtn.addEventListener("click", function(){
+  const row = document.createElement("div");
+  row.className = "time-row";
+
+  row.innerHTML = `
+    <input
+      type="time"
+      name="send_time[]"
+      required>
+
+    <button
+      type="button"
+      class="btn-small remove-time">
+      Remove
+    </button>
+  `;
+
+  timesWrap.appendChild(row);
+
+  bindTimeRemoveButtons();
+  updateTimeRemoveButtons();
+});
+
+bindTimeRemoveButtons();
+updateTimeRemoveButtons();
 
 function refreshMode(){
   if(mode.value === "fixed"){
