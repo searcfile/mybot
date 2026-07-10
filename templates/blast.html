@@ -133,7 +133,34 @@
     .preview-card{background:rgba(0,0,0,.22);border-radius:10px;padding:8px}
     .preview-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
     .muted{opacity:.65;font-size:12px}
-    @media(max-width:900px){.grid{grid-template-columns:1fr}.container{padding:12px}.nav a{margin-left:4px;padding:8px}}
+    @media(max-width:900px){
+  .grid{
+    grid-template-columns:minmax(0, 1fr);
+  }
+
+  .container{
+    padding:12px;
+  }
+
+  .nav a{
+    margin-left:4px;
+    padding:8px;
+  }
+
+  .saved-vaults-card{
+    height:auto;
+    max-height:none;
+  }
+
+  .vault-scroll{
+    max-height:620px;
+    overflow-y:auto;
+  }
+
+  .preview{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
     @media (max-width: 768px) {
   .topbar {
     height: 64px;
@@ -173,6 +200,58 @@
   .nav-icon {
     width: 19.2px;
     height: 19.2px;
+  }
+  .saved-vaults-card{
+  padding:12px;
+}
+
+.vault-scroll{
+  max-height:520px;
+}
+
+.vault{
+  padding:12px;
+}
+
+.vault-head{
+  align-items:flex-start;
+}
+
+.preview{
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:8px;
+}
+
+.preview-card img{
+  height:100px;
+}
+
+.btn-small{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:6px;
+}
+}
+@media(max-width:480px){
+  .preview{
+    grid-template-columns:1fr;
+  }
+
+  .vault-head{
+    flex-direction:column;
+  }
+
+  .vault-head .badge{
+    align-self:flex-start;
+  }
+
+  .time-row{
+    align-items:stretch;
+  }
+
+  .time-row .remove-time{
+    width:auto;
   }
 }
 .label-required::before {
@@ -277,6 +356,79 @@
   color:#38bdf8;
   font-size:12px;
 }
+html,
+body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+.grid{
+  min-width:0;
+  align-items:start;
+}
+
+.card{
+  min-width:0;
+  box-sizing:border-box;
+}
+
+.saved-vaults-card{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  height:calc(100vh - 105px);
+}
+
+.saved-vaults-card > h3{
+  flex-shrink:0;
+  margin-bottom:12px;
+}
+
+.vault-scroll{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:6px;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+
+.vault-scroll::-webkit-scrollbar{
+  width:6px;
+}
+
+.vault-scroll::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.vault-scroll::-webkit-scrollbar-thumb{
+  background:#4b5563;
+  border-radius:10px;
+}
+
+.vault-scroll::-webkit-scrollbar-thumb:hover{
+  background:#6b7280;
+}
+
+.vault{
+  min-width:0;
+}
+
+.preview{
+  min-width:0;
+}
+
+.preview-card{
+  min-width:0;
+  overflow:hidden;
+}
+
+.preview-card .muted{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
   </style>
 </head>
 <body>
@@ -338,8 +490,10 @@
 <div class="container">
   <div class="grid">
 
-    <div class="card">
-      <h3>➕ Create Blast Vault</h3>
+<div class="card saved-vaults-card">
+  <h3>📋 Saved Blast Vaults</h3>
+
+  <div class="vault-scroll">
 
       <form method="POST" action="/admin/blast" id="blastForm">
         <label class="label-required">Vault Name</label>
@@ -461,7 +615,9 @@
       {% else %}
         <p class="muted">No blast vault yet.</p>
       {% endfor %}
-    </div>
+
+  </div>
+</div>
 
   </div>
 </div>
