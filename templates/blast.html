@@ -156,9 +156,6 @@ body{
     .vault-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
     .badge{font-size:12px;padding:4px 8px;border-radius:999px;background:#1668dc}
     .off{background:#6b7280}
-    .preview{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-    .preview-card{background:rgba(0,0,0,.22);border-radius:10px;padding:8px}
-    .preview-card img{width:100%;height:90px;object-fit:cover;border-radius:8px}
     .muted{opacity:.65;font-size:12px}
  @media(max-width:900px){
   .grid{
@@ -243,12 +240,8 @@ body{
   align-items:flex-start;
 }
 
-.preview{
-  grid-template-columns:repeat(2, minmax(0, 1fr));
-  gap:8px;
-}
 
-.preview-card img{
+.preview-image-box{
   height:100px;
 }
 
@@ -441,20 +434,6 @@ body{
   min-width:0;
 }
 
-.preview{
-  min-width:0;
-}
-
-.preview-card{
-  min-width:0;
-  overflow:hidden;
-}
-
-.preview-card .muted{
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
 .create-vault-card{
   min-width:0;
 }
@@ -499,61 +478,6 @@ body{
   margin-top:12px;
 }
 
-.preview{
-  width:100%;
-  min-width:0;
-  margin-top:10px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
-  gap:10px;
-}
-
-.preview-card{
-  min-width:0;
-  overflow:hidden;
-  background:rgba(0,0,0,.22);
-  border-radius:10px;
-  padding:8px;
-}
-
-.preview-card img{
-  width:100%;
-  height:110px;
-  object-fit:cover;
-  display:block;
-  border-radius:8px;
-}
-
-.preview-card .muted{
-  margin-top:6px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.preview-card{
-  position:relative;
-  cursor:pointer;
-}
-
-.preview-card img{
-  transition:transform .25s ease, filter .25s ease;
-}
-
-.preview-hover{
-  position:absolute;
-  inset:8px 8px 32px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  border-radius:8px;
-  background:rgba(0,0,0,.62);
-  color:#fff;
-  opacity:0;
-  transform:scale(.97);
-  transition:all .25s ease;
-  pointer-events:none;
-}
 
 .preview-hover svg{
   width:20px;
@@ -679,6 +603,95 @@ body.modal-open{
   .preview-modal-body{
     padding:14px;
   }
+}
+.preview{
+  width:100%;
+  min-width:0;
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(
+    auto-fill,
+    minmax(150px, 1fr)
+  );
+  gap:10px;
+}
+
+.preview-card{
+  appearance:none;
+  width:100%;
+  min-width:0;
+  margin:0;
+  padding:8px;
+  border:0;
+  border-radius:10px;
+  background:rgba(0,0,0,.22);
+  color:#fff;
+  text-align:left;
+  cursor:pointer;
+  overflow:hidden;
+  box-sizing:border-box;
+}
+
+.preview-image-box{
+  position:relative;
+  width:100%;
+  height:110px;
+  overflow:hidden;
+  border-radius:8px;
+  background:#07182f;
+}
+
+.preview-image-box img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:
+    transform .25s ease,
+    filter .25s ease;
+}
+
+.preview-hover{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  background:rgba(0,0,0,.62);
+  color:#fff;
+  opacity:0;
+  transition:opacity .25s ease;
+  pointer-events:none;
+}
+
+.preview-hover svg{
+  width:20px;
+  height:20px;
+  fill:currentColor;
+}
+
+.preview-hover span{
+  font-size:13px;
+  font-weight:600;
+}
+
+.preview-card:hover .preview-hover,
+.preview-card:focus-visible .preview-hover{
+  opacity:1;
+}
+
+.preview-card:hover .preview-image-box img{
+  transform:scale(1.04);
+  filter:brightness(.75);
+}
+
+.preview-caption{
+  margin-top:6px;
+  display:block;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
   </style>
 </head>
@@ -888,38 +901,44 @@ body.modal-open{
             </a>
           </div>
 
-          <div class="preview">
-            {% for it in items %}
-              {% if it[1] == v[0] %}
-<div
-  class="preview-card"
-  data-image="{{ it[2] or '' }}"
-  data-caption="{{ it[3] | e }}">
+<div class="preview">
+  {% for it in items %}
+    {% if it[1] == v[0] %}
 
-  {% if it[2] %}
-    <img
-      src="{{ it[2] }}"
-      alt="Blast banner">
-  {% endif %}
+      <button
+        type="button"
+        class="preview-card"
+        data-image="{{ it[2] or '' }}"
+        data-caption="{{ it[3] | e }}">
 
-  <div class="preview-hover">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
-    </svg>
+        <div class="preview-image-box">
 
-    <span>Preview</span>
-  </div>
+          {% if it[2] %}
+            <img
+              src="{{ it[2] }}"
+              alt="Blast banner">
+          {% endif %}
 
-  <div class="muted preview-caption">
-    {{ it[3][:80] }}...
-  </div>
+          <div class="preview-hover">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5c-5 0-9 4.5-10 7 1 2.5 5 7 10 7s9-4.5 10-7c-1-2.5-5-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+            </svg>
 
-</div>
-
-                </div>
-              {% endif %}
-            {% endfor %}
+            <span>Preview</span>
           </div>
+
+        </div>
+
+        <div class="muted preview-caption">
+          {{ it[3][:80] }}
+          {% if it[3]|length > 80 %}...{% endif %}
+        </div>
+
+      </button>
+
+    {% endif %}
+  {% endfor %}
+</div>
 
         </div>
 
