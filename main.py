@@ -1688,7 +1688,9 @@ def start_bot_once():
 
 if os.getenv("BOT_DISABLE") != "1":
     start_bot_once()
-
+    
+blast_thread = threading.Thread(target=blast_scheduler, daemon=True)
+blast_thread.start()
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
