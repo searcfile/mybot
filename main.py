@@ -7,6 +7,7 @@ import cloudinary.uploader
 import re
 import secrets
 import string
+import json
 from zoneinfo import ZoneInfo
 
 from urllib.request import urlopen
@@ -294,7 +295,17 @@ def init_db():
             caption TEXT NOT NULL
         )
     """)
-
+    # inline buttons for each blast item
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS blast_item_buttons (
+            id SERIAL PRIMARY KEY,
+            item_id INT REFERENCES blast_items(id) ON DELETE CASCADE,
+            text TEXT NOT NULL,
+            button_type TEXT NOT NULL,
+            button_value TEXT,
+            sort_order INT DEFAULT 0
+        )
+    """)
     # multiple blast send times
     cur.execute("""
         CREATE TABLE IF NOT EXISTS blast_times (
@@ -1396,7 +1407,73 @@ async def send_blast_to_all(image_url, caption):
         f"[BLAST FINISHED] "
         f"Success={success_count}, Failed={failed_count}"
     )
+    
+def get_blast_item_keyboard(item_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
 
+    cur.execute("""
+        SELECT
+            text,
+            button_type,
+            button_value
+        FROM blast_item_buttons
+        WHERE item_id=%s
+        ORDER BY sort_order ASC, id ASC
+    """, (item_id,))
+
+    buttons = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    if not buttons:
+        return None
+
+    keyboard = []
+    current_row = []
+
+    for text, button_type, button_value in buttons:
+        text = (text or "").strip()
+        button_type = (button_type or "").strip()
+        button_value = (button_value or "").strip()
+
+        if not text:
+            continue
+
+        if button_type == "url":
+            if not button_value.startswith(("https://", "http://")):
+                continue
+
+            telegram_button = InlineKeyboardButton(
+                text=text,
+                url=button_value
+            )
+
+        elif button_type == "menu":
+            telegram_button = InlineKeyboardButton(
+                text=text,
+                callback_data="open_menu"
+            )
+
+        else:
+            continue
+
+        current_row.append(telegram_button)
+
+        # dua tombol setiap baris
+        if len(current_row) == 2:
+            keyboard.append(current_row)
+            current_row = []
+
+    if current_row:
+        keyboard.append(current_row)
+
+    if not keyboard:
+        return None
+
+    return InlineKeyboardMarkup(keyboard)
+    
 @flask_app.route("/admin/blast", methods=["GET", "POST"])
 def admin_blast():
     if not require_login():
