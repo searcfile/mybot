@@ -1312,7 +1312,131 @@ def admin_broadcast():
     ).start()
 
     return redirect("/admin/users")
+    
+def get_all_user_ids():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT telegram_id FROM users ORDER BY first_seen DESC")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rows
 
+
+async def send_blast_to_all(image_url, caption):
+    bot_app = Application.builder().token(BOT_TOKEN).build()
+    bot = bot_app.bot
+    users = get_all_user_ids()
+    text = convert_markdown_bold_to_html(caption)
+
+    for u in users:
+        try:
+            if image_url:
+                await bot.send_photo(
+                    chat_id=u[0],
+                    photo=image_url,
+                    caption=text,
+                    parse_mode="HTML"
+                )
+            else:
+                await bot.send_message(
+                    chat_id=u[0],
+                    text=text,
+                    parse_mode="HTML"
+                )
+        except Exception as e:
+            print("Auto blast failed:", u[0], e)
+
+@flask_app.route("/admin/blast", methods=["GET", "POST"])
+def admin_blast():
+    if not require_login():
+        return redirect("/admin/login")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        mode = request.form.get("mode", "random").strip()
+        send_time = request.form.get("send_time", "").strip()
+
+        captions = request.form.getlist("caption[]")
+        images = request.form.getlist("image_url[]")
+
+        if not name or not send_time:
+            return redirect("/admin/blast")
+
+        cur.execute("""
+            INSERT INTO blast_vaults (name, mode, send_time, is_active)
+            VALUES (%s, %s, %s, TRUE)
+            RETURNING id
+        """, (name, mode, send_time))
+
+        vault_id = cur.fetchone()[0]
+
+        for image_url, caption in zip(images, captions):
+            image_url = image_url.strip()
+            caption = caption.strip()
+
+            if caption:
+                cur.execute("""
+                    INSERT INTO blast_items (vault_id, image_url, caption)
+                    VALUES (%s, %s, %s)
+                """, (vault_id, image_url, caption))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect("/admin/blast")
+
+    cur.execute("""
+        SELECT id, name, mode, send_time, is_active, last_sent_date
+        FROM blast_vaults
+        ORDER BY id DESC
+    """)
+    vaults = cur.fetchall()
+
+    cur.execute("""
+        SELECT id, vault_id, image_url, caption
+        FROM blast_items
+        ORDER BY id ASC
+    """)
+    items = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template("blast.html", vaults=vaults, items=items)
+
+
+@flask_app.route("/admin/blast/delete/<int:vault_id>")
+def admin_blast_delete(vault_id):
+    if not require_login():
+        return redirect("/admin/login")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM blast_vaults WHERE id=%s", (vault_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/admin/blast")
+
+
+@flask_app.route("/admin/blast/toggle/<int:vault_id>")
+def admin_blast_toggle(vault_id):
+    if not require_login():
+        return redirect("/admin/login")
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE blast_vaults SET is_active = NOT is_active WHERE id=%s", (vault_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return redirect("/admin/blast")
 # =========================
 # PROMO EDIT + BUTTONS
 # =========================
@@ -1485,7 +1609,65 @@ def upload_banner():
         print("UPLOAD ERROR:", e)
         return f"Internal Error: {str(e)}", 500
 
+def blast_scheduler():
+    import time
+    import random
+    from datetime import datetime
 
+    while True:
+        try:
+            now = datetime.now()
+            today = now.strftime("%Y-%m-%d")
+            current_time = now.strftime("%H:%M")
+
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            cur.execute("""
+                SELECT id, mode, send_time, last_sent_date
+                FROM blast_vaults
+                WHERE is_active=TRUE
+            """)
+            vaults = cur.fetchall()
+
+            for vault_id, mode, send_time, last_sent_date in vaults:
+                if send_time != current_time:
+                    continue
+
+                if last_sent_date == today:
+                    continue
+
+                cur.execute("""
+                    SELECT image_url, caption
+                    FROM blast_items
+                    WHERE vault_id=%s
+                """, (vault_id,))
+                items = cur.fetchall()
+
+                if not items:
+                    continue
+
+                if mode == "random":
+                    image_url, caption = random.choice(items)
+                else:
+                    image_url, caption = items[0]
+
+                asyncio.run(send_blast_to_all(image_url, caption))
+
+                cur.execute("""
+                    UPDATE blast_vaults
+                    SET last_sent_date=%s
+                    WHERE id=%s
+                """, (today, vault_id))
+                conn.commit()
+
+            cur.close()
+            conn.close()
+
+        except Exception as e:
+            print("Blast scheduler error:", e)
+
+        time.sleep(60)
 # =========================
 # START SYSTEM
 # =========================
