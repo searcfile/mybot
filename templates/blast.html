@@ -183,6 +183,15 @@ body{
     margin-left:4px;
     padding:8px;
   }
+    .create-vault-card{
+    height:auto;
+    min-height:0;
+    overflow:visible;
+  }
+
+  .items-scroll{
+    max-height:520px;
+  }
 }
     @media (max-width: 768px) {
   .topbar {
@@ -271,6 +280,10 @@ body{
 
   .time-row .remove-time{
     width:auto;
+  }
+    .items-scroll{
+    max-height:430px;
+    padding-right:4px;
   }
 }
 .label-required::before {
@@ -758,6 +771,67 @@ body.modal-open{
     width:100%;
   }
 }
+.create-vault-card{
+  display:flex;
+  flex-direction:column;
+  height:calc(100vh - 105px);
+  min-height:560px;
+  overflow:hidden;
+}
+
+.create-vault-card > h3{
+  flex-shrink:0;
+}
+
+.create-vault-card form{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+}
+
+.items-scroll{
+  flex:1;
+  min-height:180px;
+  max-height:430px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding-right:6px;
+  margin-bottom:10px;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+
+.items-scroll::-webkit-scrollbar{
+  width:6px;
+}
+
+.items-scroll::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.items-scroll::-webkit-scrollbar-thumb{
+  background:#4b5563;
+  border-radius:10px;
+}
+
+.items-scroll::-webkit-scrollbar-thumb:hover{
+  background:#6b7280;
+}
+
+#itemsWrap{
+  width:100%;
+  min-width:0;
+}
+
+#addItemBtn{
+  flex-shrink:0;
+  align-self:flex-start;
+}
+
+.create-vault-card .btn[type="submit"]{
+  flex-shrink:0;
+}
   </style>
 </head>
 <body>
@@ -865,8 +939,9 @@ body.modal-open{
 
         <br><br>
 
-        <div id="itemsWrap">
-          <div class="item-box">
+<div class="items-scroll">
+  <div id="itemsWrap">
+    <div class="item-box">
 
             <label class="label-required">
               Banner Image URL
@@ -907,6 +982,7 @@ body.modal-open{
 
           </div>
         </div>
+      </div>
 
         <button
           type="button"
