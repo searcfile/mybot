@@ -7,6 +7,7 @@ import cloudinary.uploader
 import re
 import secrets
 import string
+from zoneinfo import ZoneInfo
 
 from urllib.request import urlopen
 
@@ -1328,6 +1329,11 @@ async def send_blast_to_all(image_url, caption):
     users = get_all_user_ids()
     text = convert_markdown_bold_to_html(caption)
 
+    print(f"[BLAST USERS] Total target users: {len(users)}")
+
+    success_count = 0
+    failed_count = 0
+
     async with Bot(token=BOT_TOKEN) as bot:
         for user in users:
             telegram_id = user[0]
@@ -1347,12 +1353,20 @@ async def send_blast_to_all(image_url, caption):
                         parse_mode="HTML"
                     )
 
+                success_count += 1
+                print(f"[BLAST USER SUCCESS] {telegram_id}")
+
             except Exception as e:
+                failed_count += 1
                 print(
-                    "Auto blast failed:",
-                    telegram_id,
-                    e
+                    f"[BLAST USER FAILED] {telegram_id}: "
+                    f"{type(e).__name__}: {e}"
                 )
+
+    print(
+        f"[BLAST FINISHED] "
+        f"Success={success_count}, Failed={failed_count}"
+    )
 
 @flask_app.route("/admin/blast", methods=["GET", "POST"])
 def admin_blast():
@@ -1760,37 +1774,84 @@ def blast_scheduler():
     import random
     from datetime import datetime
 
+    malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
+
     while True:
+        conn = None
+        cur = None
+
         try:
-            now = datetime.now()
+            now = datetime.now(malaysia_tz)
             today = now.strftime("%Y-%m-%d")
             current_time = now.strftime("%H:%M")
+
+            print(
+                f"[BLAST CHECK] Malaysia time: "
+                f"{today} {current_time}"
+            )
 
             conn = get_db_connection()
             cur = conn.cursor()
 
             cur.execute("""
-                SELECT id, mode, send_time, last_sent_date
+                SELECT
+                    id,
+                    name,
+                    mode,
+                    send_time,
+                    last_sent_date
                 FROM blast_vaults
-                WHERE is_active=TRUE
+                WHERE is_active = TRUE
+                ORDER BY id ASC
             """)
+
             vaults = cur.fetchall()
 
-            for vault_id, mode, send_time, last_sent_date in vaults:
-                if send_time != current_time:
+            for (
+                vault_id,
+                vault_name,
+                mode,
+                send_time,
+                last_sent_date
+            ) in vaults:
+
+                saved_time = str(send_time or "").strip()[:5]
+                last_sent = str(last_sent_date or "").strip()
+
+                print(
+                    f"[BLAST VAULT] "
+                    f"id={vault_id}, "
+                    f"name={vault_name}, "
+                    f"mode={mode}, "
+                    f"saved_time={saved_time}, "
+                    f"now={current_time}, "
+                    f"last_sent={last_sent}"
+                )
+
+                if saved_time != current_time:
                     continue
 
-                if last_sent_date == today:
+                if last_sent == today:
+                    print(
+                        f"[BLAST SKIP] Vault {vault_id} "
+                        f"already sent today"
+                    )
                     continue
 
                 cur.execute("""
                     SELECT image_url, caption
                     FROM blast_items
-                    WHERE vault_id=%s
+                    WHERE vault_id = %s
+                    ORDER BY id ASC
                 """, (vault_id,))
+
                 items = cur.fetchall()
 
                 if not items:
+                    print(
+                        f"[BLAST SKIP] Vault {vault_id} "
+                        f"has no banner/caption"
+                    )
                     continue
 
                 if mode == "random":
@@ -1798,20 +1859,50 @@ def blast_scheduler():
                 else:
                     image_url, caption = items[0]
 
-                asyncio.run(send_blast_to_all(image_url, caption))
+                print(
+                    f"[BLAST SEND] Sending vault "
+                    f"{vault_id}: {vault_name}"
+                )
+
+                asyncio.run(
+                    send_blast_to_all(
+                        image_url,
+                        caption
+                    )
+                )
 
                 cur.execute("""
                     UPDATE blast_vaults
-                    SET last_sent_date=%s
-                    WHERE id=%s
-                """, (today, vault_id))
+                    SET last_sent_date = %s
+                    WHERE id = %s
+                """, (
+                    today,
+                    vault_id
+                ))
+
                 conn.commit()
 
-            cur.close()
-            conn.close()
+                print(
+                    f"[BLAST SUCCESS] Vault {vault_id} "
+                    f"marked as sent"
+                )
 
         except Exception as e:
-            print("Blast scheduler error:", e)
+            print(
+                "[BLAST SCHEDULER ERROR]",
+                type(e).__name__,
+                str(e)
+            )
+
+            if conn:
+                conn.rollback()
+
+        finally:
+            if cur:
+                cur.close()
+
+            if conn:
+                conn.close()
 
         time.sleep(15)
 
