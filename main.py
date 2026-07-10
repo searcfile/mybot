@@ -2240,14 +2240,14 @@ def blast_scheduler():
                     continue
 
                 cur.execute("""
-    SELECT
-        id,
-        image_url,
-        caption
-    FROM blast_items
-    WHERE vault_id=%s
-    ORDER BY id ASC
-""", (vault_id,))
+                    SELECT
+                        id,
+                        image_url,
+                        caption
+                    FROM blast_items
+                    WHERE vault_id=%s
+                    ORDER BY id ASC
+                """, (vault_id,))
 
                 items = cur.fetchall()
 
@@ -2259,9 +2259,9 @@ def blast_scheduler():
                     continue
 
                 if mode == "random":
-    item_id, image_url, caption = random.choice(items)
-else:
-    item_id, image_url, caption = items[0]
+                    item_id, image_url, caption = random.choice(items)
+                else:
+                    item_id, image_url, caption = items[0]
 
                 print(
                     f"[BLAST SEND] "
@@ -2270,12 +2270,12 @@ else:
                 )
 
                 asyncio.run(
-    send_blast_to_all(
-        item_id,
-        image_url,
-        caption
-    )
-)
+                    send_blast_to_all(
+                        item_id,
+                        image_url,
+                        caption
+                    )
+                )
 
                 cur.execute("""
                     UPDATE blast_times
