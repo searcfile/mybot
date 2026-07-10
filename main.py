@@ -294,6 +294,34 @@ def init_db():
             caption TEXT NOT NULL
         )
     """)
+
+    # multiple blast send times
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS blast_times (
+        id SERIAL PRIMARY KEY,
+        vault_id INT REFERENCES blast_vaults(id) ON DELETE CASCADE,
+        send_time TEXT NOT NULL,
+        last_sent_date TEXT,
+        UNIQUE(vault_id, send_time)
+    )
+""")
+
+# migrate old single send_time into blast_times
+cur.execute("""
+    INSERT INTO blast_times (
+        vault_id,
+        send_time,
+        last_sent_date
+    )
+    SELECT
+        id,
+        send_time,
+        last_sent_date
+    FROM blast_vaults
+    WHERE send_time IS NOT NULL
+      AND send_time <> ''
+    ON CONFLICT (vault_id, send_time) DO NOTHING
+""")
     conn.commit()
 
     # =========================
@@ -1379,7 +1407,15 @@ def admin_blast():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         mode = request.form.get("mode", "random").strip()
-        send_time = request.form.get("send_time", "").strip()
+
+        send_times = [
+            value.strip()
+            for value in request.form.getlist("send_time[]")
+            if value.strip()
+        ]
+
+        # remove duplicate times, keep order
+        send_times = list(dict.fromkeys(send_times))
 
         captions = request.form.getlist("caption[]")
         images = request.form.getlist("image_url[]")
@@ -1393,27 +1429,50 @@ def admin_blast():
             if caption:
                 valid_items.append((image_url, caption))
 
-        if not name or not send_time or not valid_items:
+        if (
+            not name
+            or not send_times
+            or not valid_items
+            or mode not in ("random", "fixed")
+        ):
             cur.close()
             conn.close()
             return redirect("/admin/blast")
+
+        # keep first time in old column for compatibility
+        first_time = send_times[0]
 
         cur.execute("""
             INSERT INTO blast_vaults (
                 name,
                 mode,
                 send_time,
-                is_active
+                is_active,
+                last_sent_date
             )
-            VALUES (%s, %s, %s, TRUE)
+            VALUES (%s, %s, %s, TRUE, NULL)
             RETURNING id
         """, (
             name,
             mode,
-            send_time
+            first_time
         ))
 
         vault_id = cur.fetchone()[0]
+
+        for send_time in send_times:
+            cur.execute("""
+                INSERT INTO blast_times (
+                    vault_id,
+                    send_time,
+                    last_sent_date
+                )
+                VALUES (%s, %s, NULL)
+                ON CONFLICT (vault_id, send_time) DO NOTHING
+            """, (
+                vault_id,
+                send_time
+            ))
 
         for image_url, caption in valid_items:
             cur.execute("""
@@ -1446,7 +1505,6 @@ def admin_blast():
         FROM blast_vaults
         ORDER BY id DESC
     """)
-
     vaults = cur.fetchall()
 
     cur.execute("""
@@ -1458,16 +1516,38 @@ def admin_blast():
         FROM blast_items
         ORDER BY id ASC
     """)
-
     items = cur.fetchall()
+
+    cur.execute("""
+        SELECT
+            id,
+            vault_id,
+            send_time,
+            last_sent_date
+        FROM blast_times
+        ORDER BY send_time ASC
+    """)
+    blast_times = cur.fetchall()
 
     cur.close()
     conn.close()
 
+    times_by_vault = {}
+
+    for time_row in blast_times:
+        time_id, vault_id, send_time, last_sent_date = time_row
+
+        times_by_vault.setdefault(vault_id, []).append({
+            "id": time_id,
+            "send_time": send_time,
+            "last_sent_date": last_sent_date
+        })
+
     return render_template(
         "blast.html",
         vaults=vaults,
-        items=items
+        items=items,
+        times_by_vault=times_by_vault
     )
 
 
@@ -1511,7 +1591,14 @@ def admin_blast_edit(vault_id):
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         mode = request.form.get("mode", "random").strip()
-        send_time = request.form.get("send_time", "").strip()
+
+        send_times = [
+            value.strip()
+            for value in request.form.getlist("send_time[]")
+            if value.strip()
+        ]
+
+        send_times = list(dict.fromkeys(send_times))
 
         images = request.form.getlist("image_url[]")
         captions = request.form.getlist("caption[]")
@@ -1525,14 +1612,22 @@ def admin_blast_edit(vault_id):
             if caption:
                 valid_items.append((image_url, caption))
 
-        if not name or not send_time or not valid_items:
+        if (
+            not name
+            or not send_times
+            or not valid_items
+            or mode not in ("random", "fixed")
+        ):
             cur.close()
             conn.close()
             return redirect(f"/admin/blast/edit/{vault_id}")
 
+        first_time = send_times[0]
+
         cur.execute("""
             UPDATE blast_vaults
-            SET name=%s,
+            SET
+                name=%s,
                 mode=%s,
                 send_time=%s,
                 last_sent_date=NULL
@@ -1540,10 +1635,30 @@ def admin_blast_edit(vault_id):
         """, (
             name,
             mode,
-            send_time,
+            first_time,
             vault_id
         ))
 
+        # replace all scheduled times
+        cur.execute("""
+            DELETE FROM blast_times
+            WHERE vault_id=%s
+        """, (vault_id,))
+
+        for send_time in send_times:
+            cur.execute("""
+                INSERT INTO blast_times (
+                    vault_id,
+                    send_time,
+                    last_sent_date
+                )
+                VALUES (%s, %s, NULL)
+            """, (
+                vault_id,
+                send_time
+            ))
+
+        # replace all banner/caption items
         cur.execute("""
             DELETE FROM blast_items
             WHERE vault_id=%s
@@ -1570,32 +1685,52 @@ def admin_blast_edit(vault_id):
         return redirect("/admin/blast")
 
     cur.execute("""
-        SELECT id, name, mode, send_time, is_active
+        SELECT
+            id,
+            name,
+            mode,
+            send_time,
+            is_active
         FROM blast_vaults
         WHERE id=%s
     """, (vault_id,))
-
     vault = cur.fetchone()
 
+    if not vault:
+        cur.close()
+        conn.close()
+        return redirect("/admin/blast")
+
     cur.execute("""
-        SELECT id, image_url, caption
+        SELECT
+            id,
+            image_url,
+            caption
         FROM blast_items
         WHERE vault_id=%s
         ORDER BY id ASC
     """, (vault_id,))
-
     items = cur.fetchall()
+
+    cur.execute("""
+        SELECT
+            id,
+            send_time,
+            last_sent_date
+        FROM blast_times
+        WHERE vault_id=%s
+        ORDER BY send_time ASC
+    """, (vault_id,))
+    blast_times = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    if not vault:
-        return redirect("/admin/blast")
-
     return render_template(
         "blast_edit.html",
         vault=vault,
-        items=items
+        items=items,
+        blast_times=blast_times
     )
 # =========================
 # PROMO EDIT + BUTTONS
@@ -1785,63 +1920,48 @@ def blast_scheduler():
             today = now.strftime("%Y-%m-%d")
             current_time = now.strftime("%H:%M")
 
-            print(
-                f"[BLAST CHECK] Malaysia time: "
-                f"{today} {current_time}"
-            )
-
             conn = get_db_connection()
             cur = conn.cursor()
 
             cur.execute("""
                 SELECT
-                    id,
-                    name,
-                    mode,
-                    send_time,
-                    last_sent_date
-                FROM blast_vaults
-                WHERE is_active = TRUE
-                ORDER BY id ASC
+                    bt.id,
+                    bt.vault_id,
+                    bt.send_time,
+                    bt.last_sent_date,
+                    bv.name,
+                    bv.mode
+                FROM blast_times bt
+                JOIN blast_vaults bv
+                    ON bv.id = bt.vault_id
+                WHERE bv.is_active = TRUE
+                ORDER BY bt.id ASC
             """)
 
-            vaults = cur.fetchall()
+            schedules = cur.fetchall()
 
             for (
+                time_id,
                 vault_id,
-                vault_name,
-                mode,
                 send_time,
-                last_sent_date
-            ) in vaults:
+                last_sent_date,
+                vault_name,
+                mode
+            ) in schedules:
 
                 saved_time = str(send_time or "").strip()[:5]
                 last_sent = str(last_sent_date or "").strip()
-
-                print(
-                    f"[BLAST VAULT] "
-                    f"id={vault_id}, "
-                    f"name={vault_name}, "
-                    f"mode={mode}, "
-                    f"saved_time={saved_time}, "
-                    f"now={current_time}, "
-                    f"last_sent={last_sent}"
-                )
 
                 if saved_time != current_time:
                     continue
 
                 if last_sent == today:
-                    print(
-                        f"[BLAST SKIP] Vault {vault_id} "
-                        f"already sent today"
-                    )
                     continue
 
                 cur.execute("""
                     SELECT image_url, caption
                     FROM blast_items
-                    WHERE vault_id = %s
+                    WHERE vault_id=%s
                     ORDER BY id ASC
                 """, (vault_id,))
 
@@ -1850,7 +1970,7 @@ def blast_scheduler():
                 if not items:
                     print(
                         f"[BLAST SKIP] Vault {vault_id} "
-                        f"has no banner/caption"
+                        f"has no items"
                     )
                     continue
 
@@ -1860,8 +1980,9 @@ def blast_scheduler():
                     image_url, caption = items[0]
 
                 print(
-                    f"[BLAST SEND] Sending vault "
-                    f"{vault_id}: {vault_name}"
+                    f"[BLAST SEND] "
+                    f"Vault={vault_name}, "
+                    f"Time={saved_time}"
                 )
 
                 asyncio.run(
@@ -1872,19 +1993,20 @@ def blast_scheduler():
                 )
 
                 cur.execute("""
-                    UPDATE blast_vaults
-                    SET last_sent_date = %s
-                    WHERE id = %s
+                    UPDATE blast_times
+                    SET last_sent_date=%s
+                    WHERE id=%s
                 """, (
                     today,
-                    vault_id
+                    time_id
                 ))
 
                 conn.commit()
 
                 print(
-                    f"[BLAST SUCCESS] Vault {vault_id} "
-                    f"marked as sent"
+                    f"[BLAST SUCCESS] "
+                    f"Vault={vault_name}, "
+                    f"Time={saved_time}"
                 )
 
         except Exception as e:
