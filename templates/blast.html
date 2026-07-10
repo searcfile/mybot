@@ -176,6 +176,15 @@
     height: 19.2px;
   }
 }
+.label-required::before {
+    content: "*";
+    display: inline-block;
+    margin-right: 4px;
+    color: #dc4446;
+    font-size: 14px;
+    font-family: SimSun, sans-serif;
+    line-height: 1;
+}
   </style>
 </head>
 <body>
@@ -227,24 +236,24 @@
       <h3>➕ Create Blast Vault</h3>
 
       <form method="POST" action="/admin/blast" id="blastForm">
-        <label>Vault Name</label>
+        <label class="label-required">Vault Name</label>
         <input type="text" name="name" placeholder="Example: Daily Promo Random" required>
 
-        <label>Mode</label>
+        <label class="label-required">Mode</label>
         <select name="mode" id="mode">
           <option value="random">Random Auto Blast</option>
           <option value="fixed">Fixed Auto Blast</option>
         </select>
 
-        <label>Daily Send Time</label>
+        <label class="label-required">Daily Send Time</label>
         <input type="time" name="send_time" required>
 
         <div id="itemsWrap">
           <div class="item-box">
-            <label>Banner Image URL</label>
+            <label class="label-required">Banner Image URL</label>
             <input type="text" name="image_url[]" placeholder="https://res.cloudinary.com/...">
 
-            <label>Caption</label>
+            <label class="label-required">Caption</label>
             <textarea name="caption[]" placeholder="Write caption..." required></textarea>
           </div>
         </div>
