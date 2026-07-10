@@ -2270,11 +2270,12 @@ else:
                 )
 
                 asyncio.run(
-                    send_blast_to_all(
-                        image_url,
-                        caption
-                    )
-                )
+    send_blast_to_all(
+        item_id,
+        image_url,
+        caption
+    )
+)
 
                 cur.execute("""
                     UPDATE blast_times
