@@ -103,8 +103,20 @@
 
         <br>
 
-        <a class="btn-small" href="/admin/blast/toggle/{{ v[0] }}">Enable / Disable</a>
-        <a class="btn-small" href="/admin/blast/delete/{{ v[0] }}" onclick="return confirm('Delete this vault?')">Delete</a>
+<a class="btn-small" href="/admin/blast/edit/{{ v[0] }}">
+  ✏️ Edit
+</a>
+
+<a class="btn-small" href="/admin/blast/toggle/{{ v[0] }}">
+  Enable / Disable
+</a>
+
+<a
+  class="btn-small"
+  href="/admin/blast/delete/{{ v[0] }}"
+  onclick="return confirm('Delete this vault?')">
+  Delete
+</a>
 
         <div class="preview">
           {% for it in items %}
