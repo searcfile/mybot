@@ -14,6 +14,41 @@
       color: white;
       font-size:14px;
     }
+:where(button, a, .btn, .select-selected,[tabindex]):focus-visible{
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 1px;
+  transition: outline-offset 0s, outline 0s;
+}
+   .select-selected:hover {
+      border-color: #16b7ff !important;
+     transition: all 0.3s;
+    }
+   /* #159edb */
+   .select-selected:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+     transition: all 0.3s;
+    }
+    input:hover {
+      border-color: #16b7ff !important;
+     transition: all 0.3s;
+    }
+   /* #159edb */
+   input:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+     transition: all 0.3s;
+    }
+      textarea:hover {
+      border-color: #16b7ff !important;
+     transition: all 0.3s;
+    }
+   /* #159edb */
+    textarea:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.25) !important;
+     transition: all 0.3s;
+    }
  label {
    font-size:12px;
    color: rgba(255,255,255,0.85);
@@ -107,11 +142,6 @@
       margin: 0 0 12px;
       color: #38bdf8;
       font-size: 16px;
-    }
-
-    label {
-      font-size: 13px;
-      opacity: 0.8;
     }
 
     textarea {
