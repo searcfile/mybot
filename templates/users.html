@@ -1488,8 +1488,6 @@ function setRange(start, end){
     "",
     url
   );
-
-  markActiveDatePreset();
   refreshUsersTable(true);
 }
 
@@ -1500,6 +1498,11 @@ flatpickr(dateRange, {
   defaultDate: startInput.value && endInput.value ? [startInput.value, endInput.value] : null,
   onChange: function(selectedDates){
     if(selectedDates.length === 2){
+          document
+      .querySelectorAll(".date-presets button")
+      .forEach(button => {
+        button.classList.remove("active");
+      });
       setRange(selectedDates[0], selectedDates[1]);
     }
   }
@@ -1507,6 +1510,13 @@ flatpickr(dateRange, {
 
 document.querySelectorAll(".date-presets button").forEach(btn => {
   btn.addEventListener("click", () => {
+    document
+  .querySelectorAll(".date-presets button")
+  .forEach(button => {
+    button.classList.remove("active");
+  });
+
+btn.classList.add("active");
     const now = new Date();
     let start = new Date();
     let end = new Date();
@@ -1570,8 +1580,7 @@ startInput.value = fmt(firstDay);
 endInput.value = fmt(lastDay);
 }
 
-dateRange.value = `${startInput.value} → ${endInput.value}`;
-markActiveDatePreset();
+dateRange.value =`${startInput.value} → ${endInput.value}`;
 const usersTableScroll = document.getElementById("usersTableScroll");
 
 usersTableScroll.addEventListener("wheel", function(e){
