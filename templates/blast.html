@@ -54,16 +54,137 @@ textarea:focus-visible{
    font-size:12px;
    color: rgba(255,255,255,0.85);
  }
-    .topbar {
-      padding:0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255,255,255,0.05);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      height:64px;
-      padding-inline: 16px;
-    }
+.topbar{
+  width:100%;
+  height:64px;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  box-sizing:border-box;
+  background:rgba(255,255,255,.05);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+    .topbar-user{
+  position:relative;
+  margin-left:auto;
+  flex-shrink:0;
+}
+
+.username-btn{
+  height:36px;
+  max-width:220px;
+  padding:0 11px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:8px;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.username-btn:hover{
+  color:#38bdf8;
+  border-color:#38bdf8;
+  background:rgba(56,189,248,.08);
+}
+
+.username-icon{
+  width:17px;
+  height:17px;
+  display:block;
+  fill:currentColor;
+  flex-shrink:0;
+}
+
+.username-text{
+  max-width:140px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.username-arrow{
+  width:12px;
+  height:12px;
+  display:block;
+  fill:currentColor;
+  flex-shrink:0;
+  transition:transform .25s ease;
+}
+
+.topbar-user.open .username-arrow{
+  transform:rotate(180deg);
+}
+
+.username-menu{
+  position:absolute;
+  top:calc(100% + 7px);
+  right:0;
+  z-index:100000;
+  display:none;
+  width:200px;
+  padding:6px;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;
+  background:#0b2344;
+  box-shadow:0 14px 35px rgba(0,0,0,.45);
+}
+
+.topbar-user.open .username-menu{
+  display:block;
+}
+
+.username-menu-info{
+  padding:9px 10px;
+  margin-bottom:5px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.username-menu-info span{
+  display:block;
+  color:rgba(255,255,255,.6);
+  font-size:12px;
+}
+
+.username-menu-info strong{
+  display:block;
+  margin-top:4px;
+  overflow:hidden;
+  color:#fff;
+  font-size:13px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.username-logout{
+  padding:8px 10px !important;
+  display:flex !important;
+  align-items:center;
+  gap:8px;
+  border-radius:6px !important;
+  color:#fff !important;
+  text-decoration:none;
+  transition:.2s;
+}
+
+.username-logout:hover{
+  background:#1668dc !important;
+}
+
+.username-logout svg{
+  width:17px;
+  height:17px;
+  display:block;
+  fill:currentColor;
+  flex-shrink:0;
+}
 
 .nav {
   display: flex;
@@ -219,9 +340,26 @@ body{
     white-space: nowrap;
     flex-shrink: 0;
   }
+  .topbar-user{
+    margin-left:auto;
+  }
 
+  .username-btn{
+    width:36px;
+    min-width:36px;
+    padding:0;
+  }
+
+  .username-text,
+  .username-arrow{
+    display:none;
+  }
+
+  .username-menu{
+    right:0;
+  }
   .nav {
-    margin-left: auto;
+    margin-left: 0;
     display: flex;
     flex-wrap: nowrap;
     gap: 7px;
@@ -2040,7 +2178,52 @@ document.addEventListener("keydown", function(event){
     closeDeleteModal();
   }
 });
-</script>
+const topbarUser =
+  document.getElementById("topbarUser");
 
+const usernameBtn =
+  document.getElementById("usernameBtn");
+
+const usernameMenu =
+  document.getElementById("usernameMenu");
+
+if(
+  topbarUser &&
+  usernameBtn &&
+  usernameMenu
+){
+  usernameBtn.addEventListener(
+    "click",
+    function(event){
+      event.stopPropagation();
+
+      topbarUser.classList.toggle("open");
+    }
+  );
+
+  usernameMenu.addEventListener(
+    "click",
+    function(event){
+      event.stopPropagation();
+    }
+  );
+
+  document.addEventListener(
+    "click",
+    function(){
+      topbarUser.classList.remove("open");
+    }
+  );
+
+  document.addEventListener(
+    "keydown",
+    function(event){
+      if(event.key === "Escape"){
+        topbarUser.classList.remove("open");
+      }
+    }
+  );
+}
+</script>
 </body>
 </html>
