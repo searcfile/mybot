@@ -961,6 +961,186 @@ body.confirm-open{
     grid-template-columns:1fr;
   }
 }
+.layout-builder{
+  margin:6px 0 18px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:rgba(0,0,0,.12);
+}
+
+.layout-add-wrap{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  gap:8px;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.layout-add-wrap .layout-button-input{
+  height:34px;
+  margin:0;
+}
+
+.layout-add-button,
+.layout-add-row{
+  height:34px;
+  white-space:nowrap;
+}
+
+.layout-rows{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  min-height:52px;
+}
+
+.layout-row{
+  min-height:48px;
+  padding:8px;
+  display:flex;
+  align-items:center;
+  align-content:flex-start;
+  flex-wrap:wrap;
+  gap:7px;
+  border:1px dashed rgba(255,255,255,.2);
+  border-radius:9px;
+  background:rgba(0,0,0,.16);
+  transition:
+    border-color .2s,
+    background .2s;
+}
+
+.layout-row.drag-over{
+  border-color:#38bdf8;
+  background:rgba(56,189,248,.08);
+}
+
+.layout-row-head{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.layout-row-label{
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:600;
+}
+
+.layout-remove-row{
+  width:23px;
+  min-width:23px;
+  height:23px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:5px;
+  background:transparent;
+  color:#ef4444;
+  font-size:16px;
+  line-height:1;
+}
+
+.layout-remove-row:hover{
+  background:rgba(239,68,68,.14);
+}
+
+.layout-chip{
+  max-width:260px;
+  min-height:30px;
+  padding:4px 6px 4px 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  box-sizing:border-box;
+  border:1px solid rgba(56,189,248,.38);
+  border-radius:999px;
+  background:rgba(22,104,220,.2);
+  color:#fff;
+  cursor:grab;
+  user-select:none;
+  touch-action:none;
+  transition:
+    opacity .2s,
+    border-color .2s,
+    background .2s;
+}
+
+.layout-chip:hover{
+  border-color:#38bdf8;
+  background:rgba(22,104,220,.3);
+}
+
+.layout-chip:active{
+  cursor:grabbing;
+}
+
+.layout-chip.dragging{
+  opacity:.35;
+}
+
+.layout-chip-text{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.layout-chip-remove{
+  width:20px;
+  min-width:20px;
+  height:20px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:14px;
+  line-height:1;
+}
+
+.layout-chip-remove:hover{
+  background:#ef4444;
+}
+
+.layout-output{
+  width:100%;
+  min-height:82px;
+  margin:12px 0 0;
+  opacity:.58;
+  resize:vertical;
+  cursor:default;
+}
+
+.layout-output:focus{
+  border-color:rgba(255,255,255,.15) !important;
+  box-shadow:none !important;
+}
+
+.save-layout-btn{
+  min-width:140px;
+}
+
+@media(max-width:700px){
+  .layout-add-wrap{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .layout-add-wrap .layout-button-input{
+    grid-column:1 / -1;
+  }
+
+  .layout-add-button,
+  .layout-add-row{
+    width:100%;
+  }
+}
   </style>
 </head>
 
@@ -1206,17 +1386,90 @@ body.confirm-open{
         📌 About, ⬅️ Back Menu
       </div>
 
-      <form method="POST" action="/admin/menu_layout">
+<form
+  method="POST"
+  action="/admin/menu_layout"
+  id="menuLayoutForm">
 
-        <label class="label-required">Base Menu Layout</label>
-        <textarea name="base_menu_layout" required>{{ base_layout }}</textarea>
+  <!-- BASE MENU BUILDER -->
+  <label class="label-required">
+    Base Menu Layout
+  </label>
 
-        <label class="label-required">Promo Menu Layout</label>
-        <textarea name="promo_menu_layout" required>{{ promo_layout }}</textarea>
+  <div
+    class="layout-builder"
+    data-layout-builder>
 
-        <button type="submit">💾 Save Layout</button>
+    <div class="layout-add-wrap">
 
-      </form>
+      <input
+        type="text"
+        class="layout-button-input"
+        placeholder="Example: 📋 MENU">
+
+      <button
+        type="button"
+        class="layout-add-button">
+        + Add Button
+      </button>
+
+      <button
+        type="button"
+        class="layout-add-row">
+        + Add Row
+      </button>
+
+    </div>
+
+    <div
+      class="layout-rows"
+      data-layout-rows>
+    </div>
+
+    <textarea
+      name="base_menu_layout"
+      class="layout-output"
+      required
+      readonly>{{ base_layout }}</textarea>
+
+  </div>
+
+  <!-- PROMO MENU BUILDER -->
+  <label class="label-required">
+    Promo Menu Layout
+  </label>
+
+  <div
+    class="layout-builder"
+    data-layout-builder>
+
+    <div class="layout-add-wrap">
+
+      <input
+        type="text"
+        class="layout-button-input"
+        placeholder="Example: 🔥 Promo 1">
+
+      <button
+        type="button"
+        class="layout-add-button">
+        + Add Button
+      </button>
+
+      <button
+        type="button"
+        class="layout-add-row">
+        + Add Row
+      </button>
+    </div>
+    <div
+      class="layout-rows" data-layout-rows>
+    </div>
+    <textarea name="promo_menu_layout" class="layout-output" required readonly>{{ promo_layout }}</textarea>
+  </div>
+  <button type="submit" class="save-layout-btn">Save Layout</button>
+
+</form>
     </div>
   </div>
 <div
@@ -1556,6 +1809,446 @@ document.addEventListener(
 
   }
 );
+document
+  .querySelectorAll("[data-layout-builder]")
+  .forEach(builder => {
+
+    const input =
+      builder.querySelector(
+        ".layout-button-input"
+      );
+
+    const addButton =
+      builder.querySelector(
+        ".layout-add-button"
+      );
+
+    const addRowButton =
+      builder.querySelector(
+        ".layout-add-row"
+      );
+
+    const rowsWrap =
+      builder.querySelector(
+        "[data-layout-rows]"
+      );
+
+    const output =
+      builder.querySelector(
+        ".layout-output"
+      );
+
+    let draggedChip = null;
+
+    function createChip(text){
+      const chip =
+        document.createElement("div");
+
+      chip.className = "layout-chip";
+      chip.draggable = true;
+
+      chip.innerHTML = `
+        <span class="layout-chip-text"></span>
+
+        <button
+          type="button"
+          class="layout-chip-remove"
+          aria-label="Remove button">
+          ×
+        </button>
+      `;
+
+      chip
+        .querySelector(
+          ".layout-chip-text"
+        )
+        .textContent = text;
+
+      chip.addEventListener(
+        "dragstart",
+        function(){
+          draggedChip = chip;
+          chip.classList.add("dragging");
+        }
+      );
+
+      chip.addEventListener(
+        "dragend",
+        function(){
+          draggedChip = null;
+          chip.classList.remove("dragging");
+
+          rowsWrap
+            .querySelectorAll(
+              ".layout-row"
+            )
+            .forEach(row => {
+              row.classList.remove(
+                "drag-over"
+              );
+            });
+
+          removeEmptyRows();
+          updateRowLabels();
+          updateOutput();
+        }
+      );
+
+      chip
+        .querySelector(
+          ".layout-chip-remove"
+        )
+        .addEventListener(
+          "click",
+          function(){
+            chip.remove();
+
+            removeEmptyRows();
+            updateRowLabels();
+            updateOutput();
+          }
+        );
+
+      return chip;
+    }
+
+    function createRow(){
+      const row =
+        document.createElement("div");
+
+      row.className = "layout-row";
+
+      row.innerHTML = `
+        <div class="layout-row-head">
+          <span class="layout-row-label">
+            Row
+          </span>
+
+          <button
+            type="button"
+            class="layout-remove-row"
+            aria-label="Remove row">
+            ×
+          </button>
+        </div>
+      `;
+
+      row.addEventListener(
+        "dragover",
+        function(event){
+          event.preventDefault();
+
+          if(!draggedChip){
+            return;
+          }
+
+          row.classList.add(
+            "drag-over"
+          );
+
+          const afterElement =
+            getDragAfterElement(
+              row,
+              event.clientX,
+              event.clientY
+            );
+
+          if(afterElement){
+            row.insertBefore(
+              draggedChip,
+              afterElement
+            );
+          }else{
+            row.appendChild(
+              draggedChip
+            );
+          }
+        }
+      );
+
+      row.addEventListener(
+        "dragleave",
+        function(event){
+          if(
+            !row.contains(
+              event.relatedTarget
+            )
+          ){
+            row.classList.remove(
+              "drag-over"
+            );
+          }
+        }
+      );
+
+      row.addEventListener(
+        "drop",
+        function(event){
+          event.preventDefault();
+
+          row.classList.remove(
+            "drag-over"
+          );
+
+          updateOutput();
+        }
+      );
+
+      row
+        .querySelector(
+          ".layout-remove-row"
+        )
+        .addEventListener(
+          "click",
+          function(){
+            const rows =
+              rowsWrap.querySelectorAll(
+                ".layout-row"
+              );
+
+            if(rows.length <= 1){
+              row
+                .querySelectorAll(
+                  ".layout-chip"
+                )
+                .forEach(chip => {
+                  chip.remove();
+                });
+            }else{
+              row.remove();
+            }
+
+            updateRowLabels();
+            updateOutput();
+          }
+        );
+
+      rowsWrap.appendChild(row);
+      updateRowLabels();
+
+      return row;
+    }
+
+    function getDragAfterElement(
+      container,
+      x,
+      y
+    ){
+      const chips = [
+        ...container.querySelectorAll(
+          ".layout-chip:not(.dragging)"
+        )
+      ];
+
+      let nearest = null;
+      let nearestDistance = Infinity;
+
+      chips.forEach(chip => {
+        const box =
+          chip.getBoundingClientRect();
+
+        const centerX =
+          box.left + box.width / 2;
+
+        const centerY =
+          box.top + box.height / 2;
+
+        const distance =
+          Math.hypot(
+            x - centerX,
+            y - centerY
+          );
+
+        if(
+          x < centerX &&
+          distance < nearestDistance
+        ){
+          nearest = chip;
+          nearestDistance = distance;
+        }
+      });
+
+      return nearest;
+    }
+
+    function updateRowLabels(){
+      rowsWrap
+        .querySelectorAll(
+          ".layout-row"
+        )
+        .forEach(
+          (row, index) => {
+            row
+              .querySelector(
+                ".layout-row-label"
+              )
+              .textContent =
+                `Row ${index + 1}`;
+          }
+        );
+    }
+
+    function removeEmptyRows(){
+      const rows = [
+        ...rowsWrap.querySelectorAll(
+          ".layout-row"
+        )
+      ];
+
+      rows.forEach(
+        (row, index) => {
+          const hasChip =
+            row.querySelector(
+              ".layout-chip"
+            );
+
+          if(
+            !hasChip &&
+            rows.length > 1 &&
+            index !== 0
+          ){
+            row.remove();
+          }
+        }
+      );
+    }
+
+    function updateOutput(){
+      const lines = [
+        ...rowsWrap.querySelectorAll(
+          ".layout-row"
+        )
+      ]
+        .map(row => {
+          return [
+            ...row.querySelectorAll(
+              ".layout-chip-text"
+            )
+          ]
+            .map(element =>
+              element.textContent.trim()
+            )
+            .filter(Boolean)
+            .join(", ");
+        })
+        .filter(Boolean);
+
+      output.value =
+        lines.join("\n");
+    }
+
+    function loadFromTextarea(){
+      rowsWrap.innerHTML = "";
+
+      const lines =
+        output.value
+          .split(/\r?\n/)
+          .map(line => line.trim())
+          .filter(Boolean);
+
+      if(!lines.length){
+        createRow();
+        updateOutput();
+        return;
+      }
+
+      lines.forEach(line => {
+        const row = createRow();
+
+        line
+          .split(",")
+          .map(item => item.trim())
+          .filter(Boolean)
+          .forEach(text => {
+            row.appendChild(
+              createChip(text)
+            );
+          });
+      });
+
+      updateRowLabels();
+      updateOutput();
+    }
+
+    function addNewButton(){
+      const text =
+        input.value.trim();
+
+      if(!text){
+        input.focus();
+        return;
+      }
+
+      let targetRow =
+        rowsWrap.querySelector(
+          ".layout-row:last-child"
+        );
+
+      if(!targetRow){
+        targetRow = createRow();
+      }
+
+      targetRow.appendChild(
+        createChip(text)
+      );
+
+      input.value = "";
+      input.focus();
+
+      updateOutput();
+    }
+
+    addButton.addEventListener(
+      "click",
+      addNewButton
+    );
+
+    addRowButton.addEventListener(
+      "click",
+      function(){
+        createRow();
+        updateOutput();
+      }
+    );
+
+    input.addEventListener(
+      "keydown",
+      function(event){
+        if(event.key === "Enter"){
+          event.preventDefault();
+          addNewButton();
+        }
+      }
+    );
+
+    loadFromTextarea();
+  });
+  const menuLayoutForm =
+  document.getElementById(
+    "menuLayoutForm"
+  );
+
+if(menuLayoutForm){
+  menuLayoutForm.addEventListener(
+    "submit",
+    function(){
+      document
+        .querySelectorAll(
+          "[data-layout-builder]"
+        )
+        .forEach(builder => {
+          const output =
+            builder.querySelector(
+              ".layout-output"
+            );
+
+          output.dispatchEvent(
+            new Event("change")
+          );
+        });
+    }
+  );
+}
 </script>
 </body>
 </html>
