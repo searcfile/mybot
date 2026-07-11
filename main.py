@@ -1230,17 +1230,39 @@ def admin_users():
         return redirect("/admin/login")
 
     from datetime import datetime
+    import calendar
 
     q = request.args.get("q", "").strip()
     start_date = request.args.get("start_date", "").strip()
     end_date = request.args.get("end_date", "").strip()
 
-    if not start_date and not end_date:
-        today_str = datetime.now().strftime("%Y-%m-%d")
-        start_date = today_str
-        end_date = today_str
+    # Jika URL tidak membawa tarikh,
+    # default terus kepada seluruh bulan semasa.
+    if not start_date or not end_date:
+        malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
+        now = datetime.now(malaysia_tz)
 
-    page = int(request.args.get("page", 1))
+        start_date = now.replace(
+            day=1
+        ).strftime("%Y-%m-%d")
+
+        last_day_number = calendar.monthrange(
+            now.year,
+            now.month
+        )[1]
+
+        end_date = now.replace(
+            day=last_day_number
+        ).strftime("%Y-%m-%d")
+
+    try:
+        page = max(
+            1,
+            int(request.args.get("page", 1))
+        )
+    except (TypeError, ValueError):
+        page = 1
+
     per_page = 50
 
     total_users = get_total_users()
@@ -1249,8 +1271,8 @@ def admin_users():
 
     users, total_filtered, total_pages = get_users_paginated(
         search=q if q else None,
-        start_date=start_date if start_date else None,
-        end_date=end_date if end_date else None,
+        start_date=start_date,
+        end_date=end_date,
         page=page,
         per_page=per_page
     )
