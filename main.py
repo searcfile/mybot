@@ -1055,15 +1055,36 @@ def home():
 
 @flask_app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
+    # Jika sudah login, terus masuk dashboard
+    if require_login():
+        return redirect("/admin")
 
-        if username == ADMIN_USER and password == ADMIN_PASS:
+    if request.method == "POST":
+        username = request.form.get(
+            "username",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        if (
+            username == ADMIN_USER
+            and password == ADMIN_PASS
+        ):
+            session.clear()
+
             session["admin_logged_in"] = True
+            session["admin_username"] = username
+
             return redirect("/admin")
 
-        return render_template("login.html", error="Invalid username or password")
+        return render_template(
+            "login.html",
+            error="Invalid username or password"
+        )
 
     return render_template("login.html")
 
