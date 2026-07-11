@@ -99,12 +99,12 @@
       box-sizing: border-box;
     }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:12px;
+  margin-bottom:16px;
+}
 
     .stat {
       background: rgba(255,255,255,0.05);
@@ -391,10 +391,15 @@
     margin-left:auto;
   }
 }
-    @media(max-width: 900px){
-      .stats {
-        grid-template-columns: 1fr;
-      }
+  @media(max-width:600px){
+  .stats{
+    grid-template-columns:1fr;
+  }
+}
+  @media(max-width: 900px){
+  .stats{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
 
       table {
         font-size: 12px;
@@ -1062,23 +1067,30 @@ html, body{
 
   <div class="container">
 
-    <!-- STATS -->
-    <div class="stats">
-      <div class="stat">
-        <h3>Total Users</h3>
-        <p>{{ total }}</p>
-      </div>
+<div class="stats">
+  <div class="stat">
+    <h3>Total Users</h3>
+    <p>{{ total }}</p>
+  </div>
 
-      <div class="stat">
-        <h3>Today Users</h3>
-        <p>{{ today }}</p>
-      </div>
+  <div class="stat">
+    <h3>Today Users</h3>
+    <p>{{ today }}</p>
+  </div>
 
-      <div class="stat">
-        <h3>This Month</h3>
-        <p>{{ month }}</p>
-      </div>
-    </div>
+  <div class="stat">
+    <h3>This Month</h3>
+    <p>{{ month }}</p>
+  </div>
+
+  <div class="stat">
+    <h3>Selected Range Users</h3>
+    <p id="selectedRangeUsers">
+      {{ total_filtered }}
+    </p>
+  </div>
+
+</div>
 
 <div class="search-filter-row">
 
@@ -1449,6 +1461,7 @@ broadcastForm.addEventListener("submit", function(e){
 const searchInput = document.querySelector('input[name="q"]');
 const searchForm = document.getElementById("searchUserForm");
 const searchBtn = document.querySelector(".search-btn");
+const selectedRangeUsers = document.getElementById("selectedRangeUsers");
 let currentPage = {{ page }};
 let currentPerPage = {{ per_page }};
 let currentTotalPages = {{ total_pages }};
@@ -1537,6 +1550,10 @@ async function refreshUsersTable(
     currentPerPage = data.per_page;
     currentTotalPages = data.total_pages;
     currentTotalItems = data.total_filtered;
+    if(selectedRangeUsers){
+  selectedRangeUsers.textContent =
+    data.total_filtered;
+}
 
     const tbody = document.querySelector("tbody");
 
