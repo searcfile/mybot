@@ -247,7 +247,37 @@
       padding: 20px;
       box-sizing: border-box;
     }
+.promo-grid{
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:
+    minmax(300px, 380px)
+    minmax(0, 1fr);
+  gap:16px;
+  align-items:start;
+}
 
+.promo-add-card,
+.promo-list-card{
+  min-width:0;
+  margin-bottom:0;
+}
+
+.keyboard-card{
+  margin-top:16px;
+}
+
+@media(max-width:900px){
+  .promo-grid{
+    grid-template-columns:minmax(0, 1fr);
+  }
+
+  .promo-add-card,
+  .promo-list-card{
+    width:100%;
+  }
+}
     .card {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
@@ -539,20 +569,144 @@ html {
   from{ transform:rotate(0deg); }
   to{ transform:rotate(360deg); }
 }
-.actions-col{
-    width:320px;
-}
 
 .actions-cell{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    flex-wrap:nowrap;
-    white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+  white-space:nowrap;
+  min-width:300px;
+}
+
+.actions-cell .btn{
+  flex:0 0 auto;
 }
 
 .actions-cell .btn{
     flex-shrink:0;
+}
+.promo-table-scroll{
+  width:100%;
+  max-height:540px;
+  overflow:auto;
+  border-radius:10px;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  -webkit-overflow-scrolling:touch;
+}
+
+.promo-table{
+  width:100%;
+  min-width:820px;
+  margin-top:0;
+  table-layout:fixed;
+}
+
+.promo-table th{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:#1d395e;
+}
+
+.promo-table th,
+.promo-table td{
+  vertical-align:middle;
+}
+
+.promo-table-scroll::-webkit-scrollbar{
+  width:6px;
+  height:6px;
+}
+
+.promo-table-scroll::-webkit-scrollbar-track{
+  background:transparent;
+}
+
+.promo-table-scroll::-webkit-scrollbar-thumb{
+  background:#4b5563;
+  border-radius:10px;
+}
+
+.promo-table-scroll::-webkit-scrollbar-thumb:hover{
+  background:#6b7280;
+}
+
+@media(max-width:900px){
+  .promo-table-scroll{
+    max-height:480px;
+  }
+}
+.id-col{
+  width:60px;
+}
+
+.title-col{
+  width:auto;
+}
+
+.status-col{
+  width:120px;
+}
+
+.actions-col{
+  width:310px;
+}
+.promo-title-cell{
+  min-width:0;
+}
+
+.promo-title{
+  margin-bottom:5px;
+  overflow:hidden;
+  color:#fff;
+  font-weight:700;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.promo-caption-wrap{
+  min-width:0;
+}
+
+.promo-caption{
+  color:rgba(255,255,255,.72);
+  font-size:12px;
+  line-height:1.5;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+.promo-caption.collapsed{
+  display:-webkit-box;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+
+.caption-toggle{
+  width:auto;
+  height:auto;
+  margin-top:5px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:#38bdf8;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.caption-toggle:hover{
+  background:transparent;
+  color:#7dd3fc;
+  text-decoration:underline;
+}
+
+.caption-toggle:active{
+  background:transparent;
 }
   </style>
 </head>
@@ -663,10 +817,11 @@ html {
   </div>
 </div>
 
-  <div class="container">
+<div class="container">
+  <div class="promo-grid">
 
     <!-- ADD PROMO -->
-    <div class="card">
+    <div class="card promo-add-card">
       <h3>➕ Add New Promo</h3>
 
       <form method="POST" action="/admin/promos/add">
@@ -683,25 +838,49 @@ html {
       </form>
     </div>
 
-    <!-- PROMO LIST -->
-    <div class="card">
+<!-- PROMO LIST -->
+<div class="card promo-list-card">
       <h3>Promo List</h3>
 
-      <table>
-        <tr>
-          <th style="width:60px;">ID</th>
-          <th>Title</th>
-          <th style="width:110px;">Status</th>
-          <th class="actions-col">Actions</th>
-        </tr>
+     <div
+  class="promo-table-scroll"
+  id="promoTableScroll"
+  tabindex="0">
+
+  <table class="promo-table">
+<tr>
+  <th class="id-col">ID</th>
+  <th class="title-col">Title</th>
+  <th class="status-col">Status</th>
+  <th class="actions-col">Actions</th>
+</tr>
 
         {% for p in promos %}
         <tr>
           <td>{{ p[0] }}</td>
-          <td>
-            <b>{{ p[1] }}</b><br>
-            <span class="small-text">{{ p[3][:120] }}{% if p[3]|length > 120 %}...{% endif %}</span>
-          </td>
+<td class="promo-title-cell">
+
+  <div class="promo-title">
+    {{ p[1] }}
+  </div>
+
+  <div class="promo-caption-wrap">
+
+    <div class="promo-caption collapsed">
+      {{ p[3] }}
+    </div>
+
+    {% if p[3]|length > 90 %}
+    <button
+      type="button"
+      class="caption-toggle">
+      Expand
+    </button>
+    {% endif %}
+
+  </div>
+
+</td>
 
           <td>
             {% if p[4] %}
@@ -723,11 +902,12 @@ html {
         </tr>
         {% endfor %}
       </table>
-
+      </div>
+  
     </div>
-
+</div>
     <!-- KEYBOARD LAYOUT SETTINGS -->
-    <div class="card">
+    <div class="card keyboard-card">
       <h3>⌨️ Keyboard Layout Settings</h3>
 
       <div class="layout-hint">
@@ -859,6 +1039,61 @@ if(
       if(event.key === "Escape"){
         topbarUser.classList.remove("open");
       }
+    }
+  );
+}
+document
+  .querySelectorAll(".caption-toggle")
+  .forEach(button => {
+
+    button.addEventListener("click", function(){
+      const captionWrap =
+        this.closest(".promo-caption-wrap");
+
+      const caption =
+        captionWrap.querySelector(
+          ".promo-caption"
+        );
+
+      const isCollapsed =
+        caption.classList.contains(
+          "collapsed"
+        );
+
+      caption.classList.toggle(
+        "collapsed",
+        !isCollapsed
+      );
+
+      this.textContent =
+        isCollapsed
+          ? "Collapse"
+          : "Expand";
+    });
+  });
+    
+  const promoTableScroll =
+  document.getElementById(
+    "promoTableScroll"
+  );
+
+if(promoTableScroll){
+  promoTableScroll.addEventListener(
+    "wheel",
+    function(event){
+
+      if(!event.shiftKey){
+        return;
+      }
+
+      event.preventDefault();
+
+      promoTableScroll.scrollLeft +=
+        event.deltaY;
+
+    },
+    {
+      passive:false
     }
   );
 }
