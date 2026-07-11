@@ -335,18 +335,21 @@
       font-weight: bold;
     }
 
-    .btn {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 10px;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: bold;
-      margin-right: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:0 14px;
+    height:36px;
+    border-radius:10px;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:600;
+    margin:0;
+    white-space:nowrap;
+    box-sizing:border-box;
+}
     .btn-edit {
       background: #38bdf8;
       color: black;
@@ -536,6 +539,21 @@ html {
   from{ transform:rotate(0deg); }
   to{ transform:rotate(360deg); }
 }
+.actions-col{
+    width:320px;
+}
+
+.actions-cell{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:nowrap;
+    white-space:nowrap;
+}
+
+.actions-cell .btn{
+    flex-shrink:0;
+}
   </style>
 </head>
 
@@ -674,7 +692,7 @@ html {
           <th style="width:60px;">ID</th>
           <th>Title</th>
           <th style="width:110px;">Status</th>
-          <th style="width:260px;">Actions</th>
+          <th class="actions-col">Actions</th>
         </tr>
 
         {% for p in promos %}
@@ -693,7 +711,7 @@ html {
             {% endif %}
           </td>
 
-          <td>
+          <td class="actions-cell">
             <a class="btn btn-edit" href="/admin/promo/{{ p[0] }}">✏️ Edit</a>
             <a class="btn btn-toggle" href="/admin/promos/toggle/{{ p[0] }}">🔁 Toggle</a>
             <a class="btn btn-delete"
