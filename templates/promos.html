@@ -14,22 +14,6 @@
       color: white;
       font-size:14px;
     }
-    .menu-layout-column .layout-builder{
-  flex:1;
-  min-height:420px;
-  margin:0;
-  box-sizing:border-box;
-}
-
-@media(max-width:1100px){
-  .menu-layout-grid{
-    grid-template-columns:1fr;
-  }
-
-  .menu-layout-column .layout-builder{
-    min-height:0;
-  }
-}
 :where(button, a, .btn, .select-selected,[tabindex]):focus-visible{
   outline: 2px solid #38bdf8 !important;
   outline-offset: 1px;
@@ -1420,25 +1404,7 @@ body.confirm-open{
 </div>
     <!-- KEYBOARD LAYOUT SETTINGS -->
     <div class="card keyboard-card">
-      <h3>⌨️ Keyboard Layout Settings</h3>
-
-      <div class="layout-hint">
-        <b>How to use:</b><br>
-        - Each line = 1 row of keyboard buttons<br>
-        - Multiple buttons in same row = separated by comma ( , )<br>
-        - Promo menu supports: <b>AUTO_PROMOS_2</b> or <b>AUTO_PROMOS_3</b><br><br>
-
-        <b>Example Base Menu:</b><br>
-        🚀 Register<br>
-        📋 MENU<br>
-        📞 Contact, 📌 About<br><br>
-
-        <b>Example Promo Menu:</b><br>
-        AUTO_PROMOS_2<br>
-        📞 Contact, 🚀 Register<br>
-        📌 About, ⬅️ Back Menu
-      </div>
-
+      <h3>Button Layout Settings</h3>
 <form
   method="POST"
   action="/admin/menu_layout"
