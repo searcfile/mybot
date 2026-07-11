@@ -14,6 +14,22 @@
       color: white;
       font-size:14px;
     }
+    .menu-layout-column .layout-builder{
+  flex:1;
+  min-height:420px;
+  margin:0;
+  box-sizing:border-box;
+}
+
+@media(max-width:1100px){
+  .menu-layout-grid{
+    grid-template-columns:1fr;
+  }
+
+  .menu-layout-column .layout-builder{
+    min-height:0;
+  }
+}
 :where(button, a, .btn, .select-selected,[tabindex]):focus-visible{
   outline: 2px solid #38bdf8 !important;
   outline-offset: 1px;
