@@ -347,11 +347,6 @@
       flex-wrap: wrap;
       gap: 10px;
     }
-
-    .pagination-info {
-      font-size: 13px;
-      opacity: 0.7;
-    }
 .pagination{
   margin-top:14px;
   display:flex;
@@ -1281,17 +1276,17 @@ html {
   </div>
 
   <div class="stat">
-    <h3>Today Users</h3>
+    <h3>Daily Users</h3>
     <p>{{ today }}</p>
   </div>
 
   <div class="stat">
-    <h3>This Month</h3>
+    <h3>Monthly Users</h3>
     <p>{{ month }}</p>
   </div>
 
   <div class="stat">
-    <h3>Users List</h3>
+    <h3>Sunmmary Users</h3>
     <p id="selectedRangeUsers">
       {{ total_filtered }}
     </p>
@@ -1335,7 +1330,7 @@ html {
 <div class="user-tools-grid">
     <!-- USERS TABLE -->
     <div class="card">
-      <h3>🔍 Search User</h3>
+      <h3>User Subscriber</h3>
       <div class="table-scroll" id="usersTableScroll">
       <table>
         <thead>
