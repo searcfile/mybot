@@ -1495,16 +1495,23 @@ flatpickr(dateRange, {
   mode: "range",
   dateFormat: "Y-m-d",
   showMonths: 2,
-  defaultDate: startInput.value && endInput.value ? [startInput.value, endInput.value] : null,
+
+  defaultDate:
+    startInput.value && endInput.value
+      ? [startInput.value, endInput.value]
+      : null,
+
   onChange: function(selectedDates){
-    if(selectedDates.length === 2){
-          document
-      .querySelectorAll(".date-presets button")
-      .forEach(button => {
-        button.classList.remove("active");
-      });
-      setRange(selectedDates[0], selectedDates[1]);
+    if(selectedDates.length !== 2){
+      return;
     }
+
+    setRange(
+      selectedDates[0],
+      selectedDates[1]
+    );
+
+    markActiveDatePreset();
   }
 });
 
