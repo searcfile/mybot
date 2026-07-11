@@ -410,22 +410,70 @@
       line-height: 1.5;
     }
 
-    .status-active {
-      color: #22c55e;
-      font-weight: bold;
-    }
-
-    .status-off {
-      color: #ef4444;
-      font-weight: bold;
-    }
-
     .layout-hint {
       font-size: 13px;
       opacity: 0.7;
       line-height: 1.5;
       margin-bottom: 12px;
     }
+    .status-cell{
+  vertical-align:middle;
+}
+
+.status-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  white-space:nowrap;
+  color:inherit;
+  font-weight:600;
+}
+
+.status-icon{
+  width:18px;
+  height:18px;
+  display:block;
+  flex-shrink:0;
+  overflow:visible;
+}
+
+/* Bulatan */
+.status-icon circle{
+  fill:currentColor;
+  stroke:none;
+}
+
+/* Teks tetap ikut body */
+.status-text{
+  color:inherit;
+}
+
+/* Active: icon hijau sahaja */
+.status-is-active .status-icon{
+  color:#22c55e;
+}
+
+/* Inactive: icon merah sahaja */
+.status-is-inactive .status-icon{
+  color:#ef4444;
+}
+
+/* Tick putih */
+.status-check{
+  fill:none;
+  stroke:#fff;
+  stroke-width:2.2;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+/* Cross putih */
+.status-cross{
+  fill:none;
+  stroke:#fff;
+  stroke-width:2.2;
+  stroke-linecap:round;
+}
 @media (max-width: 768px) {
   .topbar {
     height: 64px;
@@ -935,17 +983,49 @@ html {
 
           </td>
 
-          <td>
-            {% if p[4] %}
-              <span class="status-active">
-                ✅ Active
-              </span>
-            {% else %}
-              <span class="status-off">
-                ❌ Disabled
-              </span>
-            {% endif %}
-          </td>
+         <td class="status-cell">
+  {% if p[4] %}
+    <span class="status-badge status-is-active">
+      <svg
+        class="status-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true">
+        <circle
+          cx="12"
+          cy="12"
+          r="10">
+        </circle>
+        <path
+          class="status-check"
+          d="M7.5 12.2l3 3.1 6-6.3">
+        </path>
+      </svg>
+      <span class="status-text">
+        Active
+      </span>
+    </span>
+  {% else %}
+    <span class="status-badge status-is-inactive">
+      <svg
+        class="status-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true">
+        <circle
+          cx="12"
+          cy="12"
+          r="10">
+        </circle>
+        <path
+          class="status-cross"
+          d="M8.5 8.5l7 7m0-7l-7 7">
+        </path>
+      </svg>
+      <span class="status-text">
+        Inactive
+      </span>
+    </span>
+  {% endif %}
+</td>
 
           <td class="actions-cell">
 
