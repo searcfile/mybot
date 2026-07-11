@@ -394,11 +394,6 @@
       color: black;
     }
 
-    .btn-toggle {
-      background: #facc15;
-      color: black;
-    }
-
     .btn-delete {
       background: #ef4444;
       color: white;
@@ -419,60 +414,84 @@
     .status-cell{
   vertical-align:middle;
 }
-
-.status-badge{
-  display:inline-flex;
+.status-switch{
+  position:relative;
+  width:106px;
+  height:34px;
+  padding:3px;
+  display:flex;
   align-items:center;
-  gap:8px;
-  white-space:nowrap;
-  color:inherit;
-  font-weight:600;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:18px;
+  color:#fff;
+  text-decoration:none;
+  cursor:pointer;
+  overflow:hidden;
+  transition:
+    background .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease,
+    transform .15s ease;
 }
 
-.status-icon{
-  width:18px;
-  height:18px;
+/* Active */
+.status-switch.active{
+  justify-content:flex-start;
+  padding-left:13px;
+  padding-right:37px;
+  background:#1668dc;
+  border-color:#3c89e8;
+  box-shadow:0 0 0 1px rgba(60,137,232,.18);
+}
+
+/* Inactive */
+.status-switch.inactive{
+  justify-content:flex-end;
+  padding-left:37px;
+  padding-right:11px;
+  background:rgba(0,0,0,.35);
+  border-color:rgba(255,255,255,.18);
+}
+
+.status-switch-text{
+  position:relative;
+  z-index:2;
   display:block;
-  flex-shrink:0;
-  overflow:visible;
+  overflow:hidden;
+  color:#fff;
+  font-size:12px;
+  font-weight:600;
+  line-height:1;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
 
-/* Bulatan */
-.status-icon circle{
-  fill:currentColor;
-  stroke:none;
+.status-switch-knob{
+  position:absolute;
+  top:3px;
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 2px 7px rgba(0,0,0,.35);
+  transition:left .25s ease;
 }
 
-/* Teks tetap ikut body */
-.status-text{
-  color:inherit;
+.status-switch.active .status-switch-knob{
+  left:calc(100% - 29px);
 }
 
-/* Active: icon hijau sahaja */
-.status-is-active .status-icon{
-  color:#22c55e;
+.status-switch.inactive .status-switch-knob{
+  left:3px;
 }
 
-/* Inactive: icon merah sahaja */
-.status-is-inactive .status-icon{
-  color:#ef4444;
+.status-switch:hover{
+  filter:brightness(1.08);
 }
 
-/* Tick putih */
-.status-check{
-  fill:none;
-  stroke:#fff;
-  stroke-width:2.2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-
-/* Cross putih */
-.status-cross{
-  fill:none;
-  stroke:#fff;
-  stroke-width:2.2;
-  stroke-linecap:round;
+.status-switch:active{
+  transform:scale(.97);
 }
 @media (max-width: 768px) {
   .topbar {
@@ -733,11 +752,11 @@ html {
 }
 
 .status-col{
-  width:130px;
+  width:145px;
 }
 
 .actions-col{
-  width:360px;
+  width:230px;
 }
 
 .promo-title-cell{
@@ -978,53 +997,23 @@ html {
                 Expand
               </button>
               {% endif %}
-
             </div>
-
           </td>
 
-         <td class="status-cell">
-  {% if p[4] %}
-    <span class="status-badge status-is-active">
-      <svg
-        class="status-icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true">
-        <circle
-          cx="12"
-          cy="12"
-          r="10">
-        </circle>
-        <path
-          class="status-check"
-          d="M7.5 12.2l3 3.1 6-6.3">
-        </path>
-      </svg>
-      <span class="status-text">
+<td class="status-cell">
+  <a
+    href="/admin/promos/toggle/{{ p[0] }}"
+    class="status-switch {% if p[4] %}active{% else %}inactive{% endif %}"
+    aria-label="{% if p[4] %}Disable{% else %}Enable{% endif %} promo">
+    <span class="status-switch-text">
+      {% if p[4] %}
         Active
-      </span>
-    </span>
-  {% else %}
-    <span class="status-badge status-is-inactive">
-      <svg
-        class="status-icon"
-        viewBox="0 0 24 24"
-        aria-hidden="true">
-        <circle
-          cx="12"
-          cy="12"
-          r="10">
-        </circle>
-        <path
-          class="status-cross"
-          d="M8.5 8.5l7 7m0-7l-7 7">
-        </path>
-      </svg>
-      <span class="status-text">
+      {% else %}
         Inactive
-      </span>
+      {% endif %}
     </span>
-  {% endif %}
+    <span class="status-switch-knob"></span>
+  </a>
 </td>
 
           <td class="actions-cell">
@@ -1035,12 +1024,6 @@ html {
                 class="btn btn-edit"
                 href="/admin/promo/{{ p[0] }}">
                 ✏️ Edit
-              </a>
-
-              <a
-                class="btn btn-toggle"
-                href="/admin/promos/toggle/{{ p[0] }}">
-                🔁 Toggle
               </a>
 
               <a
@@ -1135,7 +1118,9 @@ window.addEventListener("beforeunload", () => {
 document.querySelectorAll("a").forEach(a => {
   a.addEventListener("click", function () {
     const href = this.getAttribute("href");
-
+if(this.classList.contains("status-switch")){
+  return;
+}
     if (
       !href ||
       href.startsWith("#") ||
