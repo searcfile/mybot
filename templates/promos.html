@@ -1058,7 +1058,7 @@ body.confirm-open{
   gap:7px;
   box-sizing:border-box;
   border:1px solid rgba(56,189,248,.38);
-  border-radius:999px;
+  border-radius:6px;
   background:rgba(22,104,220,.2);
   color:#fff;
   cursor:grab;
@@ -1125,8 +1125,42 @@ body.confirm-open{
 
 .save-layout-btn{
   min-width:140px;
+  margin-top:16px;
+}
+.menu-layout-grid{
+  width:100%;
+  display:grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap:16px;
+  align-items:stretch;
 }
 
+.menu-layout-column{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+}
+
+.menu-layout-column > label{
+  display:block;
+  margin-bottom:6px;
+}
+
+.menu-layout-column .layout-builder{
+  flex:1;
+  margin:0;
+  box-sizing:border-box;
+}
+
+@media(max-width:1100px){
+  .menu-layout-grid{
+    grid-template-columns:1fr;
+  }
+  .menu-layout-column .layout-builder{
+    min-height:0;
+  }
+}
 @media(max-width:700px){
   .layout-add-wrap{
     grid-template-columns:1fr 1fr;
@@ -1140,6 +1174,9 @@ body.confirm-open{
   .layout-add-row{
     width:100%;
   }
+}
+.menu-layout-column .layout-builder{
+  min-height:420px;
 }
   </style>
 </head>
@@ -1391,83 +1428,109 @@ body.confirm-open{
   action="/admin/menu_layout"
   id="menuLayoutForm">
 
-  <!-- BASE MENU BUILDER -->
-  <label class="label-required">
-    Base Menu Layout
-  </label>
+  <div class="menu-layout-grid">
 
-  <div
-    class="layout-builder"
-    data-layout-builder>
+    <!-- BASE MENU COLUMN -->
+    <div class="menu-layout-column">
 
-    <div class="layout-add-wrap">
+      <label class="label-required">
+        Base Menu Layout
+      </label>
 
-      <input
-        type="text"
-        class="layout-button-input"
-        placeholder="Example: 📋 MENU">
+      <div
+        class="layout-builder"
+        data-layout-builder>
 
-      <button
-        type="button"
-        class="layout-add-button">
-        + Add Button
-      </button>
+        <div class="layout-add-wrap">
 
-      <button
-        type="button"
-        class="layout-add-row">
-        + Add Row
-      </button>
+          <input
+            type="text"
+            class="layout-button-input"
+            placeholder="Example: 📋 MENU">
+
+          <button
+            type="button"
+            class="layout-add-button">
+            + Add Button
+          </button>
+
+          <button
+            type="button"
+            class="layout-add-row">
+            + Add Row
+          </button>
+
+        </div>
+
+        <div
+          class="layout-rows"
+          data-layout-rows>
+        </div>
+
+        <textarea
+          name="base_menu_layout"
+          class="layout-output"
+          required
+          readonly>{{ base_layout }}</textarea>
+
+      </div>
 
     </div>
 
-    <div
-      class="layout-rows"
-      data-layout-rows>
-    </div>
+    <!-- PROMO MENU COLUMN -->
+    <div class="menu-layout-column">
 
-    <textarea
-      name="base_menu_layout"
-      class="layout-output"
-      required
-      readonly>{{ base_layout }}</textarea>
+      <label class="label-required">
+        Promo Menu Layout
+      </label>
+
+      <div
+        class="layout-builder"
+        data-layout-builder>
+
+        <div class="layout-add-wrap">
+
+          <input
+            type="text"
+            class="layout-button-input"
+            placeholder="Example: 🔥 Promo 1">
+
+          <button
+            type="button"
+            class="layout-add-button">
+            + Add Button
+          </button>
+
+          <button
+            type="button"
+            class="layout-add-row">
+            + Add Row
+          </button>
+
+        </div>
+
+        <div
+          class="layout-rows"
+          data-layout-rows>
+        </div>
+
+        <textarea
+          name="promo_menu_layout"
+          class="layout-output"
+          required
+          readonly>{{ promo_layout }}</textarea>
+
+      </div>
+
+    </div>
 
   </div>
 
-  <!-- PROMO MENU BUILDER -->
-  <label class="label-required">
-    Promo Menu Layout
-  </label>
-
-  <div
-    class="layout-builder"
-    data-layout-builder>
-
-    <div class="layout-add-wrap">
-
-      <input
-        type="text"
-        class="layout-button-input"
-        placeholder="Example: 🔥 Promo 1">
-
-      <button
-        type="button"
-        class="layout-add-button">
-        + Add Button
-      </button>
-
-      <button
-        type="button"
-        class="layout-add-row">
-        + Add Row
-      </button>
-    </div>
-    <div
-      class="layout-rows" data-layout-rows>
-    </div>
-    <textarea name="promo_menu_layout" class="layout-output" required readonly>{{ promo_layout }}</textarea>
-  </div>
-  <button type="submit" class="save-layout-btn">Save Layout</button>
+  <button
+    type="submit"
+    class="save-layout-btn">
+    Save Layout
+  </button>
 
 </form>
     </div>
