@@ -411,12 +411,16 @@
       line-height: 1.5;
       margin-bottom: 12px;
     }
-    .status-cell{
+.status-cell{
   vertical-align:middle;
+  text-align:center;
+}
+.status-cell .status-switch{
+  margin:0 auto;
 }
 .status-switch{
   position:relative;
-  width:106px;
+  width:96px;
   height:28px;
   padding:3px;
   display:flex;
@@ -438,8 +442,8 @@
 /* Active */
 .status-switch.active{
   justify-content:flex-start;
-  padding-left:13px;
-  padding-right:35px;
+  padding-left:10px;
+  padding-right:28px;
   background:#1668dc;
   border-color:#3c89e8;
   box-shadow:0 0 0 1px rgba(60,137,232,.18);
@@ -448,8 +452,8 @@
 /* Inactive */
 .status-switch.inactive{
   justify-content:flex-end;
-  padding-left:35px;
-  padding-right:11px;
+  padding-left:28px;
+  padding-right:9px;
   background:rgba(0,0,0,.35);
   border-color:rgba(255,255,255,.18);
 }
@@ -460,7 +464,7 @@
   display:block;
   overflow:hidden;
   color:#fff;
-  font-size:14px;
+  font-size:12px;
   font-weight:600;
   line-height:1;
   text-overflow:ellipsis;
@@ -479,7 +483,7 @@
 }
 
 .status-switch.active .status-switch-knob{
-  left:calc(100% - 29px);
+  left:calc(100% - 25px);
 }
 
 .status-switch.inactive .status-switch-knob{
@@ -649,11 +653,13 @@ html {
 .actions-cell{
   white-space:nowrap;
   vertical-align:middle;
+  text-align:center;
 }
 
 .actions-wrap{
   display:flex;
   align-items:center;
+  justify-content:center;
   gap:10px;
   flex-wrap:nowrap;
 }
@@ -758,7 +764,10 @@ html {
 .actions-col{
   width:230px;
 }
-
+.status-col,
+.actions-col{
+  text-align:center;
+}
 .promo-title-cell{
   min-width:0;
 }
