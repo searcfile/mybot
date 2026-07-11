@@ -517,7 +517,13 @@ def ensure_user(user_id: int, username: str):
     conn.close()
 
 
-def get_users_paginated(search=None, start_date=None, end_date=None, page=1, per_page=50):
+def get_users_paginated(
+    search=None,
+    start_date=None,
+    end_date=None,
+    page=1,
+    per_page=10
+):
     offset = (page - 1) * per_page
     conn = get_db_connection()
     cur = conn.cursor()
@@ -1236,8 +1242,7 @@ def admin_users():
     start_date = request.args.get("start_date", "").strip()
     end_date = request.args.get("end_date", "").strip()
 
-    # Jika URL tidak membawa tarikh,
-    # default terus kepada seluruh bulan semasa.
+    # Default kepada seluruh bulan semasa
     if not start_date or not end_date:
         malaysia_tz = ZoneInfo("Asia/Kuala_Lumpur")
         now = datetime.now(malaysia_tz)
@@ -1263,7 +1268,15 @@ def admin_users():
     except (TypeError, ValueError):
         page = 1
 
-    per_page = 50
+    try:
+        per_page = int(
+            request.args.get("per_page", 10)
+        )
+    except (TypeError, ValueError):
+        per_page = 10
+
+    if per_page not in (10, 20, 50, 100):
+        per_page = 10
 
     total_users = get_total_users()
     today = get_today_count()
@@ -1277,6 +1290,19 @@ def admin_users():
         per_page=per_page
     )
 
+    # Jika page lebih besar daripada total page,
+    # bawa balik ke page terakhir.
+    if page > total_pages:
+        page = total_pages
+
+        users, total_filtered, total_pages = get_users_paginated(
+            search=q if q else None,
+            start_date=start_date,
+            end_date=end_date,
+            page=page,
+            per_page=per_page
+        )
+
     return render_template(
         "users.html",
         total=total_users,
@@ -1285,6 +1311,7 @@ def admin_users():
         users=users,
         q=q,
         page=page,
+        per_page=per_page,
         total_pages=total_pages,
         total_filtered=total_filtered,
         start_date=start_date,
@@ -1293,25 +1320,82 @@ def admin_users():
     
 from flask import jsonify
 
+
 @flask_app.route("/admin/users/search")
 def admin_users_search():
     if not require_login():
-        return jsonify({"error": "unauthorized"}), 401
+        return jsonify({
+            "error": "unauthorized"
+        }), 401
 
     q = request.args.get("q", "").strip()
-    start_date = request.args.get("start_date", "").strip()
-    end_date = request.args.get("end_date", "").strip()
+    start_date = request.args.get(
+        "start_date",
+        ""
+    ).strip()
+
+    end_date = request.args.get(
+        "end_date",
+        ""
+    ).strip()
+
+    try:
+        page = max(
+            1,
+            int(request.args.get("page", 1))
+        )
+    except (TypeError, ValueError):
+        page = 1
+
+    try:
+        per_page = int(
+            request.args.get("per_page", 10)
+        )
+    except (TypeError, ValueError):
+        per_page = 10
+
+    if per_page not in (10, 20, 50, 100):
+        per_page = 10
 
     users, total_filtered, total_pages = get_users_paginated(
         search=q if q else None,
-        start_date=start_date if start_date else None,
-        end_date=end_date if end_date else None,
-        page=1,
-        per_page=50
+        start_date=(
+            start_date
+            if start_date
+            else None
+        ),
+        end_date=(
+            end_date
+            if end_date
+            else None
+        ),
+        page=page,
+        per_page=per_page
     )
+
+    if page > total_pages:
+        page = total_pages
+
+        users, total_filtered, total_pages = get_users_paginated(
+            search=q if q else None,
+            start_date=(
+                start_date
+                if start_date
+                else None
+            ),
+            end_date=(
+                end_date
+                if end_date
+                else None
+            ),
+            page=page,
+            per_page=per_page
+        )
 
     return jsonify({
         "users": users,
+        "page": page,
+        "per_page": per_page,
         "total_filtered": total_filtered,
         "total_pages": total_pages
     })
