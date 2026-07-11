@@ -234,28 +234,153 @@
       font-size: 13px;
       opacity: 0.7;
     }
+.pagination{
+  margin-top:14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
 
-    .pagination-buttons {
-      display: flex;
-      gap: 10px;
-    }
+.pagination-info{
+  font-size:13px;
+  color:rgba(255,255,255,.72);
+  white-space:nowrap;
+}
 
-    .page-btn {
-      padding: 10px 14px;
-      border-radius: 10px;
-      text-decoration: none;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: white;
-      font-size: 13px;
-      transition: all 0.3s;
-    }
+.pagination-controls{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+}
 
-    .page-btn:hover {
-      background: rgba(56,189,248,0.2);
-      border-color: rgba(56,189,248,0.4);
-    }
+.page-number-list{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
 
+.page-number,
+.pagination-arrow{
+  min-width:30px;
+  height:30px;
+  padding:0 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid transparent;
+  border-radius:6px;
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.page-number:hover,
+.pagination-arrow:hover{
+  color:#38bdf8;
+  border-color:#38bdf8;
+}
+
+.page-number.active{
+  color:#38bdf8;
+  border-color:#1677ff;
+  background:rgba(22,104,220,.16);
+}
+
+.pagination-arrow:disabled{
+  opacity:.3;
+  cursor:not-allowed;
+}
+
+.page-ellipsis{
+  min-width:24px;
+  text-align:center;
+  color:rgba(255,255,255,.55);
+}
+
+.page-size-select{
+  position:relative;
+  margin-left:10px;
+}
+
+.page-size-selected{
+  position:relative;
+  min-width:88px;
+  height:30px;
+  padding:0 27px 0 10px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:6px;
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  cursor:pointer;
+}
+
+.page-size-selected::after{
+  content:"";
+  position:absolute;
+  right:8px;
+  top:50%;
+  width:11px;
+  height:11px;
+  transform:translateY(-50%);
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:11px;
+
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+}
+
+.page-size-options{
+  position:absolute;
+  right:0;
+  bottom:calc(100% + 5px);
+  z-index:500;
+  display:none;
+  width:105px;
+  padding:4px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:7px;
+  background:#0b1f3a;
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+}
+
+.page-size-select.open .page-size-options{
+  display:block;
+}
+
+.page-size-options button{
+  width:100%;
+  padding:7px 9px;
+  border:0;
+  border-radius:5px;
+  background:transparent;
+  color:#fff;
+  text-align:left;
+  cursor:pointer;
+}
+
+.page-size-options button:hover,
+.page-size-options button.active{
+  background:#1668dc;
+}
+
+@media(max-width:600px){
+  .pagination{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .pagination-controls{
+    width:100%;
+  }
+
+  .page-size-select{
+    margin-left:auto;
+  }
+}
     @media(max-width: 900px){
       .stats {
         grid-template-columns: 1fr;
@@ -1028,34 +1153,76 @@ html, body{
         </tbody>
       </table>
    </div>
-      <!-- PAGINATION -->
-      <div class="pagination">
+<!-- PAGINATION -->
+<div class="pagination">
 
-        <div class="pagination-info">
-          Page {{ page }} / {{ total_pages }} | Results: {{ total_filtered }}
-        </div>
+  <div
+    class="pagination-info"
+    id="paginationInfo">
+    1-{{ users|length }} of {{ total_filtered }} items
+  </div>
 
-        <div class="pagination-buttons">
+  <div class="pagination-controls">
 
-          {% if page > 1 %}
-            <a
-  class="page-btn"
-  href="/admin/users?q={{ q }}&page={{ page-1 }}&start_date={{ start_date }}&end_date={{ end_date }}">
-  ⬅ Prev
-</a>
-          {% endif %}
+    <button
+      type="button"
+      class="pagination-arrow"
+      id="prevPageBtn"
+      aria-label="Previous page">
+      ‹
+    </button>
 
-          {% if page < total_pages %}
-            <a
-  class="page-btn"
-  href="/admin/users?q={{ q }}&page={{ page+1 }}&start_date={{ start_date }}&end_date={{ end_date }}">
-  Next ➡
-</a>
-          {% endif %}
+    <div
+      class="page-number-list"
+      id="pageNumberList">
+    </div>
 
-        </div>
+    <button
+      type="button"
+      class="pagination-arrow"
+      id="nextPageBtn"
+      aria-label="Next page">
+      ›
+    </button>
+
+    <div
+      class="page-size-select"
+      id="pageSizeSelect">
+
+      <button
+        type="button"
+        class="page-size-selected"
+        id="pageSizeSelected">
+        {{ per_page }} / page
+      </button>
+
+      <div
+        class="page-size-options"
+        id="pageSizeOptions">
+
+        <button type="button" data-size="10">
+          10 / page
+        </button>
+
+        <button type="button" data-size="20">
+          20 / page
+        </button>
+
+        <button type="button" data-size="50">
+          50 / page
+        </button>
+
+        <button type="button" data-size="100">
+          100 / page
+        </button>
 
       </div>
+
+    </div>
+
+  </div>
+
+</div>
 
     </div>
 
@@ -1256,6 +1423,31 @@ broadcastForm.addEventListener("submit", function(e){
 const searchInput = document.querySelector('input[name="q"]');
 const searchForm = document.getElementById("searchUserForm");
 const searchBtn = document.querySelector(".search-btn");
+let currentPage = {{ page }};
+let currentPerPage = {{ per_page }};
+let currentTotalPages = {{ total_pages }};
+let currentTotalItems = {{ total_filtered }};
+
+const paginationInfo =
+  document.getElementById("paginationInfo");
+
+const pageNumberList =
+  document.getElementById("pageNumberList");
+
+const prevPageBtn =
+  document.getElementById("prevPageBtn");
+
+const nextPageBtn =
+  document.getElementById("nextPageBtn");
+
+const pageSizeSelect =
+  document.getElementById("pageSizeSelect");
+
+const pageSizeSelected =
+  document.getElementById("pageSizeSelected");
+
+const pageSizeOptions =
+  document.getElementById("pageSizeOptions");
   
 if (searchInput && searchInput.value.trim() !== "") {
   searchInput.focus();
@@ -1279,57 +1471,357 @@ const navType = performance.getEntriesByType("navigation")[0]?.type;
 if (navType === "reload") {
   searchBtn.classList.add("loading");
 }
-  async function refreshUsersTable(showSpinner = false){
+async function refreshUsersTable(
+  showSpinner = false,
+  requestedPage = currentPage
+){
   if(showSpinner){
     searchBtn.classList.add("loading");
   }
 
-  const q = encodeURIComponent(searchInput.value.trim());
-  const start = encodeURIComponent(startInput.value);
-  const end = encodeURIComponent(endInput.value);
+  try{
+    const q = encodeURIComponent(
+      searchInput.value.trim()
+    );
 
-  const res = await fetch(`/admin/users/search?q=${q}&start_date=${start}&end_date=${end}`);
-  const data = await res.json();
+    const start = encodeURIComponent(
+      startInput.value
+    );
 
-  const tbody = document.querySelector("tbody");
-  tbody.innerHTML = "";
+    const end = encodeURIComponent(
+      endInput.value
+    );
 
-  if (!data.users.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" style="text-align:center;padding:26px;opacity:.65;">
-          No data found
-        </td>
-      </tr>`;
-  } else {
-    data.users.forEach(u => {
-      tbody.innerHTML += `
+    const res = await fetch(
+      `/admin/users/search` +
+      `?q=${q}` +
+      `&start_date=${start}` +
+      `&end_date=${end}` +
+      `&page=${requestedPage}` +
+      `&per_page=${currentPerPage}`
+    );
+
+    if(!res.ok){
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    currentPage = data.page;
+    currentPerPage = data.per_page;
+    currentTotalPages = data.total_pages;
+    currentTotalItems = data.total_filtered;
+
+    const tbody = document.querySelector("tbody");
+
+    if(!data.users.length){
+      tbody.innerHTML = `
         <tr>
-          <td>${u[0]}</td>
-          <td>${u[1] || ""}</td>
-          <td>${u[2] ? `<span class="code">${u[2]}</span>` : `<span class="small">-</span>`}</td>
-          <td>${u[3] || `<span class="small">-</span>`}</td>
-          <td>${u[4]}</td>
-        </tr>`;
-    });
+          <td
+            colspan="5"
+            style="
+              text-align:center;
+              padding:26px;
+              opacity:.65;
+            ">
+            No data found
+          </td>
+        </tr>
+      `;
+    }else{
+      tbody.innerHTML = data.users.map(user => `
+        <tr>
+          <td>${escapeHtml(user[0])}</td>
+          <td>${escapeHtml(user[1] || "")}</td>
+
+          <td>
+            ${
+              user[2]
+                ? `<span class="code">${escapeHtml(user[2])}</span>`
+                : `<span class="small">-</span>`
+            }
+          </td>
+
+          <td>
+            ${
+              user[3]
+                ? escapeHtml(user[3])
+                : `<span class="small">-</span>`
+            }
+          </td>
+
+          <td>${escapeHtml(user[4])}</td>
+        </tr>
+      `).join("");
+    }
+
+    renderPagination();
+
+    const url = new URL(window.location.href);
+
+    url.searchParams.set(
+      "start_date",
+      startInput.value
+    );
+
+    url.searchParams.set(
+      "end_date",
+      endInput.value
+    );
+
+    url.searchParams.set(
+      "page",
+      currentPage
+    );
+
+    url.searchParams.set(
+      "per_page",
+      currentPerPage
+    );
+
+    if(searchInput.value.trim()){
+      url.searchParams.set(
+        "q",
+        searchInput.value.trim()
+      );
+    }else{
+      url.searchParams.delete("q");
+    }
+
+    window.history.replaceState(
+      {},
+      "",
+      url
+    );
+
+  }catch(error){
+    console.error(
+      "Refresh users failed:",
+      error
+    );
+
+  }finally{
+    searchBtn.classList.remove("loading");
+  }
+}
+function escapeHtml(value){
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getPaginationItems(current, total){
+  if(total <= 7){
+    return Array.from(
+      {length:total},
+      (_, index) => index + 1
+    );
   }
 
-  document.querySelector(".pagination-info").textContent =
-    `Page 1 / ${data.total_pages} | Results: ${data.total_filtered}`;
+  if(current <= 4){
+    return [
+      1, 2, 3, 4, 5,
+      "...",
+      total
+    ];
+  }
 
-  searchBtn.classList.remove("loading");
+  if(current >= total - 3){
+    return [
+      1,
+      "...",
+      total - 4,
+      total - 3,
+      total - 2,
+      total - 1,
+      total
+    ];
+  }
+
+  return [
+    1,
+    "...",
+    current - 1,
+    current,
+    current + 1,
+    "...",
+    total
+  ];
 }
+
+function renderPagination(){
+  const firstItem =
+    currentTotalItems === 0
+      ? 0
+      : ((currentPage - 1) * currentPerPage) + 1;
+
+  const lastItem = Math.min(
+    currentPage * currentPerPage,
+    currentTotalItems
+  );
+
+  paginationInfo.textContent =
+    `${firstItem}-${lastItem} of ${currentTotalItems} items`;
+
+  prevPageBtn.disabled =
+    currentPage <= 1;
+
+  nextPageBtn.disabled =
+    currentPage >= currentTotalPages;
+
+  pageSizeSelected.textContent =
+    `${currentPerPage} / page`;
+
+  pageSizeOptions
+    .querySelectorAll("button")
+    .forEach(button => {
+      button.classList.toggle(
+        "active",
+        Number(button.dataset.size) ===
+          currentPerPage
+      );
+    });
+
+  const pages = getPaginationItems(
+    currentPage,
+    currentTotalPages
+  );
+
+  pageNumberList.innerHTML =
+    pages.map(page => {
+      if(page === "..."){
+        return `
+          <span class="page-ellipsis">…</span>
+        `;
+      }
+
+      return `
+        <button
+          type="button"
+          class="page-number ${
+            page === currentPage
+              ? "active"
+              : ""
+          }"
+          data-page="${page}">
+          ${page}
+        </button>
+      `;
+    }).join("");
+
+  pageNumberList
+    .querySelectorAll(".page-number")
+    .forEach(button => {
+      button.addEventListener(
+        "click",
+        function(){
+          refreshUsersTable(
+            true,
+            Number(this.dataset.page)
+          );
+        }
+      );
+    });
+}
+prevPageBtn.addEventListener(
+  "click",
+  function(){
+    if(currentPage > 1){
+      refreshUsersTable(
+        true,
+        currentPage - 1
+      );
+    }
+  }
+);
+
+nextPageBtn.addEventListener(
+  "click",
+  function(){
+    if(currentPage < currentTotalPages){
+      refreshUsersTable(
+        true,
+        currentPage + 1
+      );
+    }
+  }
+);
+
+pageSizeSelected.addEventListener(
+  "click",
+  function(event){
+    event.stopPropagation();
+
+    pageSizeSelect.classList.toggle(
+      "open"
+    );
+  }
+);
+
+pageSizeOptions
+  .querySelectorAll("button")
+  .forEach(button => {
+    button.addEventListener(
+      "click",
+      function(event){
+        event.stopPropagation();
+
+        currentPerPage =
+          Number(this.dataset.size);
+
+        currentPage = 1;
+
+        pageSizeSelect.classList.remove(
+          "open"
+        );
+
+        refreshUsersTable(
+          true,
+          1
+        );
+      }
+    );
+  });
+
+document.addEventListener(
+  "click",
+  function(event){
+    if(
+      !pageSizeSelect.contains(
+        event.target
+      )
+    ){
+      pageSizeSelect.classList.remove(
+        "open"
+      );
+    }
+  }
+);
 let searchTimer;
 
-searchInput.addEventListener("input", () => {
-  clearTimeout(searchTimer);
+searchInput.addEventListener(
+  "input",
+  function(){
+    clearTimeout(searchTimer);
 
-  searchTimer = setTimeout(() => {
-    refreshUsersTable(true);
-  }, 700);
-});
+    searchTimer = setTimeout(() => {
+      currentPage = 1;
+
+      refreshUsersTable(
+        true,
+        1
+      );
+    }, 700);
+  }
+);
 setInterval(() => {
-  refreshUsersTable(true);
+  refreshUsersTable(
+    false,
+    currentPage
+  );
 }, 5000);
 const dateFilter = document.getElementById("dateFilter");
 const dateToggle = document.getElementById("dateToggle");
@@ -1488,7 +1980,12 @@ function setRange(start, end){
     "",
     url
   );
-  refreshUsersTable(true);
+  currentPage = 1;
+
+refreshUsersTable(
+  true,
+  1
+);
 }
 
 flatpickr(dateRange, {
@@ -1587,8 +2084,13 @@ startInput.value = fmt(firstDay);
 endInput.value = fmt(lastDay);
 }
 
-dateRange.value =`${startInput.value} → ${endInput.value}`;
-const usersTableScroll = document.getElementById("usersTableScroll");
+dateRange.value =
+  `${startInput.value} → ${endInput.value}`;
+
+renderPagination();
+
+const usersTableScroll =
+  document.getElementById("usersTableScroll");
 
 usersTableScroll.addEventListener("wheel", function(e){
   if(e.shiftKey){
