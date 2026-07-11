@@ -1642,44 +1642,41 @@ function hideLoading(){
   if (loading) loading.classList.remove("show");
 }
 
-window.addEventListener("load", () => {
-  setTimeout(hideLoading, 300);
-});
+function resetSubmitButtons(){
+  document
+    .querySelectorAll(".submit-btn")
+    .forEach(button => {
+
+      button.classList.remove("loading");
+      button.disabled = false;
+
+      const label =
+        button.querySelector(".btn-label");
+
+      if(
+        label &&
+        button.dataset.originalText
+      ){
+        label.textContent =
+          button.dataset.originalText;
+      }
+
+    });
+}
+
+window.addEventListener(
+  "load",
+  function(){
+    hideLoading();
+    resetSubmitButtons();
+  }
+);
 
 window.addEventListener(
   "pageshow",
   function(){
-    setTimeout(
-      hideLoading,
-      300
-    );
-
-    document
-      .querySelectorAll(
-        ".submit-btn.loading"
-      )
-      .forEach(button => {
-
-        button.classList.remove(
-          "loading"
-        );
-
-        button.disabled = false;
-
-        const label =
-          button.querySelector(
-            ".btn-label"
-          );
-
-        if(
-          label &&
-          button.dataset.originalText
-        ){
-          label.textContent =
-            button.dataset.originalText;
-        }
-
-      });
+    hideLoading();
+    resetSubmitButtons();
   }
 );
 
@@ -1719,49 +1716,39 @@ document
       "submit",
       function(event){
 
+        if(form.dataset.submitting === "true"){
+          event.preventDefault();
+          return;
+        }
+
         const submitter =
           event.submitter ||
           form.querySelector(
             'button[type="submit"]'
           );
 
-        if(!submitter){
-          showLoading();
-          return;
+        form.dataset.submitting = "true";
+
+        if(submitter){
+          const label =
+            submitter.querySelector(
+              ".btn-label"
+            );
+
+          if(label){
+            submitter.dataset.originalText =
+              label.textContent.trim();
+
+            label.textContent =
+              submitter.dataset.loadingText ||
+              "Please wait...";
+          }
+
+          submitter.classList.add("loading");
+          submitter.disabled = true;
         }
 
-        if(
-          submitter.classList.contains(
-            "loading"
-          )
-        ){
-          event.preventDefault();
-          return;
-        }
-
-        submitter.classList.add(
-          "loading"
-        );
-
-        submitter.disabled = true;
-
-        const label =
-          submitter.querySelector(
-            ".btn-label"
-          );
-
-        if(label){
-          submitter.dataset.originalText =
-            label.textContent.trim();
-
-          label.textContent =
-            submitter.dataset.loadingText ||
-            "Please wait...";
-        }
-
-        setTimeout(() => {
-          showLoading();
-        }, 350);
+        showLoading();
       }
     );
 
