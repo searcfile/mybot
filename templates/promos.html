@@ -380,23 +380,26 @@
     justify-content:center;
     gap:6px;
     padding:0 14px;
-    height:36px;
-    border-radius:10px;
+    height:28px;
+    border-radius:50px;
     text-decoration:none;
-    font-size:13px;
+    font-size:14px;
     font-weight:600;
     margin:0;
     white-space:nowrap;
     box-sizing:border-box;
 }
     .btn-edit {
-      background: #38bdf8;
-      color: black;
+      background: #ffffff0f;
+      color: #fff;
+      border:1px solid rgba(255, 255, 255, .15);
+      font-size:12px;
     }
 
     .btn-delete {
       background: #ef4444;
       color: white;
+      font-size:12px;
     }
 
     .small-text {
@@ -1024,14 +1027,14 @@ html {
               <a
                 class="btn btn-edit"
                 href="/admin/promo/{{ p[0] }}">
-                ✏️ Edit
+                Edit
               </a>
 
               <a
                 class="btn btn-delete"
                 href="/admin/promos/delete/{{ p[0] }}"
                 onclick="return confirm('Delete this promo?');">
-                🗑 Delete
+                Delete
               </a>
 
             </div>
