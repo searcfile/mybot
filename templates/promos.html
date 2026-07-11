@@ -1178,6 +1178,40 @@ body.confirm-open{
 .menu-layout-column .layout-builder{
   min-height:420px;
 }
+.btn-spinner{
+  width:13px;
+  height:13px;
+  display:none;
+  flex-shrink:0;
+  box-sizing:border-box;
+  border:2px solid rgba(255,255,255,.38);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:buttonSpin .7s linear infinite;
+}
+
+.submit-btn .btn-content{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+}
+
+.submit-btn.loading{
+  opacity:.82;
+  pointer-events:none;
+  cursor:not-allowed;
+}
+
+.submit-btn.loading .btn-spinner{
+  display:inline-block;
+}
+
+@keyframes buttonSpin{
+  to{
+    transform:rotate(360deg);
+  }
+}
   </style>
 </head>
 
@@ -1304,7 +1338,20 @@ body.confirm-open{
         <label class="label-required">Caption</label>
         <textarea name="caption" placeholder="Write you caption..." required></textarea>
 
-        <button type="submit">Add Promo</button>
+        <button
+  type="submit"
+  class="submit-btn"
+  data-loading-text="Add Promo...">
+
+  <span class="btn-content">
+    <span class="btn-spinner"></span>
+
+    <span class="btn-label">
+      Add Promo
+    </span>
+  </span>
+
+</button>
       </form>
     </div>
 
@@ -1508,11 +1555,20 @@ body.confirm-open{
 
   </div>
 
-  <button
-    type="submit"
-    class="save-layout-btn">
-    Save Layout
-  </button>
+<button
+  type="submit"
+  class="save-layout-btn submit-btn"
+  data-loading-text="Save Layout...">
+
+  <span class="btn-content">
+    <span class="btn-spinner"></span>
+
+    <span class="btn-label">
+      Save Layout
+    </span>
+  </span>
+
+</button>
 
 </form>
     </div>
@@ -1590,9 +1646,42 @@ window.addEventListener("load", () => {
   setTimeout(hideLoading, 300);
 });
 
-window.addEventListener("pageshow", () => {
-  setTimeout(hideLoading, 300);
-});
+window.addEventListener(
+  "pageshow",
+  function(){
+    setTimeout(
+      hideLoading,
+      300
+    );
+
+    document
+      .querySelectorAll(
+        ".submit-btn.loading"
+      )
+      .forEach(button => {
+
+        button.classList.remove(
+          "loading"
+        );
+
+        button.disabled = false;
+
+        const label =
+          button.querySelector(
+            ".btn-label"
+          );
+
+        if(
+          label &&
+          button.dataset.originalText
+        ){
+          label.textContent =
+            button.dataset.originalText;
+        }
+
+      });
+  }
+);
 
 window.addEventListener("beforeunload", () => {
   showLoading();
@@ -1622,11 +1711,61 @@ document.querySelectorAll("a").forEach(a => {
   });
 });
 
-document.querySelectorAll("form").forEach(form => {
-  form.addEventListener("submit", () => {
-    showLoading();
+document
+  .querySelectorAll("form")
+  .forEach(form => {
+
+    form.addEventListener(
+      "submit",
+      function(event){
+
+        const submitter =
+          event.submitter ||
+          form.querySelector(
+            'button[type="submit"]'
+          );
+
+        if(!submitter){
+          showLoading();
+          return;
+        }
+
+        if(
+          submitter.classList.contains(
+            "loading"
+          )
+        ){
+          event.preventDefault();
+          return;
+        }
+
+        submitter.classList.add(
+          "loading"
+        );
+
+        submitter.disabled = true;
+
+        const label =
+          submitter.querySelector(
+            ".btn-label"
+          );
+
+        if(label){
+          submitter.dataset.originalText =
+            label.textContent.trim();
+
+          label.textContent =
+            submitter.dataset.loadingText ||
+            "Please wait...";
+        }
+
+        setTimeout(() => {
+          showLoading();
+        }, 350);
+      }
+    );
+
   });
-});
 const topbarUser =
   document.getElementById("topbarUser");
 
