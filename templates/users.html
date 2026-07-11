@@ -1038,11 +1038,19 @@ html, body{
         <div class="pagination-buttons">
 
           {% if page > 1 %}
-            <a class="page-btn" href="/admin/users?q={{ q }}&page={{ page-1 }}">⬅ Prev</a>
+            <a
+  class="page-btn"
+  href="/admin/users?q={{ q }}&page={{ page-1 }}&start_date={{ start_date }}&end_date={{ end_date }}">
+  ⬅ Prev
+</a>
           {% endif %}
 
           {% if page < total_pages %}
-            <a class="page-btn" href="/admin/users?q={{ q }}&page={{ page+1 }}">Next ➡</a>
+            <a
+  class="page-btn"
+  href="/admin/users?q={{ q }}&page={{ page+1 }}&start_date={{ start_date }}&end_date={{ end_date }}">
+  Next ➡
+</a>
           {% endif %}
 
         </div>
@@ -1339,12 +1347,149 @@ function fmt(d){
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
+function markActiveDatePreset(){
+  const now = new Date();
 
+  const today = fmt(now);
+
+  const yesterdayDate = new Date(now);
+  yesterdayDate.setDate(now.getDate() - 1);
+  const yesterday = fmt(yesterdayDate);
+
+  const day = now.getDay() || 7;
+
+  const thisWeekStartDate = new Date(now);
+  thisWeekStartDate.setDate(
+    now.getDate() - day + 1
+  );
+
+  const thisWeekEndDate =
+    new Date(thisWeekStartDate);
+
+  thisWeekEndDate.setDate(
+    thisWeekStartDate.getDate() + 6
+  );
+
+  const lastWeekEndDate = new Date(now);
+  lastWeekEndDate.setDate(
+    now.getDate() - day
+  );
+
+  const lastWeekStartDate =
+    new Date(lastWeekEndDate);
+
+  lastWeekStartDate.setDate(
+    lastWeekEndDate.getDate() - 6
+  );
+
+  const thisMonthStart = fmt(
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    )
+  );
+
+  const thisMonthEnd = fmt(
+    new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0
+    )
+  );
+
+  const lastMonthStart = fmt(
+    new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1
+    )
+  );
+
+  const lastMonthEnd = fmt(
+    new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0
+    )
+  );
+
+  const ranges = {
+    today: [
+      today,
+      today
+    ],
+
+    yesterday: [
+      yesterday,
+      yesterday
+    ],
+
+    this_week: [
+      fmt(thisWeekStartDate),
+      fmt(thisWeekEndDate)
+    ],
+
+    last_week: [
+      fmt(lastWeekStartDate),
+      fmt(lastWeekEndDate)
+    ],
+
+    this_month: [
+      thisMonthStart,
+      thisMonthEnd
+    ],
+
+    last_month: [
+      lastMonthStart,
+      lastMonthEnd
+    ]
+  };
+
+  document
+    .querySelectorAll(".date-presets button")
+    .forEach(button => {
+      button.classList.remove("active");
+
+      const range =
+        ranges[button.dataset.range];
+
+      if(
+        range &&
+        startInput.value === range[0] &&
+        endInput.value === range[1]
+      ){
+        button.classList.add("active");
+      }
+    });
+}
 function setRange(start, end){
   startInput.value = fmt(start);
   endInput.value = fmt(end);
-  dateRange.value = `${fmt(start)} → ${fmt(end)}`;
+  dateRange.value =
+    `${startInput.value} → ${endInput.value}`;
 
+  const url = new URL(window.location.href);
+
+  url.searchParams.set(
+    "start_date",
+    startInput.value
+  );
+
+  url.searchParams.set(
+    "end_date",
+    endInput.value
+  );
+
+  url.searchParams.delete("page");
+
+  window.history.replaceState(
+    {},
+    "",
+    url
+  );
+
+  markActiveDatePreset();
   refreshUsersTable(true);
 }
 
@@ -1365,7 +1510,10 @@ document.querySelectorAll(".date-presets button").forEach(btn => {
     const now = new Date();
     let start = new Date();
     let end = new Date();
-
+if(btn.dataset.range === "today"){
+  start = new Date(now);
+  end = new Date(now);
+}
     if(btn.dataset.range === "yesterday"){
       start.setDate(now.getDate() - 1);
       end.setDate(now.getDate() - 1);
@@ -1423,14 +1571,7 @@ endInput.value = fmt(lastDay);
 }
 
 dateRange.value = `${startInput.value} → ${endInput.value}`;
-  
-if (performance.navigation.type === 1) {
-  const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-window.location.href = `/admin/users?start_date=${fmt(firstDay)}&end_date=${fmt(lastDay)}`;
-}
+markActiveDatePreset();
 const usersTableScroll = document.getElementById("usersTableScroll");
 
 usersTableScroll.addEventListener("wheel", function(e){
