@@ -1075,17 +1075,17 @@ body.confirm-open{
 
     <!-- ADD PROMO -->
     <div class="card promo-add-card">
-      <h3>➕ Add New Promo</h3>
+      <h3>Add New Promo</h3>
 
       <form method="POST" action="/admin/promos/add">
         <label class="label-required">Title</label>
-        <input type="text" name="title" required>
+        <input type="text" name="title" placeholder="Tittle Button" required>
 
         <label class="label-required">Image URL</label>
-        <input type="text" name="image_url" required>
+        <input type="text" name="image_url" placeholder="Image URL" required>
 
         <label class="label-required">Caption</label>
-        <textarea name="caption" required></textarea>
+        <textarea name="caption" placeholder="Write you caption..." required></textarea>
 
         <button type="submit">Add Promo</button>
       </form>
