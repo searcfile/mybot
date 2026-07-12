@@ -67,10 +67,54 @@
 }
 .topbar-user{
   position:relative;
-  margin-left:auto;
+  margin-left:0;
   flex-shrink:0;
 }
+.topbar-right{
+  margin-left:auto;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+}
 
+.kl-clock{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  color:#fff;
+  white-space:nowrap;
+}
+
+.kl-clock-city{
+  color:rgba(255,255,255,.72);
+  font-size:12px;
+  line-height:1;
+}
+
+.kl-clock-value{
+  display:flex;
+  align-items:baseline;
+  gap:5px;
+  line-height:1;
+}
+
+.kl-clock-time,
+#klClockTime{
+  color:#fff;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.2px;
+}
+
+.kl-clock-date,
+#klClockDate{
+  color:#fff;
+  font-size:11px;
+  font-weight:600;
+}
 .username-btn{
   height:36px;
   max-width:220px;
@@ -713,7 +757,38 @@ html {
     padding-inline: 10px;
     gap: 8px;
   }
+.topbar-right{
+  gap:8px;
+}
 
+.kl-clock{
+  min-width:74px;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:3px;
+  white-space:normal;
+}
+
+.kl-clock-city{
+  font-size:10px;
+  line-height:1;
+}
+
+.kl-clock-value{
+  display:flex;
+  align-items:baseline;
+  gap:4px;
+  white-space:nowrap;
+}
+
+#klClockTime{
+  font-size:16px;
+}
+
+#klClockDate{
+  font-size:10px;
+}
   .topbar h2 {
     font-size: 17px;
     line-height: 1;
@@ -770,6 +845,34 @@ html {
     gap: 0px;
   }
 }
+@media(max-width:480px){
+
+  .topbar{
+    padding-inline:8px;
+    gap:6px;
+  }
+
+  .topbar-right{
+    gap:6px;
+  }
+
+  .kl-clock{
+    min-width:66px;
+  }
+
+  .kl-clock-city{
+    font-size:9px;
+  }
+
+  #klClockTime{
+    font-size:14px;
+  }
+
+  #klClockDate{
+    font-size:9px;
+  }
+
+}
 .label-required::before {
     content: "*";
     display: inline-block;
@@ -822,6 +925,28 @@ html {
       </svg>
       <span class="nav-text">Users</span>
     </a>
+  </div>
+
+  <div class="topbar-right">
+
+  <div
+    class="kl-clock"
+    id="klClock"
+    aria-label="Kuala Lumpur time">
+
+    <span class="kl-clock-city">
+      Kuala Lumpur
+    </span>
+
+    <div class="kl-clock-value">
+      <strong id="klClockTime">
+        --:--
+      </strong>
+
+      <span id="klClockDate">
+        ---
+      </span>
+    </div>
 
   </div>
 
@@ -874,7 +999,8 @@ html {
     </div>
   </div>
 </div>
-
+</div>
+  
 <div class="container">
 
     <div class="page-actions">
@@ -1213,6 +1339,74 @@ function copyUrl() {
   showToast("Image link copied!");
 }
   const currentPath = window.location.pathname;
+
+const klClockTime =
+  document.getElementById(
+    "klClockTime"
+  );
+
+const klClockDate =
+  document.getElementById(
+    "klClockDate"
+  );
+
+function updateKualaLumpurClock(){
+  if(
+    !klClockTime ||
+    !klClockDate
+  ){
+    return;
+  }
+
+  const now =
+    new Date();
+
+  const timeFormatter =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:
+          "Asia/Kuala_Lumpur",
+
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit",
+
+        hour12:
+          false
+      }
+    );
+
+  const dateFormatter =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:
+          "Asia/Kuala_Lumpur",
+
+        month:
+          "short",
+
+        day:
+          "2-digit"
+      }
+    );
+
+  klClockTime.textContent =
+    timeFormatter.format(now);
+
+  klClockDate.textContent =
+    dateFormatter.format(now);
+}
+
+updateKualaLumpurClock();
+
+setInterval(
+  updateKualaLumpurClock,
+  1000
+);
 
 document.querySelectorAll(".nav a").forEach(link => {
   const href = link.getAttribute("href");
