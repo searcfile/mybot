@@ -1,4 +1,4 @@
-def get_promo_buttons(promo_id):import os
+import os
 import threading
 import asyncio
 import psycopg2
@@ -12,7 +12,14 @@ from zoneinfo import ZoneInfo
 
 from urllib.request import urlopen
 
-from flask import Flask, render_template, request, redirect, session
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    session,
+    jsonify
+)
 
 from telegram import (
     Bot,
@@ -21,6 +28,7 @@ from telegram import (
     InlineKeyboardMarkup,
     ReplyKeyboardMarkup
 )
+
 from telegram.ext import (
     Application,
     CommandHandler,
