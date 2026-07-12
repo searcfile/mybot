@@ -990,7 +990,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [
             [
                 InlineKeyboardButton(
-                    "🌍 Register Now",
+                    "🚀 Register Now",
                     url=register_url
                 )
             ]
