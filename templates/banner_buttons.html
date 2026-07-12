@@ -251,8 +251,6 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 12px;
     }
 
     th, td {
@@ -432,6 +430,108 @@ html {
   from{ transform:rotate(0deg); }
   to{ transform:rotate(360deg); }
 }
+.banner-buttons-grid{
+  width:100%;
+  min-width:0;
+  display:grid;
+  grid-template-columns:
+    minmax(300px, 420px)
+    minmax(0, 1fr);
+  gap:18px;
+  align-items:stretch;
+}
+
+.banner-buttons-grid > .card{
+  min-width:0;
+  margin-bottom:0;
+  box-sizing:border-box;
+}
+
+.add-banner-card{
+  height:100%;
+}
+
+.banner-list-card{
+  height:100%;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Table boleh scroll kiri-kanan dan atas-bawah */
+.banner-table-scroll{
+  width:100%;
+  max-height:520px;
+  min-height:0;
+  overflow:auto;
+  border-radius:12px;
+  scrollbar-gutter:stable;
+}
+
+/* Pastikan table tidak mengecil terlalu sempit */
+.banner-table-scroll table{
+  width:100%;
+  min-width:820px;
+  border-collapse:collapse;
+}
+
+/* Header kekal di atas masa scroll bawah */
+.banner-table-scroll thead th{
+  position:sticky;
+  top:0;
+  z-index:2;
+  background:#203f67;
+}
+
+/* Elakkan teks merosakkan kolum */
+.banner-table-scroll th,
+.banner-table-scroll td{
+  white-space:nowrap;
+  vertical-align:middle;
+}
+
+/* URL panjang jadi ellipsis */
+.banner-url-cell{
+  max-width:420px;
+}
+
+.banner-url-text{
+  display:block;
+  max-width:420px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+/* Action jangan pecah baris */
+.actions{
+  white-space:nowrap;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  .banner-buttons-grid{
+    grid-template-columns:minmax(0, 1fr);
+  }
+
+  .banner-table-scroll{
+    max-height:480px;
+  }
+}
+
+@media(max-width:480px){
+  .container{
+    padding:12px;
+  }
+
+  .card{
+    padding:14px;
+  }
+
+  .banner-table-scroll{
+    max-height:420px;
+  }
+}
   </style>
 </head>
 <body>
@@ -543,50 +643,120 @@ html {
 
 </div>
 
-  <div class="container">
+<div class="container">
 
-    <div class="card">
-      <h3>➕ Add New Banner Button</h3>
+  <div class="banner-buttons-grid">
+
+    <!-- ADD NEW BUTTON -->
+    <div class="card add-banner-card">
+
+      <h3>
+        ➕ Add New Banner Button
+      </h3>
 
       <form method="POST">
-        <input type="text" name="text" placeholder="Button Text (example: Register)" required>
-        <input type="text" name="url" placeholder="Button URL (optional)">
-        <input type="text" name="callback_data" placeholder="Callback Data (optional example: open_menu)">
-        <button class="btn" type="submit">Add Button</button>
+
+        <input
+          type="text"
+          name="text"
+          placeholder="Button Text (example: Register)"
+          required>
+
+        <input
+          type="text"
+          name="url"
+          placeholder="Button URL (optional)">
+
+        <input
+          type="text"
+          name="callback_data"
+          placeholder="Callback Data (optional example: open_menu)">
+
+        <button
+          class="btn"
+          type="submit">
+          Add Button
+        </button>
+
       </form>
-    </div>
-
-    <div class="card">
-      <h3>📋 Current Banner Buttons</h3>
-
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Text</th>
-            <th>URL</th>
-            <th>Callback</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for b in buttons %}
-          <tr>
-            <td>{{ b[0] }}</td>
-            <td>{{ b[1] }}</td>
-            <td>{{ b[2] }}</td>
-            <td>{{ b[3] }}</td>
-            <td class="actions">
-              <a href="/admin/banner_buttons/delete/{{ b[0] }}" onclick="return confirm('Delete this button?')">Delete</a>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
 
     </div>
 
+
+    <!-- CURRENT BUTTONS -->
+    <div class="card banner-list-card">
+
+      <h3>
+        📋 Current Banner Buttons
+      </h3>
+
+      <div class="banner-table-scroll">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Text</th>
+              <th>URL</th>
+              <th>Callback</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            {% for b in buttons %}
+
+            <tr>
+
+              <td>
+                {{ b[0] }}
+              </td>
+
+              <td>
+                {{ b[1] }}
+              </td>
+
+              <td class="banner-url-cell">
+
+                <span
+                  class="banner-url-text"
+                  title="{{ b[2] or 'None' }}">
+
+                  {{ b[2] or "None" }}
+
+                </span>
+
+              </td>
+
+              <td>
+                {{ b[3] or "None" }}
+              </td>
+
+              <td class="actions">
+
+                <a
+                  href="/admin/banner_buttons/delete/{{ b[0] }}"
+                  onclick="return confirm('Delete this button?')">
+                  Delete
+                </a>
+
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="5">
+                No banner buttons found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+</div>
 <script>
 const currentPath = window.location.pathname;
 
@@ -609,13 +779,15 @@ function hideLoading(){
   if (loading) loading.classList.remove("show");
 }
 
-window.addEventListener("load", () => {
-  setTimeout(hideLoading, 300);
-});
+window.addEventListener(
+  "load",
+  hideLoading
+);
 
-window.addEventListener("pageshow", () => {
-  setTimeout(hideLoading, 300);
-});
+window.addEventListener(
+  "pageshow",
+  hideLoading
+);
 
 window.addEventListener("beforeunload", () => {
   showLoading();
