@@ -1918,29 +1918,60 @@ def admin_blast_toggle(vault_id):
 
     return redirect("/admin/blast")
 
-@flask_app.route("/admin/blast/edit/<int:vault_id>", methods=["GET", "POST"])
+@flask_app.route(
+    "/admin/blast/edit/<int:vault_id>",
+    methods=["GET", "POST"]
+)
 def admin_blast_edit(vault_id):
     if not require_login():
+        if request.method == "GET":
+            return jsonify({
+                "success": False,
+                "message": "Unauthorized"
+            }), 401
+
         return redirect("/admin/login")
 
     conn = get_db_connection()
     cur = conn.cursor()
 
+    # =========================
+    # SAVE EDITED VAULT
+    # =========================
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        mode = request.form.get("mode", "random").strip()
+        name = request.form.get(
+            "name",
+            ""
+        ).strip()
+
+        mode = request.form.get(
+            "mode",
+            "random"
+        ).strip()
 
         send_times = [
             value.strip()
-            for value in request.form.getlist("send_time[]")
+            for value in request.form.getlist(
+                "send_time[]"
+            )
             if value.strip()
         ]
 
-        send_times = list(dict.fromkeys(send_times))
+        send_times = list(
+            dict.fromkeys(send_times)
+        )
 
-        images = request.form.getlist("image_url[]")
-        captions = request.form.getlist("caption[]")
-        buttons_json_list = request.form.getlist("buttons_json[]")
+        images = request.form.getlist(
+            "image_url[]"
+        )
+
+        captions = request.form.getlist(
+            "caption[]"
+        )
+
+        buttons_json_list = request.form.getlist(
+            "buttons_json[]"
+        )
 
         valid_items = []
 
@@ -1971,22 +2002,59 @@ def admin_blast_edit(vault_id):
             )
 
             try:
-                submitted_buttons = json.loads(raw_buttons)
-            except (json.JSONDecodeError, TypeError):
+                submitted_buttons = json.loads(
+                    raw_buttons
+                )
+
+                if not isinstance(
+                    submitted_buttons,
+                    list
+                ):
+                    submitted_buttons = []
+
+            except (
+                json.JSONDecodeError,
+                TypeError
+            ):
                 submitted_buttons = []
 
             clean_buttons = []
 
             for button in submitted_buttons:
-                text = str(button.get("text", "")).strip()
-                button_type = str(button.get("type", "")).strip()
-                value = str(button.get("value", "")).strip()
+                if not isinstance(button, dict):
+                    continue
+
+                text = str(
+                    button.get(
+                        "text",
+                        ""
+                    )
+                ).strip()
+
+                button_type = str(
+                    button.get(
+                        "type",
+                        ""
+                    )
+                ).strip()
+
+                value = str(
+                    button.get(
+                        "value",
+                        ""
+                    )
+                ).strip()
 
                 if not text:
                     continue
 
                 if button_type == "url":
-                    if not value.startswith(("https://", "http://")):
+                    if not value.startswith(
+                        (
+                            "https://",
+                            "http://"
+                        )
+                    ):
                         continue
 
                     clean_buttons.append({
@@ -2013,97 +2081,129 @@ def admin_blast_edit(vault_id):
             not name
             or not send_times
             or not valid_items
-            or mode not in ("random", "fixed")
+            or mode not in (
+                "random",
+                "fixed"
+            )
         ):
             cur.close()
             conn.close()
-            return redirect(f"/admin/blast/edit/{vault_id}")
+
+            return redirect("/admin/blast")
+
+        # Fixed mode hanya simpan satu item.
+        if mode == "fixed":
+            valid_items = valid_items[:1]
 
         first_time = send_times[0]
 
-        cur.execute("""
-            UPDATE blast_vaults
-            SET
-                name=%s,
-                mode=%s,
-                send_time=%s,
-                last_sent_date=NULL
-            WHERE id=%s
-        """, (
-            name,
-            mode,
-            first_time,
-            vault_id
-        ))
-
-        cur.execute("""
-            DELETE FROM blast_times
-            WHERE vault_id=%s
-        """, (vault_id,))
-
-        for send_time in send_times:
+        try:
             cur.execute("""
-                INSERT INTO blast_times (
-                    vault_id,
-                    send_time,
-                    last_sent_date
-                )
-                VALUES (%s, %s, NULL)
+                UPDATE blast_vaults
+                SET
+                    name=%s,
+                    mode=%s,
+                    send_time=%s,
+                    last_sent_date=NULL
+                WHERE id=%s
             """, (
-                vault_id,
-                send_time
+                name,
+                mode,
+                first_time,
+                vault_id
             ))
 
-        # blast_item_buttons ikut terhapus kerana ON DELETE CASCADE
-        cur.execute("""
-            DELETE FROM blast_items
-            WHERE vault_id=%s
-        """, (vault_id,))
-
-        for item in valid_items:
             cur.execute("""
-                INSERT INTO blast_items (
-                    vault_id,
-                    image_url,
-                    caption
-                )
-                VALUES (%s, %s, %s)
-                RETURNING id
+                DELETE FROM blast_times
+                WHERE vault_id=%s
             """, (
                 vault_id,
-                item["image_url"],
-                item["caption"]
             ))
 
-            item_id = cur.fetchone()[0]
-
-            for sort_order, button in enumerate(
-                item["buttons"],
-                start=1
-            ):
+            for send_time in send_times:
                 cur.execute("""
-                    INSERT INTO blast_item_buttons (
-                        item_id,
-                        text,
-                        button_type,
-                        button_value,
-                        sort_order
+                    INSERT INTO blast_times (
+                        vault_id,
+                        send_time,
+                        last_sent_date
                     )
-                    VALUES (%s, %s, %s, %s, %s)
+                    VALUES (%s, %s, NULL)
                 """, (
-                    item_id,
-                    button["text"],
-                    button["type"],
-                    button["value"],
-                    sort_order
+                    vault_id,
+                    send_time
                 ))
 
-        conn.commit()
+            # Item button ikut terhapus kerana
+            # ON DELETE CASCADE.
+            cur.execute("""
+                DELETE FROM blast_items
+                WHERE vault_id=%s
+            """, (
+                vault_id,
+            ))
+
+            for item in valid_items:
+                cur.execute("""
+                    INSERT INTO blast_items (
+                        vault_id,
+                        image_url,
+                        caption
+                    )
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                """, (
+                    vault_id,
+                    item["image_url"],
+                    item["caption"]
+                ))
+
+                item_id = cur.fetchone()[0]
+
+                for sort_order, button in enumerate(
+                    item["buttons"],
+                    start=1
+                ):
+                    cur.execute("""
+                        INSERT INTO blast_item_buttons (
+                            item_id,
+                            text,
+                            button_type,
+                            button_value,
+                            sort_order
+                        )
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (
+                        item_id,
+                        button["text"],
+                        button["type"],
+                        button["value"],
+                        sort_order
+                    ))
+
+            conn.commit()
+
+        except Exception as error:
+            conn.rollback()
+
+            print(
+                "[BLAST EDIT ERROR]",
+                type(error).__name__,
+                str(error)
+            )
+
+            cur.close()
+            conn.close()
+
+            return redirect("/admin/blast")
+
         cur.close()
         conn.close()
 
         return redirect("/admin/blast")
 
+    # =========================
+    # GET JSON FOR EDIT MODAL
+    # =========================
     cur.execute("""
         SELECT
             id,
@@ -2113,14 +2213,32 @@ def admin_blast_edit(vault_id):
             is_active
         FROM blast_vaults
         WHERE id=%s
-    """, (vault_id,))
+    """, (
+        vault_id,
+    ))
 
     vault = cur.fetchone()
 
     if not vault:
         cur.close()
         conn.close()
-        return redirect("/admin/blast")
+
+        return jsonify({
+            "success": False,
+            "message": "Blast vault not found"
+        }), 404
+
+    cur.execute("""
+        SELECT
+            send_time
+        FROM blast_times
+        WHERE vault_id=%s
+        ORDER BY send_time ASC
+    """, (
+        vault_id,
+    ))
+
+    time_rows = cur.fetchall()
 
     cur.execute("""
         SELECT
@@ -2130,11 +2248,17 @@ def admin_blast_edit(vault_id):
         FROM blast_items
         WHERE vault_id=%s
         ORDER BY id ASC
-    """, (vault_id,))
+    """, (
+        vault_id,
+    ))
 
-    items = cur.fetchall()
+    item_rows = cur.fetchall()
 
-    item_ids = [item[0] for item in items]
+    item_ids = [
+        item[0]
+        for item in item_rows
+    ]
+
     buttons_by_item = {}
 
     if item_ids:
@@ -2147,8 +2271,13 @@ def admin_blast_edit(vault_id):
                 sort_order
             FROM blast_item_buttons
             WHERE item_id = ANY(%s)
-            ORDER BY item_id ASC, sort_order ASC, id ASC
-        """, (item_ids,))
+            ORDER BY
+                item_id ASC,
+                sort_order ASC,
+                id ASC
+        """, (
+            item_ids,
+        ))
 
         button_rows = cur.fetchall()
 
@@ -2159,34 +2288,59 @@ def admin_blast_edit(vault_id):
             button_value,
             sort_order
         ) in button_rows:
-            buttons_by_item.setdefault(item_id, []).append({
-                "text": text,
-                "type": button_type,
-                "value": button_value
+
+            buttons_by_item.setdefault(
+                item_id,
+                []
+            ).append({
+                "text": text or "",
+                "type": button_type or "url",
+                "value": button_value or ""
             })
-
-    cur.execute("""
-        SELECT
-            id,
-            send_time,
-            last_sent_date
-        FROM blast_times
-        WHERE vault_id=%s
-        ORDER BY send_time ASC
-    """, (vault_id,))
-
-    blast_times = cur.fetchall()
 
     cur.close()
     conn.close()
 
-    return render_template(
-        "blast_edit.html",
-        vault=vault,
-        items=items,
-        blast_times=blast_times,
-        buttons_by_item=buttons_by_item
-    )
+    send_times = [
+        str(row[0])[:5]
+        for row in time_rows
+        if row[0]
+    ]
+
+    if not send_times and vault[3]:
+        send_times = [
+            str(vault[3])[:5]
+        ]
+
+    items_data = []
+
+    for (
+        item_id,
+        image_url,
+        caption
+    ) in item_rows:
+
+        items_data.append({
+            "id": item_id,
+            "image_url": image_url or "",
+            "caption": caption or "",
+            "buttons": buttons_by_item.get(
+                item_id,
+                []
+            )
+        })
+
+    return jsonify({
+        "success": True,
+        "vault": {
+            "id": vault[0],
+            "name": vault[1],
+            "mode": vault[2],
+            "is_active": bool(vault[4]),
+            "send_times": send_times,
+            "items": items_data
+        }
+    })
 # =========================
 # PROMO EDIT + INLINE BUTTONS
 # =========================
