@@ -2130,69 +2130,94 @@ const blastEditSaveBtn =
     "blastEditSaveBtn"
   );
 
-function showLoading(){
-  if (loading) loading.classList.add("show");
+function showLoading(message = "Please wait while fetching..."){
+  if(!loading){
+    return;
+  }
+
+  const loadingText =
+    loading.querySelector(".loading-text");
+
+  if(loadingText){
+    loadingText.textContent = message;
+  }
+
+  loading.classList.add("show");
 }
 
 function hideLoading(){
-  if (loading) loading.classList.remove("show");
+  if(loading){
+    loading.classList.remove("show");
+  }
+}
+
+function resetSaveButton(
+  button,
+  defaultText
+){
+  if(!button){
+    return;
+  }
+
+  button.classList.remove(
+    "is-saving"
+  );
+
+  button.disabled = false;
+
+  const label =
+    button.querySelector(
+      ".btn-label"
+    );
+
+  if(label){
+    label.textContent =
+      defaultText;
+  }
+}
+
+function resetPageState(){
+  hideLoading();
+
+  resetSaveButton(
+    saveBlastBtn,
+    "Save Message"
+  );
+
+  resetSaveButton(
+    blastEditSaveBtn,
+    "Save Changes"
+  );
+
+  if(blastForm){
+    blastForm.dataset.submitting =
+      "false";
+  }
+
+  if(blastEditForm){
+    blastEditForm.dataset.submitting =
+      "false";
+  }
 }
 
 window.addEventListener(
   "load",
-  function(){
-    hideLoading();
-  }
+  resetPageState
 );
 
 window.addEventListener(
   "pageshow",
-  function(){
-
-    hideLoading();
-
-    if(saveBlastBtn){
-      saveBlastBtn.classList.remove(
-        "is-saving"
-      );
-
-      saveBlastBtn.disabled = false;
-
-      const label =
-        saveBlastBtn.querySelector(
-          ".btn-label"
-        );
-
-      if(label){
-        label.textContent =
-          "Save Message";
-      }
-    }
-
-    if(blastEditSaveBtn){
-      blastEditSaveBtn.classList.remove(
-        "is-saving"
-      );
-
-      blastEditSaveBtn.disabled = false;
-
-      const label =
-        blastEditSaveBtn.querySelector(
-          ".btn-label"
-        );
-
-      if(label){
-        label.textContent =
-          "Save Changes";
-      }
-    }
-
-  }
+  resetPageState
 );
 
-window.addEventListener("beforeunload", () => {
-  showLoading();
-});
+window.addEventListener(
+  "beforeunload",
+  function(){
+    showLoading(
+      "Please wait while processing..."
+    );
+  }
+);
 
 document.querySelectorAll("a").forEach(a => {
   a.addEventListener("click", function () {
@@ -2639,35 +2664,54 @@ function bindItemButtonSections(){
   );
 }
 
-blastForm.addEventListener(
-  "submit",
-  function(){
+if(blastForm){
+  blastForm.addEventListener(
+    "submit",
+    function(event){
 
-    document
-      .querySelectorAll(".item-box")
-      .forEach(saveItemButtons);
+      if(
+        blastForm.dataset.submitting ===
+        "true"
+      ){
+        event.preventDefault();
+        return;
+      }
 
-    if(saveBlastBtn){
-      saveBlastBtn.classList.add(
-        "is-saving"
-      );
+      blastForm.dataset.submitting =
+        "true";
 
-      saveBlastBtn.disabled = true;
-
-      const label =
-        saveBlastBtn.querySelector(
-          ".btn-label"
+      document
+        .querySelectorAll(
+          ".item-box"
+        )
+        .forEach(
+          saveItemButtons
         );
 
-      if(label){
-        label.textContent =
-          "Saving Message...";
-      }
-    }
+      if(saveBlastBtn){
+        saveBlastBtn.classList.add(
+          "is-saving"
+        );
 
-    showLoading();
-  }
-);
+        saveBlastBtn.disabled = true;
+
+        const label =
+          saveBlastBtn.querySelector(
+            ".btn-label"
+          );
+
+        if(label){
+          label.textContent =
+            "Saving Message...";
+        }
+      }
+
+      showLoading(
+        "Saving blast message..."
+      );
+    }
+  );
+}
 
 bindItemButtonSections();
 refreshMode();
@@ -3304,7 +3348,9 @@ function syncBlastEditButtons(){
 async function openBlastEditModal(
   vaultId
 ){
-  showLoading();
+  showLoading(
+  "Loading blast data..."
+);
 
   try{
     const response =
@@ -3426,23 +3472,13 @@ function closeBlastEditModal(){
   );
 
   blastEditForm.reset();
-  if(blastEditSaveBtn){
-  blastEditSaveBtn.classList.remove(
-    "is-saving"
-  );
+resetSaveButton(
+  blastEditSaveBtn,
+  "Save Changes"
+);
 
-  blastEditSaveBtn.disabled = false;
-
-  const label =
-    blastEditSaveBtn.querySelector(
-      ".btn-label"
-    );
-
-  if(label){
-    label.textContent =
-      "Save Changes";
-  }
-}
+blastEditForm.dataset.submitting =
+  "false";
   setBlastEditModeValue(
   "random"
 );
@@ -3546,34 +3582,48 @@ setupCustomSelect(
 );
 
 
-blastEditForm.addEventListener(
-  "submit",
-  function(){
+if(blastEditForm){
+  blastEditForm.addEventListener(
+    "submit",
+    function(event){
 
-    syncBlastEditButtons();
+      if(
+        blastEditForm.dataset
+          .submitting === "true"
+      ){
+        event.preventDefault();
+        return;
+      }
 
-    if(blastEditSaveBtn){
-      blastEditSaveBtn.classList.add(
-        "is-saving"
-      );
+      blastEditForm.dataset.submitting =
+        "true";
 
-      blastEditSaveBtn.disabled = true;
+      syncBlastEditButtons();
 
-      const label =
-        blastEditSaveBtn.querySelector(
-          ".btn-label"
+      if(blastEditSaveBtn){
+        blastEditSaveBtn.classList.add(
+          "is-saving"
         );
 
-      if(label){
-        label.textContent =
-          "Saving Changes...";
+        blastEditSaveBtn.disabled = true;
+
+        const label =
+          blastEditSaveBtn.querySelector(
+            ".btn-label"
+          );
+
+        if(label){
+          label.textContent =
+            "Saving Changes...";
+        }
       }
+
+      showLoading(
+        "Saving blast changes..."
+      );
     }
-
-    showLoading();
-  }
-);
-
+  );
+}
 
 document.addEventListener(
   "keydown",
