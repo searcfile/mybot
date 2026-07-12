@@ -1333,7 +1333,9 @@ html {
   border-radius:10px;
   background:rgba(0,0,0,.12);
 }
-
+.blast-edit-item.fixed-hidden-item{
+  display:none;
+}
 .blast-edit-item-head{
   margin-bottom:10px;
   display:flex;
@@ -3543,32 +3545,31 @@ blastEditAddItem.addEventListener(
 
 
 function refreshBlastEditMode(){
-  if(
-    blastEditMode.value === "fixed"
-  ){
-    const items = [
-      ...blastEditItems.querySelectorAll(
-        ".blast-edit-item"
-      )
-    ];
+  const isFixed =
+    blastEditMode.value === "fixed";
 
-    items.forEach(
-      (item, index) => {
-        if(index > 0){
-          item.remove();
-        }
-      }
-    );
+  const items = [
+    ...blastEditItems.querySelectorAll(
+      ".blast-edit-item"
+    )
+  ];
 
-    blastEditAddItem.style.display =
-      "none";
+  items.forEach(
+    function(item, index){
 
-  }else{
-    blastEditAddItem.style.display =
-      "inline-flex";
-  }
+      item.classList.toggle(
+        "fixed-hidden-item",
+        isFixed && index > 0
+      );
+
+    }
+  );
+
+  blastEditAddItem.style.display =
+    isFixed
+      ? "none"
+      : "inline-flex";
 }
-
 blastEditMode.addEventListener(
   "change",
   refreshBlastEditMode
