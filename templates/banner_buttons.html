@@ -557,6 +557,36 @@ html {
     max-height:420px;
   }
 }
+.btn-spinner{
+    width:13px;
+    height:13px;
+    border:2px solid rgba(255,255,255,.35);
+    border-top-color:#fff;
+    border-radius:50%;
+    display:none;
+    animation:spin .7s linear infinite;
+}
+
+.btn-content{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+}
+
+button.loading{
+    opacity:.9;
+    pointer-events:none;
+}
+
+button.loading .btn-spinner{
+    display:inline-block;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
   </style>
 </head>
 <body>
@@ -697,11 +727,22 @@ html {
           name="callback_data"
           placeholder="Callback Data (optional example: open_menu)">
 
-        <button
-          class="btn"
-          type="submit">
-          Add Button
-        </button>
+<button
+    class="btn"
+    id="addBannerButtonBtn"
+    type="submit">
+
+    <span class="btn-content">
+
+        <span class="btn-spinner"></span>
+
+        <span class="btn-label">
+            Add Button
+        </span>
+
+    </span>
+
+</button>
 
       </form>
 
@@ -813,11 +854,84 @@ window.addEventListener(
   "pageshow",
   hideLoading
 );
+window.addEventListener(
+    "pageshow",
+    function(){
 
+        if(addBannerButton){
+
+            addBannerButton.classList.remove(
+                "loading"
+            );
+
+            addBannerButton.disabled = false;
+
+            const label =
+                addBannerButton.querySelector(
+                    ".btn-label"
+                );
+
+            if(label){
+                label.textContent =
+                    "Add Button";
+            }
+
+        }
+
+    }
+);
 window.addEventListener("beforeunload", () => {
   showLoading();
 });
+const addBannerForm =
+    document.querySelector("form");
 
+const addBannerButton =
+    document.getElementById(
+        "addBannerButtonBtn"
+    );
+
+if(
+    addBannerForm &&
+    addBannerButton
+){
+
+    addBannerForm.addEventListener(
+        "submit",
+        function(e){
+
+            if(
+                addBannerForm.dataset.submitting ===
+                "true"
+            ){
+                e.preventDefault();
+                return;
+            }
+
+            addBannerForm.dataset.submitting =
+                "true";
+
+            addBannerButton.classList.add(
+                "loading"
+            );
+
+            addBannerButton.disabled = true;
+
+            const label =
+                addBannerButton.querySelector(
+                    ".btn-label"
+                );
+
+            if(label){
+                label.textContent =
+                    "Adding Button...";
+            }
+
+            showLoading();
+
+        }
+    );
+}
 document.querySelectorAll("a").forEach(a => {
   a.addEventListener("click", function () {
     const href = this.getAttribute("href");
@@ -835,11 +949,7 @@ document.querySelectorAll("a").forEach(a => {
   });
 });
 
-document.querySelectorAll("form").forEach(form => {
-  form.addEventListener("submit", () => {
-    showLoading();
-  });
-});
+
 const topbarUser =
   document.getElementById("topbarUser");
 
