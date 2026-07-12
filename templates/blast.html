@@ -1450,6 +1450,26 @@ body.blast-edit-open{
 .blast-edit-mode-select .select-items{
   z-index:5001;
 }
+.blast-edit-button-row
+.custom-select{
+
+margin:0;
+
+}
+
+.blast-edit-button-row
+.select-selected{
+
+height:34px;
+
+}
+
+.blast-edit-button-row
+.select-items{
+
+z-index:9999;
+
+}
   </style>
 </head>
 <body>
@@ -2803,18 +2823,38 @@ function createBlastEditButton(
       class="blast-edit-button-text"
       placeholder="Button name">
 
-    <select
-      class="blast-edit-button-type">
+<input
+  type="hidden"
+  class="blast-edit-button-type"
+  value="${buttonData.type || 'url'}">
 
-      <option value="url">
-        Open Link
-      </option>
+<div class="custom-select blast-edit-button-type-select">
 
-      <option value="menu">
-        Open Menu
-      </option>
+    <div
+        class="select-selected"
+        tabindex="0">
+        ${buttonData.type === "menu"
+            ? "Open Menu"
+            : "Open Link"}
+    </div>
 
-    </select>
+    <div class="select-items">
+
+        <div
+            data-value="url"
+            class="${buttonData.type !== "menu" ? "active" : ""}">
+            Open Link
+        </div>
+
+        <div
+            data-value="menu"
+            class="${buttonData.type === "menu" ? "active" : ""}">
+            Open Menu
+        </div>
+
+    </div>
+
+</div>
 
     <input
       type="text"
@@ -2843,18 +2883,25 @@ function createBlastEditButton(
   ).value =
     buttonData.value || "";
 
-  row
-    .querySelector(
-      ".blast-edit-button-type"
-    )
-    .addEventListener(
-      "change",
-      function(){
-        updateBlastEditButtonType(
-          row
-        );
-      }
-    );
+const hiddenType =
+row.querySelector(
+".blast-edit-button-type"
+);
+
+const customSelect =
+row.querySelector(
+".blast-edit-button-type-select"
+);
+
+setupCustomSelect(
+customSelect,
+hiddenType,
+function(){
+
+updateBlastEditButtonType(row);
+
+}
+);
 
   row
     .querySelector(
