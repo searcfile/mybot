@@ -2110,6 +2110,25 @@ document.querySelectorAll(".nav a").forEach(link => {
   }
 });
 const loading = document.getElementById("pageLoading");
+  const blastForm =
+  document.getElementById(
+    "blastForm"
+  );
+
+const saveBlastBtn =
+  document.getElementById(
+    "saveBlastBtn"
+  );
+
+const blastEditForm =
+  document.getElementById(
+    "blastEditForm"
+  );
+
+const blastEditSaveBtn =
+  document.getElementById(
+    "blastEditSaveBtn"
+  );
 
 function showLoading(){
   if (loading) loading.classList.add("show");
@@ -2119,18 +2138,18 @@ function hideLoading(){
   if (loading) loading.classList.remove("show");
 }
 
-window.addEventListener("load", () => {
-  setTimeout(hideLoading, 300);
-});
+window.addEventListener(
+  "load",
+  function(){
+    hideLoading();
+  }
+);
 
 window.addEventListener(
   "pageshow",
   function(){
 
-    setTimeout(
-      hideLoading,
-      300
-    );
+    hideLoading();
 
     if(saveBlastBtn){
       saveBlastBtn.classList.remove(
@@ -2620,16 +2639,6 @@ function bindItemButtonSections(){
   );
 }
 
-const blastForm =
-  document.getElementById(
-    "blastForm"
-  );
-
-const saveBlastBtn =
-  document.getElementById(
-    "saveBlastBtn"
-  );
-
 blastForm.addEventListener(
   "submit",
   function(){
@@ -2821,11 +2830,6 @@ if(
 const blastEditModal =
   document.getElementById(
     "blastEditModal"
-  );
-
-const blastEditForm =
-  document.getElementById(
-    "blastEditForm"
   );
 
 const blastEditName =
@@ -3541,11 +3545,6 @@ setupCustomSelect(
   }
 );
 
-
-const blastEditSaveBtn =
-  document.getElementById(
-    "blastEditSaveBtn"
-  );
 
 blastEditForm.addEventListener(
   "submit",
