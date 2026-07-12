@@ -1,4 +1,4 @@
-import os
+fdef get_promo_buttons(promo_id):import os
 import threading
 import asyncio
 import psycopg2
@@ -659,23 +659,50 @@ def get_promo_buttons(promo_id):
     return rows
 
 
-def add_promo_button(promo_id, text, url):
+def get_all_promo_buttons_by_promo():
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT COALESCE(MAX(sort_order), 0) FROM promo_buttons WHERE promo_id=%s", (promo_id,))
-    max_sort = cur.fetchone()[0] + 1
-
     cur.execute("""
-        INSERT INTO promo_buttons (promo_id, text, url, sort_order)
-        VALUES (%s, %s, %s, %s)
-    """, (promo_id, text, url, max_sort))
+        SELECT
+            promo_id,
+            id,
+            text,
+            url,
+            sort_order
+        FROM promo_buttons
+        ORDER BY
+            promo_id ASC,
+            sort_order ASC,
+            id ASC
+    """)
 
-    conn.commit()
+    rows = cur.fetchall()
+
     cur.close()
     conn.close()
 
+    buttons_by_promo = {}
 
+    for (
+        promo_id,
+        button_id,
+        text,
+        url,
+        sort_order
+    ) in rows:
+
+        buttons_by_promo.setdefault(
+            promo_id,
+            []
+        ).append({
+            "id": button_id,
+            "text": text or "",
+            "url": url or "",
+            "sort_order": sort_order or 0
+        })
+
+    return buttons_by_promo
 # =========================
 # BANNER BUTTONS
 # =========================
@@ -1180,14 +1207,26 @@ def admin_promos():
     if not require_login():
         return redirect("/admin/login")
 
-    promos = get_promos(active_only=False)
+    promos = get_promos(
+        active_only=False
+    )
 
-    base_layout = get_setting("base_menu_layout")
-    promo_layout = get_setting("promo_menu_layout")
+    promo_buttons_by_promo = (
+        get_all_promo_buttons_by_promo()
+    )
+
+    base_layout = get_setting(
+        "base_menu_layout"
+    )
+
+    promo_layout = get_setting(
+        "promo_menu_layout"
+    )
 
     return render_template(
         "promos.html",
         promos=promos,
+        promo_buttons_by_promo=promo_buttons_by_promo,
         base_layout=base_layout,
         promo_layout=promo_layout
     )
@@ -2141,77 +2180,151 @@ def admin_blast_edit(vault_id):
         buttons_by_item=buttons_by_item
     )
 # =========================
-# PROMO EDIT + BUTTONS
+# PROMO EDIT + INLINE BUTTONS
 # =========================
-@flask_app.route("/admin/promo/<int:promo_id>", methods=["GET", "POST"])
+@flask_app.route(
+    "/admin/promo/<int:promo_id>",
+    methods=["GET", "POST"]
+)
 def admin_edit_promo(promo_id):
     if not require_login():
         return redirect("/admin/login")
 
+    # Page promo_edit.html sudah dibuang.
+    if request.method == "GET":
+        return redirect("/admin/promos")
+
+    title = request.form.get(
+        "title",
+        ""
+    ).strip()
+
+    image_url = request.form.get(
+        "image_url",
+        ""
+    ).strip()
+
+    caption = request.form.get(
+        "caption",
+        ""
+    ).strip()
+
+    button_texts = request.form.getlist(
+        "button_text[]"
+    )
+
+    button_urls = request.form.getlist(
+        "button_url[]"
+    )
+
+    if not title or not image_url or not caption:
+        return redirect("/admin/promos")
+
+    clean_buttons = []
+
+    max_buttons = max(
+        len(button_texts),
+        len(button_urls),
+        0
+    )
+
+    for index in range(max_buttons):
+        text = (
+            button_texts[index].strip()
+            if index < len(button_texts)
+            else ""
+        )
+
+        url = (
+            button_urls[index].strip()
+            if index < len(button_urls)
+            else ""
+        )
+
+        # Row kosong diabaikan.
+        if not text and not url:
+            continue
+
+        # Row tidak lengkap diabaikan.
+        if not text or not url:
+            continue
+
+        # Telegram URL button perlukan URL sah.
+        if not url.startswith(
+            ("https://", "http://")
+        ):
+            continue
+
+        clean_buttons.append({
+            "text": text,
+            "url": url
+        })
+
     conn = get_db_connection()
     cur = conn.cursor()
 
-    if request.method == "POST":
-        title = request.form.get("title", "")
-        image_url = request.form.get("image_url", "")
-        caption = request.form.get("caption", "")
-
+    try:
         cur.execute("""
-            UPDATE promos SET title=%s, image_url=%s, caption=%s
+            UPDATE promos
+            SET
+                title=%s,
+                image_url=%s,
+                caption=%s
             WHERE id=%s
-        """, (title, image_url, caption, promo_id))
+        """, (
+            title,
+            image_url,
+            caption,
+            promo_id
+        ))
+
+        # Buang semua buttons lama promo ini.
+        cur.execute("""
+            DELETE FROM promo_buttons
+            WHERE promo_id=%s
+        """, (
+            promo_id,
+        ))
+
+        # Simpan semula ikut urutan modal.
+        for sort_order, button in enumerate(
+            clean_buttons,
+            start=1
+        ):
+            cur.execute("""
+                INSERT INTO promo_buttons (
+                    promo_id,
+                    text,
+                    url,
+                    sort_order
+                )
+                VALUES (%s, %s, %s, %s)
+            """, (
+                promo_id,
+                button["text"],
+                button["url"],
+                sort_order
+            ))
+
         conn.commit()
+
+    except Exception as error:
+        conn.rollback()
+        print(
+            "[PROMO EDIT ERROR]",
+            type(error).__name__,
+            str(error)
+        )
 
         cur.close()
         conn.close()
-        return redirect(f"/admin/promo/{promo_id}")
 
-    cur.execute("SELECT id, title, image_url, caption FROM promos WHERE id=%s", (promo_id,))
-    promo = cur.fetchone()
-
-    cur.execute("""
-        SELECT id, text, url, sort_order
-        FROM promo_buttons
-        WHERE promo_id=%s
-        ORDER BY sort_order ASC
-    """, (promo_id,))
-    buttons = cur.fetchall()
+        return redirect("/admin/promos")
 
     cur.close()
     conn.close()
 
-    return render_template("promo_edit.html", promo=promo, buttons=buttons)
-
-
-@flask_app.route("/admin/promo/<int:promo_id>/button/add", methods=["POST"])
-def admin_add_promo_button_route(promo_id):
-    if not require_login():
-        return redirect("/admin/login")
-
-    text_btn = request.form.get("text", "").strip()
-    url = request.form.get("url", "").strip()
-
-    if not text_btn or not url:
-        return redirect(f"/admin/promo/{promo_id}")
-
-    add_promo_button(promo_id, text_btn, url)
-    return redirect(f"/admin/promo/{promo_id}")
-
-
-@flask_app.route("/admin/promo/button/delete/<int:button_id>/<int:promo_id>")
-def admin_delete_promo_button(button_id, promo_id):
-    if not require_login():
-        return redirect("/admin/login")
-
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM promo_buttons WHERE id=%s", (button_id,))
-    conn.commit()
-    cur.close()
-    conn.close()
-
-    return redirect(f"/admin/promo/{promo_id}")
-
+    return redirect("/admin/promos")
 
 # =========================
 # BANNER BUTTONS
