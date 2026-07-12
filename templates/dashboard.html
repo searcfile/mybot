@@ -59,26 +59,36 @@
   padding:0 16px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
   gap:14px;
   box-sizing:border-box;
   background:rgba(255,255,255,.05);
   border-bottom:1px solid rgba(255,255,255,.08);
+  overflow:visible;
+}
+
+.nav{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+  flex:1 1 auto;
+}
+
+.topbar-right{
+  margin-left:auto;
+  min-width:max-content;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:14px;
+  flex:0 0 auto;
 }
 .topbar-user{
   position:relative;
   margin-left:0;
   flex-shrink:0;
 }
-.topbar-right{
-  margin-left:auto;
-  min-width:0;
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  gap:14px;
-}
-
 .kl-clock{
   min-width:0;
   display:flex;
@@ -229,14 +239,6 @@
   fill:currentColor;
   flex-shrink:0;
 }
-
-.nav {
-  display: flex;
-  gap: 10px;
-  flex-wrap: nowrap;
-  align-items: center;
-}
-
 .nav a{
     display:flex;
     align-items:center;
@@ -751,52 +753,101 @@ html {
   from{ transform:rotate(0deg); }
   to{ transform:rotate(360deg); }
 }
-@media (max-width: 768px) {
-  .topbar {
-    height: 64px;
-    padding-inline: 10px;
-    gap: 8px;
+@media(max-width:1150px){
+
+  .topbar{
+    padding-inline:12px;
+    gap:10px;
   }
-.topbar-right{
-  gap:8px;
-}
 
-.kl-clock{
-  min-width:74px;
-  flex-direction:column;
-  align-items:flex-start;
-  justify-content:center;
-  gap:3px;
-  white-space:normal;
-}
-
-.kl-clock-city{
-  font-size:10px;
-  line-height:1;
-}
-
-.kl-clock-value{
-  display:flex;
-  align-items:baseline;
-  gap:4px;
-  white-space:nowrap;
-}
-
-#klClockTime{
-  font-size:16px;
-}
-
-#klClockDate{
-  font-size:10px;
-}
-  .topbar h2 {
-    font-size: 17px;
-    line-height: 1;
-    white-space: nowrap;
-    flex-shrink: 0;
+  .nav{
+    gap:7px;
   }
-    .topbar-user{
+
+  .nav a{
+    width:38px;
+    height:38px;
+    min-width:38px;
+    padding:0;
+    justify-content:center;
+    border-radius:8px;
+  }
+
+  .nav a .nav-text{
+    display:none;
+  }
+
+  .nav-icon{
+    width:19.2px;
+    height:19.2px;
+  }
+
+  .topbar-right{
+    gap:9px;
+  }
+
+  .username-text{
+    max-width:90px;
+  }
+}
+@media(max-width:768px){
+
+  .topbar{
+    height:64px;
+    padding-inline:10px;
+    gap:8px;
+  }
+
+  .nav{
+    gap:6px;
+    min-width:0;
+  }
+
+  .nav a{
+    width:36px;
+    height:36px;
+    min-width:36px;
+    padding:0;
+    justify-content:center;
+  }
+
+  .nav a .nav-text{
+    display:none;
+  }
+
+  .topbar-right{
     margin-left:auto;
+    gap:7px;
+    flex-shrink:0;
+  }
+
+  .kl-clock{
+    min-width:72px;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    gap:3px;
+    white-space:normal;
+  }
+
+  .kl-clock-city{
+    font-size:10px;
+    line-height:1;
+  }
+
+  .kl-clock-value{
+    display:flex;
+    align-items:baseline;
+    gap:4px;
+    white-space:nowrap;
+  }
+
+  #klClockTime{
+    font-size:15px;
+  }
+
+  #klClockDate{
+    font-size:9px;
   }
 
   .username-btn{
@@ -814,62 +865,80 @@ html {
     right:0;
   }
 
-  .nav {
-    margin-left: 0;
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 7px;
-    overflow: visible;
-    flex-shrink: 0;
-  }
-
-  .nav a {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    padding: 0;
-    justify-content: center;
-    border-radius: 8px;
-  }
-
-  .nav a .nav-text {
-    display: none;
-  }
-
-  .nav-icon {
-    width: 19.2px;
-    height: 19.2px;
-  }
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 0px;
+  .dashboard-grid{
+    grid-template-columns:1fr;
+    gap:0;
   }
 }
 @media(max-width:480px){
 
   .topbar{
-    padding-inline:8px;
-    gap:6px;
+    padding-inline:6px;
+    gap:5px;
+  }
+
+  .nav{
+    gap:4px;
+  }
+
+  .nav a{
+    width:32px;
+    height:32px;
+    min-width:32px;
+  }
+
+  .nav-icon{
+    width:17px;
+    height:17px;
+    min-width:17px;
+    min-height:17px;
   }
 
   .topbar-right{
-    gap:6px;
+    gap:5px;
   }
 
   .kl-clock{
-    min-width:66px;
+    min-width:62px;
   }
 
   .kl-clock-city{
-    font-size:9px;
+    font-size:8px;
   }
 
   #klClockTime{
-    font-size:14px;
+    font-size:13px;
   }
 
   #klClockDate{
-    font-size:9px;
+    font-size:8px;
+  }
+
+  .username-btn{
+    width:32px;
+    height:32px;
+    min-width:32px;
+  }
+
+  .username-icon{
+    width:15px;
+    height:15px;
+  }
+}
+@media(max-width:360px){
+
+  .kl-clock-city{
+    display:none;
+  }
+
+  .kl-clock{
+    min-width:auto;
+  }
+
+  .kl-clock-value{
+    flex-direction:column;
+    align-items:flex-end;
+    gap:1px;
   }
 
 }
