@@ -1438,6 +1438,18 @@ body.blast-edit-open{
     flex-direction:column;
   }
 }
+.blast-edit-mode-select{
+  position:relative;
+  z-index:20;
+}
+
+.blast-edit-mode-select.open{
+  z-index:5000;
+}
+
+.blast-edit-mode-select .select-items{
+  z-index:5001;
+}
   </style>
 </head>
 <body>
@@ -1914,20 +1926,36 @@ body.blast-edit-open{
         Select Type
       </label>
 
-      <select
-        name="mode"
-        id="blastEditMode"
-        required>
+<input
+  type="hidden"
+  name="mode"
+  id="blastEditMode"
+  value="random">
 
-        <option value="random">
-          Random Auto Blast
-        </option>
+<div
+  class="custom-select blast-edit-mode-select"
+  id="blastEditModeCustomSelect">
 
-        <option value="fixed">
-          Fixed Auto Blast
-        </option>
+  <div
+    class="select-selected"
+    tabindex="0">
+    Random Auto Blast
+  </div>
 
-      </select>
+  <div class="select-items">
+
+    <div
+      class="active"
+      data-value="random">
+      Random Auto Blast
+    </div>
+
+    <div
+      data-value="fixed">
+      Fixed Auto Blast
+    </div>
+  </div>
+</div>
 
       <div class="blast-edit-section-head">
 
@@ -2645,7 +2673,10 @@ const blastEditMode =
   document.getElementById(
     "blastEditMode"
   );
-
+const blastEditModeCustomSelect =
+  document.getElementById(
+    "blastEditModeCustomSelect"
+  );
 const blastEditTimes =
   document.getElementById(
     "blastEditTimes"
@@ -3037,6 +3068,43 @@ function syncBlastEditButtons(){
     });
 }
 
+  function setBlastEditModeValue(value){
+  const safeValue =
+    value === "fixed"
+      ? "fixed"
+      : "random";
+
+  blastEditMode.value =
+    safeValue;
+
+  const selected =
+    blastEditModeCustomSelect.querySelector(
+      ".select-selected"
+    );
+
+  const options =
+    blastEditModeCustomSelect.querySelectorAll(
+      ".select-items div"
+    );
+
+  options.forEach(option => {
+    const isActive =
+      option.dataset.value ===
+      safeValue;
+
+    option.classList.toggle(
+      "active",
+      isActive
+    );
+
+    if(isActive){
+      selected.textContent =
+        option.textContent.trim();
+    }
+  });
+
+  refreshBlastEditMode();
+}
 
 async function openBlastEditModal(
   vaultId
@@ -3073,15 +3141,17 @@ async function openBlastEditModal(
 
     blastEditName.value =
       vault.name || "";
-
-    blastEditMode.value =
-      vault.mode || "random";
-
-    blastEditTimes.innerHTML =
+    
+        blastEditTimes.innerHTML =
       "";
-
     blastEditItems.innerHTML =
       "";
+
+setBlastEditModeValue(
+  vault.mode || "random"
+);
+
+
 
     const sendTimes =
       Array.isArray(
@@ -3114,7 +3184,8 @@ async function openBlastEditModal(
     }else{
       createBlastEditItem();
     }
-
+   refreshBlastEditMode();
+    
     blastEditForm.action =
       `/admin/blast/edit/${vault.id}`;
 
@@ -3160,6 +3231,9 @@ function closeBlastEditModal(){
   );
 
   blastEditForm.reset();
+  setBlastEditModeValue(
+  "random"
+);
 
   blastEditForm.removeAttribute(
     "action"
@@ -3219,34 +3293,43 @@ blastEditAddItem.addEventListener(
 );
 
 
+function refreshBlastEditMode(){
+  if(
+    blastEditMode.value === "fixed"
+  ){
+    const items = [
+      ...blastEditItems.querySelectorAll(
+        ".blast-edit-item"
+      )
+    ];
+
+    items.forEach(
+      (item, index) => {
+        if(index > 0){
+          item.remove();
+        }
+      }
+    );
+
+    blastEditAddItem.style.display =
+      "none";
+
+  }else{
+    blastEditAddItem.style.display =
+      "inline-flex";
+  }
+}
+
 blastEditMode.addEventListener(
   "change",
+  refreshBlastEditMode
+);
+
+setupCustomSelect(
+  blastEditModeCustomSelect,
+  blastEditMode,
   function(){
-
-    if(
-      blastEditMode.value ===
-      "fixed"
-    ){
-      const items = [
-        ...blastEditItems.querySelectorAll(
-          ".blast-edit-item"
-        )
-      ];
-
-      items.forEach(
-        (item, index) => {
-          if(index > 0){
-            item.remove();
-          }
-        }
-      );
-
-      blastEditAddItem.style.display =
-        "none";
-    }else{
-      blastEditAddItem.style.display =
-        "inline-flex";
-    }
+    refreshBlastEditMode();
   }
 );
 
