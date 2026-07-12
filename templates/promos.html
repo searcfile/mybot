@@ -65,9 +65,9 @@
   background:rgba(255,255,255,.05);
   border-bottom:1px solid rgba(255,255,255,.08);
 }
-  .topbar-user{
+.topbar-user{
   position:relative;
-  margin-left:auto;
+  margin-left:0;
   flex-shrink:0;
 }
 
@@ -1460,6 +1460,34 @@ body.edit-promo-open{
     width:100%;
   }
 }
+@media(max-width:480px){
+
+  .topbar{
+    padding-inline:8px;
+    gap:6px;
+  }
+
+  .topbar-right{
+    gap:6px;
+  }
+
+  .kl-clock{
+    min-width:66px;
+  }
+
+  .kl-clock-city{
+    font-size:9px;
+  }
+
+  #klClockTime{
+    font-size:14px;
+  }
+
+  #klClockDate{
+    font-size:9px;
+  }
+
+}
   </style>
 </head>
 
@@ -2013,6 +2041,74 @@ body.edit-promo-open{
 </div>
   <script>
 const currentPath = window.location.pathname;
+
+const klClockTime =
+  document.getElementById(
+    "klClockTime"
+  );
+
+const klClockDate =
+  document.getElementById(
+    "klClockDate"
+  );
+
+function updateKualaLumpurClock(){
+  if(
+    !klClockTime ||
+    !klClockDate
+  ){
+    return;
+  }
+
+  const now =
+    new Date();
+
+  const timeFormatter =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:
+          "Asia/Kuala_Lumpur",
+
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit",
+
+        hour12:
+          false
+      }
+    );
+
+  const dateFormatter =
+    new Intl.DateTimeFormat(
+      "en-US",
+      {
+        timeZone:
+          "Asia/Kuala_Lumpur",
+
+        month:
+          "short",
+
+        day:
+          "2-digit"
+      }
+    );
+
+  klClockTime.textContent =
+    timeFormatter.format(now);
+
+  klClockDate.textContent =
+    dateFormatter.format(now);
+}
+
+updateKualaLumpurClock();
+
+setInterval(
+  updateKualaLumpurClock,
+  1000
+);
 
 document.querySelectorAll(".nav a").forEach(link => {
   const href = link.getAttribute("href");
