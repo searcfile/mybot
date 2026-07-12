@@ -1228,6 +1228,216 @@ html {
   scrollbar-width: thin;
   scrollbar-color: #555 transparent;
 }
+.blast-edit-modal{
+  position:fixed;
+  inset:0;
+  z-index:9999998;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  box-sizing:border-box;
+}
+
+.blast-edit-modal.show{
+  display:flex;
+}
+
+.blast-edit-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);
+}
+
+.blast-edit-dialog{
+  position:relative;
+  z-index:1;
+  width:min(760px, 100%);
+  max-height:calc(100vh - 36px);
+  padding:18px;
+  overflow-y:auto;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  background:#0b2344;
+  box-shadow:0 24px 70px rgba(0,0,0,.55);
+  animation:blastEditPop .2s ease;
+}
+
+.blast-edit-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.blast-edit-header h3{
+  margin:0;
+}
+
+.blast-edit-close{
+  width:32px;
+  min-width:32px;
+  height:32px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  border-radius:7px;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-size:20px;
+  cursor:pointer;
+}
+
+.blast-edit-close:hover{
+  background:rgba(239,68,68,.18);
+  color:#ef4444;
+}
+
+.blast-edit-section-head{
+  margin:12px 0 8px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  color:#38bdf8;
+  font-weight:600;
+}
+
+.blast-edit-time-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  margin-bottom:8px;
+}
+
+.blast-edit-time-row input{
+  margin:0;
+}
+
+.blast-edit-item{
+  margin-bottom:12px;
+  padding:12px;
+  border:1px dashed rgba(255,255,255,.18);
+  border-radius:10px;
+  background:rgba(0,0,0,.12);
+}
+
+.blast-edit-item-head{
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.blast-edit-item-title{
+  color:#38bdf8;
+  font-size:12px;
+  font-weight:700;
+}
+
+.blast-edit-item textarea{
+  min-height:130px;
+}
+
+.blast-edit-buttons{
+  margin-top:10px;
+  padding:10px;
+  border:1px dashed rgba(255,255,255,.14);
+  border-radius:8px;
+}
+
+.blast-edit-buttons-title{
+  margin-bottom:8px;
+  color:#38bdf8;
+  font-size:12px;
+  font-weight:600;
+}
+
+.blast-edit-button-row{
+  display:grid;
+  grid-template-columns:
+    minmax(0,1fr)
+    115px
+    minmax(0,1fr)
+    auto;
+  gap:7px;
+  margin-bottom:8px;
+}
+
+.blast-edit-button-row input,
+.blast-edit-button-row select{
+  min-width:0;
+  margin:0;
+}
+
+.blast-edit-button-row
+.blast-edit-button-value:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.blast-edit-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:16px;
+}
+
+.blast-edit-cancel,
+.blast-edit-save{
+  height:36px;
+  border-radius:7px;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.blast-edit-cancel{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);
+}
+
+.blast-edit-save{
+  border:0;
+  background:#1668dc;
+}
+
+body.blast-edit-open{
+  overflow:hidden;
+}
+
+@keyframes blastEditPop{
+  from{
+    opacity:0;
+    transform:scale(.95) translateY(8px);
+  }
+
+  to{
+    opacity:1;
+    transform:scale(1) translateY(0);
+  }
+}
+
+@media(max-width:650px){
+  .blast-edit-button-row{
+    grid-template-columns:1fr;
+  }
+
+  .blast-edit-actions{
+    grid-template-columns:1fr;
+  }
+
+  .blast-edit-section-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
   </style>
 </head>
 <body>
@@ -1515,11 +1725,12 @@ html {
           </div>
 
           <div class="vault-actions">
-            <a
-              class="btn-small"
-              href="/admin/blast/edit/{{ v[0] }}">
-              Edit
-            </a>
+<button
+  type="button"
+  class="btn-small edit-vault-btn"
+  data-vault-id="{{ v[0] }}">
+  Edit
+</button>
 
             <a
               class="btn-small"
@@ -1650,6 +1861,120 @@ html {
         Delete
       </button>
     </div>
+  </div>
+</div>
+  
+<div
+  class="blast-edit-modal"
+  id="blastEditModal"
+  aria-hidden="true">
+
+  <div
+    class="blast-edit-backdrop"
+    data-close-blast-edit>
+  </div>
+
+  <div
+    class="blast-edit-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="blastEditModalTitle">
+
+    <div class="blast-edit-header">
+
+      <h3 id="blastEditModalTitle">
+        Edit Blast Message
+      </h3>
+
+      <button
+        type="button"
+        class="blast-edit-close"
+        data-close-blast-edit
+        aria-label="Close">
+        ×
+      </button>
+
+    </div>
+
+    <form
+      method="POST"
+      id="blastEditForm">
+
+      <label class="label-required">
+        Title
+      </label>
+
+      <input
+        type="text"
+        name="name"
+        id="blastEditName"
+        required>
+
+      <label class="label-required">
+        Select Type
+      </label>
+
+      <select
+        name="mode"
+        id="blastEditMode"
+        required>
+
+        <option value="random">
+          Random Auto Blast
+        </option>
+
+        <option value="fixed">
+          Fixed Auto Blast
+        </option>
+
+      </select>
+
+      <div class="blast-edit-section-head">
+
+        <span>Daily Send Times</span>
+
+        <button
+          type="button"
+          class="btn-small"
+          id="blastEditAddTime">
+          + Add Send Time
+        </button>
+
+      </div>
+
+      <div id="blastEditTimes"></div>
+
+      <div class="blast-edit-section-head">
+
+        <span>Banner / Captions</span>
+
+        <button
+          type="button"
+          class="btn-small"
+          id="blastEditAddItem">
+          + Add Banner/Caption
+        </button>
+
+      </div>
+
+      <div id="blastEditItems"></div>
+
+      <div class="blast-edit-actions">
+
+        <button
+          type="button"
+          class="blast-edit-cancel"
+          data-close-blast-edit>
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="blast-edit-save">
+          Save Changes
+        </button>
+      </div>
+    </form>
   </div>
 </div>
 <script>
@@ -2301,6 +2626,655 @@ if(
     }
   );
 }
+const blastEditModal =
+  document.getElementById(
+    "blastEditModal"
+  );
+
+const blastEditForm =
+  document.getElementById(
+    "blastEditForm"
+  );
+
+const blastEditName =
+  document.getElementById(
+    "blastEditName"
+  );
+
+const blastEditMode =
+  document.getElementById(
+    "blastEditMode"
+  );
+
+const blastEditTimes =
+  document.getElementById(
+    "blastEditTimes"
+  );
+
+const blastEditItems =
+  document.getElementById(
+    "blastEditItems"
+  );
+
+const blastEditAddTime =
+  document.getElementById(
+    "blastEditAddTime"
+  );
+
+const blastEditAddItem =
+  document.getElementById(
+    "blastEditAddItem"
+  );
+
+
+function createBlastEditTime(
+  value = ""
+){
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "blast-edit-time-row";
+
+  row.innerHTML = `
+    <input
+      type="time"
+      name="send_time[]"
+      required>
+
+    <button
+      type="button"
+      class="btn-small blast-edit-remove-time">
+      Remove
+    </button>
+  `;
+
+  row.querySelector("input").value =
+    value || "";
+
+  row
+    .querySelector(
+      ".blast-edit-remove-time"
+    )
+    .addEventListener(
+      "click",
+      function(){
+
+        const rows =
+          blastEditTimes.querySelectorAll(
+            ".blast-edit-time-row"
+          );
+
+        if(rows.length <= 1){
+          return;
+        }
+
+        row.remove();
+      }
+    );
+
+  blastEditTimes.appendChild(row);
+
+  return row;
+}
+
+
+function updateBlastEditButtonType(row){
+  const type =
+    row.querySelector(
+      ".blast-edit-button-type"
+    ).value;
+
+  const valueInput =
+    row.querySelector(
+      ".blast-edit-button-value"
+    );
+
+  if(type === "menu"){
+    valueInput.value =
+      "open_menu";
+
+    valueInput.disabled =
+      true;
+
+    valueInput.placeholder =
+      "Open bot menu";
+  }else{
+    if(
+      valueInput.value ===
+      "open_menu"
+    ){
+      valueInput.value = "";
+    }
+
+    valueInput.disabled =
+      false;
+
+    valueInput.placeholder =
+      "https://yourdomain.com";
+  }
+}
+
+
+function createBlastEditButton(
+  container,
+  buttonData = {}
+){
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "blast-edit-button-row";
+
+  row.innerHTML = `
+    <input
+      type="text"
+      class="blast-edit-button-text"
+      placeholder="Button name">
+
+    <select
+      class="blast-edit-button-type">
+
+      <option value="url">
+        Open Link
+      </option>
+
+      <option value="menu">
+        Open Menu
+      </option>
+
+    </select>
+
+    <input
+      type="text"
+      class="blast-edit-button-value"
+      placeholder="https://yourdomain.com">
+
+    <button
+      type="button"
+      class="btn-small blast-edit-remove-button">
+      Remove
+    </button>
+  `;
+
+  row.querySelector(
+    ".blast-edit-button-text"
+  ).value =
+    buttonData.text || "";
+
+  row.querySelector(
+    ".blast-edit-button-type"
+  ).value =
+    buttonData.type || "url";
+
+  row.querySelector(
+    ".blast-edit-button-value"
+  ).value =
+    buttonData.value || "";
+
+  row
+    .querySelector(
+      ".blast-edit-button-type"
+    )
+    .addEventListener(
+      "change",
+      function(){
+        updateBlastEditButtonType(
+          row
+        );
+      }
+    );
+
+  row
+    .querySelector(
+      ".blast-edit-remove-button"
+    )
+    .addEventListener(
+      "click",
+      function(){
+        row.remove();
+      }
+    );
+
+  container.appendChild(row);
+
+  updateBlastEditButtonType(row);
+
+  return row;
+}
+
+
+function createBlastEditItem(
+  itemData = {}
+){
+  const item =
+    document.createElement("div");
+
+  item.className =
+    "blast-edit-item";
+
+  item.innerHTML = `
+    <div class="blast-edit-item-head">
+
+      <div class="blast-edit-item-title">
+        Banner / Caption
+      </div>
+
+      <button
+        type="button"
+        class="btn-small blast-edit-remove-item">
+        Remove
+      </button>
+
+    </div>
+
+    <label>
+      Banner Image URL
+    </label>
+
+    <input
+      type="text"
+      name="image_url[]"
+      placeholder="https://res.cloudinary.com/...">
+
+    <label>
+      Caption
+    </label>
+
+    <textarea
+      name="caption[]"
+      placeholder="Write caption..."
+      required></textarea>
+
+    <input
+      type="hidden"
+      name="buttons_json[]"
+      class="blast-edit-buttons-json"
+      value="[]">
+
+    <div class="blast-edit-buttons">
+
+      <div class="blast-edit-buttons-title">
+        Inline Buttons
+      </div>
+
+      <div class="blast-edit-buttons-list">
+      </div>
+
+      <button
+        type="button"
+        class="btn-small blast-edit-add-button">
+        + Add Button
+      </button>
+
+    </div>
+  `;
+
+  item.querySelector(
+    'input[name="image_url[]"]'
+  ).value =
+    itemData.image_url || "";
+
+  item.querySelector(
+    'textarea[name="caption[]"]'
+  ).value =
+    itemData.caption || "";
+
+  const buttonList =
+    item.querySelector(
+      ".blast-edit-buttons-list"
+    );
+
+  const buttons =
+    Array.isArray(itemData.buttons)
+      ? itemData.buttons
+      : [];
+
+  buttons.forEach(button => {
+    createBlastEditButton(
+      buttonList,
+      button
+    );
+  });
+
+  item
+    .querySelector(
+      ".blast-edit-add-button"
+    )
+    .addEventListener(
+      "click",
+      function(){
+        createBlastEditButton(
+          buttonList
+        );
+      }
+    );
+
+  item
+    .querySelector(
+      ".blast-edit-remove-item"
+    )
+    .addEventListener(
+      "click",
+      function(){
+
+        const items =
+          blastEditItems.querySelectorAll(
+            ".blast-edit-item"
+          );
+
+        if(items.length <= 1){
+          return;
+        }
+
+        item.remove();
+      }
+    );
+
+  blastEditItems.appendChild(item);
+
+  return item;
+}
+
+
+function syncBlastEditButtons(){
+  blastEditItems
+    .querySelectorAll(
+      ".blast-edit-item"
+    )
+    .forEach(item => {
+
+      const buttons = [];
+
+      item
+        .querySelectorAll(
+          ".blast-edit-button-row"
+        )
+        .forEach(row => {
+
+          const text =
+            row.querySelector(
+              ".blast-edit-button-text"
+            ).value.trim();
+
+          const type =
+            row.querySelector(
+              ".blast-edit-button-type"
+            ).value;
+
+          const valueInput =
+            row.querySelector(
+              ".blast-edit-button-value"
+            );
+
+          const value =
+            type === "menu"
+              ? "open_menu"
+              : valueInput.value.trim();
+
+          if(!text){
+            return;
+          }
+
+          if(
+            type === "url" &&
+            !value
+          ){
+            return;
+          }
+
+          buttons.push({
+            text,
+            type,
+            value
+          });
+        });
+
+      item.querySelector(
+        ".blast-edit-buttons-json"
+      ).value =
+        JSON.stringify(buttons);
+    });
+}
+
+
+async function openBlastEditModal(
+  vaultId
+){
+  showLoading();
+
+  try{
+    const response =
+      await fetch(
+        `/admin/blast/edit/${vaultId}`,
+        {
+          headers:{
+            "Accept":
+              "application/json"
+          }
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if(
+      !response.ok ||
+      !data.success
+    ){
+      throw new Error(
+        data.message ||
+        "Unable to load blast vault"
+      );
+    }
+
+    const vault =
+      data.vault;
+
+    blastEditName.value =
+      vault.name || "";
+
+    blastEditMode.value =
+      vault.mode || "random";
+
+    blastEditTimes.innerHTML =
+      "";
+
+    blastEditItems.innerHTML =
+      "";
+
+    const sendTimes =
+      Array.isArray(
+        vault.send_times
+      )
+        ? vault.send_times
+        : [];
+
+    if(sendTimes.length){
+      sendTimes.forEach(time => {
+        createBlastEditTime(
+          time
+        );
+      });
+    }else{
+      createBlastEditTime();
+    }
+
+    const items =
+      Array.isArray(vault.items)
+        ? vault.items
+        : [];
+
+    if(items.length){
+      items.forEach(item => {
+        createBlastEditItem(
+          item
+        );
+      });
+    }else{
+      createBlastEditItem();
+    }
+
+    blastEditForm.action =
+      `/admin/blast/edit/${vault.id}`;
+
+    blastEditModal.classList.add(
+      "show"
+    );
+
+    blastEditModal.setAttribute(
+      "aria-hidden",
+      "false"
+    );
+
+    document.body.classList.add(
+      "blast-edit-open"
+    );
+
+  }catch(error){
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Unable to load blast data"
+    );
+
+  }finally{
+    hideLoading();
+  }
+}
+
+
+function closeBlastEditModal(){
+  blastEditModal.classList.remove(
+    "show"
+  );
+
+  blastEditModal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.classList.remove(
+    "blast-edit-open"
+  );
+
+  blastEditForm.reset();
+
+  blastEditForm.removeAttribute(
+    "action"
+  );
+
+  blastEditTimes.innerHTML = "";
+  blastEditItems.innerHTML = "";
+}
+
+
+document
+  .querySelectorAll(
+    ".edit-vault-btn"
+  )
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      function(){
+
+        openBlastEditModal(
+          this.dataset.vaultId
+        );
+      }
+    );
+
+  });
+
+
+document
+  .querySelectorAll(
+    "[data-close-blast-edit]"
+  )
+  .forEach(element => {
+
+    element.addEventListener(
+      "click",
+      closeBlastEditModal
+    );
+
+  });
+
+
+blastEditAddTime.addEventListener(
+  "click",
+  function(){
+    createBlastEditTime();
+  }
+);
+
+
+blastEditAddItem.addEventListener(
+  "click",
+  function(){
+    createBlastEditItem();
+  }
+);
+
+
+blastEditMode.addEventListener(
+  "change",
+  function(){
+
+    if(
+      blastEditMode.value ===
+      "fixed"
+    ){
+      const items = [
+        ...blastEditItems.querySelectorAll(
+          ".blast-edit-item"
+        )
+      ];
+
+      items.forEach(
+        (item, index) => {
+          if(index > 0){
+            item.remove();
+          }
+        }
+      );
+
+      blastEditAddItem.style.display =
+        "none";
+    }else{
+      blastEditAddItem.style.display =
+        "inline-flex";
+    }
+  }
+);
+
+
+blastEditForm.addEventListener(
+  "submit",
+  function(){
+    syncBlastEditButtons();
+    showLoading();
+  }
+);
+
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(
+      event.key === "Escape" &&
+      blastEditModal.classList.contains(
+        "show"
+      )
+    ){
+      closeBlastEditModal();
+    }
+
+  }
+);
 </script>
 </body>
 </html>
