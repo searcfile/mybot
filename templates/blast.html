@@ -1489,6 +1489,40 @@ height:34px;
 z-index:9999;
 
 }
+.btn-spinner{
+  width:13px;
+  height:13px;
+  display:none;
+  flex-shrink:0;
+  box-sizing:border-box;
+  border:2px solid rgba(255,255,255,.38);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:buttonSpinnerRotate .7s linear infinite;
+}
+
+.btn-content{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+}
+
+button.is-saving{
+  opacity:.82;
+  pointer-events:none;
+  cursor:not-allowed;
+}
+
+button.is-saving .btn-spinner{
+  display:inline-block;
+}
+
+@keyframes buttonSpinnerRotate{
+  to{
+    transform:rotate(360deg);
+  }
+}
   </style>
 </head>
 <body>
@@ -1728,8 +1762,19 @@ z-index:9999;
 
 <div class="save-vault-space"></div>
 
-<button class="btn" type="submit">
-  Save Massage
+<button
+  class="btn"
+  type="submit"
+  id="saveBlastBtn">
+
+  <span class="btn-content">
+    <span class="btn-spinner"></span>
+
+    <span class="btn-label">
+      Save Message
+    </span>
+  </span>
+
 </button>
 
       </form>
@@ -2035,11 +2080,20 @@ z-index:9999;
           Cancel
         </button>
 
-        <button
-          type="submit"
-          class="blast-edit-save">
-          Save Changes
-        </button>
+<button
+  type="submit"
+  class="blast-edit-save"
+  id="blastEditSaveBtn">
+
+  <span class="btn-content">
+    <span class="btn-spinner"></span>
+
+    <span class="btn-label">
+      Save Changes
+    </span>
+  </span>
+
+</button>
       </div>
     </form>
   </div>
@@ -2069,9 +2123,53 @@ window.addEventListener("load", () => {
   setTimeout(hideLoading, 300);
 });
 
-window.addEventListener("pageshow", () => {
-  setTimeout(hideLoading, 300);
-});
+window.addEventListener(
+  "pageshow",
+  function(){
+
+    setTimeout(
+      hideLoading,
+      300
+    );
+
+    if(saveBlastBtn){
+      saveBlastBtn.classList.remove(
+        "is-saving"
+      );
+
+      saveBlastBtn.disabled = false;
+
+      const label =
+        saveBlastBtn.querySelector(
+          ".btn-label"
+        );
+
+      if(label){
+        label.textContent =
+          "Save Message";
+      }
+    }
+
+    if(blastEditSaveBtn){
+      blastEditSaveBtn.classList.remove(
+        "is-saving"
+      );
+
+      blastEditSaveBtn.disabled = false;
+
+      const label =
+        blastEditSaveBtn.querySelector(
+          ".btn-label"
+        );
+
+      if(label){
+        label.textContent =
+          "Save Changes";
+      }
+    }
+
+  }
+);
 
 window.addEventListener("beforeunload", () => {
   showLoading();
@@ -2094,11 +2192,6 @@ document.querySelectorAll("a").forEach(a => {
   });
 });
 
-document.querySelectorAll("form").forEach(form => {
-  form.addEventListener("submit", () => {
-    showLoading();
-  });
-});
   
 const mode = document.getElementById("mode");
 
@@ -2527,13 +2620,45 @@ function bindItemButtonSections(){
   );
 }
 
-document
-  .getElementById("blastForm")
-  .addEventListener("submit", function(){
+const blastForm =
+  document.getElementById(
+    "blastForm"
+  );
+
+const saveBlastBtn =
+  document.getElementById(
+    "saveBlastBtn"
+  );
+
+blastForm.addEventListener(
+  "submit",
+  function(){
+
     document
       .querySelectorAll(".item-box")
       .forEach(saveItemButtons);
-  });
+
+    if(saveBlastBtn){
+      saveBlastBtn.classList.add(
+        "is-saving"
+      );
+
+      saveBlastBtn.disabled = true;
+
+      const label =
+        saveBlastBtn.querySelector(
+          ".btn-label"
+        );
+
+      if(label){
+        label.textContent =
+          "Saving Message...";
+      }
+    }
+
+    showLoading();
+  }
+);
 
 bindItemButtonSections();
 refreshMode();
@@ -3297,6 +3422,23 @@ function closeBlastEditModal(){
   );
 
   blastEditForm.reset();
+  if(blastEditSaveBtn){
+  blastEditSaveBtn.classList.remove(
+    "is-saving"
+  );
+
+  blastEditSaveBtn.disabled = false;
+
+  const label =
+    blastEditSaveBtn.querySelector(
+      ".btn-label"
+    );
+
+  if(label){
+    label.textContent =
+      "Save Changes";
+  }
+}
   setBlastEditModeValue(
   "random"
 );
@@ -3400,10 +3542,35 @@ setupCustomSelect(
 );
 
 
+const blastEditSaveBtn =
+  document.getElementById(
+    "blastEditSaveBtn"
+  );
+
 blastEditForm.addEventListener(
   "submit",
   function(){
+
     syncBlastEditButtons();
+
+    if(blastEditSaveBtn){
+      blastEditSaveBtn.classList.add(
+        "is-saving"
+      );
+
+      blastEditSaveBtn.disabled = true;
+
+      const label =
+        blastEditSaveBtn.querySelector(
+          ".btn-label"
+        );
+
+      if(label){
+        label.textContent =
+          "Saving Changes...";
+      }
+    }
+
     showLoading();
   }
 );
