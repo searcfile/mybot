@@ -1212,6 +1212,152 @@ body.confirm-open{
     transform:rotate(360deg);
   }
 }
+.edit-promo-modal{
+  position:fixed;
+  inset:0;
+  z-index:9999998;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  box-sizing:border-box;
+}
+
+.edit-promo-modal.show{
+  display:flex;
+}
+
+.edit-promo-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px);
+}
+
+.edit-promo-dialog{
+  position:relative;
+  z-index:1;
+  width:min(540px,100%);
+  max-height:calc(100vh - 36px);
+  padding:18px;
+  overflow:auto;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  background:#0b2344;
+  box-shadow:0 24px 70px rgba(0,0,0,.55);
+  animation:editPromoPop .2s ease;
+}
+
+.edit-promo-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.edit-promo-header h3{
+  margin:0;
+}
+
+.edit-promo-close{
+  width:32px;
+  min-width:32px;
+  height:32px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-size:20px;
+}
+
+.edit-promo-close:hover{
+  background:rgba(239,68,68,.16);
+  color:#ef4444;
+}
+
+.edit-promo-dialog textarea{
+  min-height:160px;
+}
+
+.edit-promo-preview{
+  min-height:90px;
+  margin-top:4px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  background:rgba(0,0,0,.18);
+}
+
+.edit-preview-label{
+  width:100%;
+  margin-bottom:8px;
+  color:rgba(255,255,255,.65);
+  font-size:12px;
+  text-align:left;
+}
+
+.edit-promo-preview img{
+  display:none;
+  max-width:100%;
+  max-height:220px;
+  border-radius:8px;
+  object-fit:contain;
+}
+
+.edit-preview-empty{
+  color:rgba(255,255,255,.45);
+  font-size:12px;
+}
+
+.edit-promo-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:16px;
+}
+
+.edit-promo-cancel{
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.07);
+}
+
+.edit-promo-cancel:hover{
+  background:rgba(255,255,255,.12);
+}
+
+.edit-promo-save{
+  background:#1668dc;
+}
+
+body.edit-promo-open{
+  overflow:hidden;
+}
+
+@keyframes editPromoPop{
+  from{
+    opacity:0;
+    transform:scale(.95) translateY(8px);
+  }
+
+  to{
+    opacity:1;
+    transform:scale(1) translateY(0);
+  }
+}
+
+@media(max-width:520px){
+  .edit-promo-actions{
+    grid-template-columns:1fr;
+  }
+}
   </style>
 </head>
 
@@ -1420,14 +1566,17 @@ body.confirm-open{
 </td>
 
           <td class="actions-cell">
-
             <div class="actions-wrap">
 
-              <a
-                class="btn btn-edit"
-                href="/admin/promo/{{ p[0] }}">
-                Edit
-              </a>
+<button
+  type="button"
+  class="btn btn-edit promo-edit-btn"
+  data-promo-id="{{ p[0] }}"
+  data-promo-title="{{ p[1] | e }}"
+  data-promo-image="{{ p[2] | e }}"
+  data-promo-caption="{{ p[3] | e }}">
+  Edit
+</button>
 
 <a
   class="btn btn-delete promo-delete-btn"
@@ -1617,6 +1766,114 @@ body.confirm-open{
 
     </div>
 
+  </div>
+</div>
+<div
+  class="edit-promo-modal"
+  id="editPromoModal"
+  aria-hidden="true">
+
+  <div
+    class="edit-promo-backdrop"
+    data-close-edit-promo>
+  </div>
+
+  <div
+    class="edit-promo-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="editPromoModalTitle">
+
+    <div class="edit-promo-header">
+
+      <h3 id="editPromoModalTitle">
+        Edit Promo
+      </h3>
+
+      <button
+        type="button"
+        class="edit-promo-close"
+        data-close-edit-promo
+        aria-label="Close">
+        ×
+      </button>
+
+    </div>
+
+    <form
+      method="POST"
+      id="editPromoForm">
+
+      <label class="label-required">
+        Title
+      </label>
+
+      <input
+        type="text"
+        name="title"
+        id="editPromoTitleInput"
+        required>
+
+      <label class="label-required">
+        Image URL
+      </label>
+
+      <input
+        type="text"
+        name="image_url"
+        id="editPromoImageInput"
+        required>
+
+      <label class="label-required">
+        Caption
+      </label>
+
+      <textarea
+        name="caption"
+        id="editPromoCaptionInput"
+        required></textarea>
+
+      <div class="edit-promo-preview">
+
+        <div class="edit-preview-label">
+          Image Preview
+        </div>
+
+        <img
+          id="editPromoPreview"
+          alt="Promo Preview">
+
+        <div
+          class="edit-preview-empty"
+          id="editPreviewEmpty">
+          No image preview
+        </div>
+
+      </div>
+
+      <div class="edit-promo-actions">
+
+        <button
+          type="button"
+          class="edit-promo-cancel"
+          data-close-edit-promo>
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="edit-promo-save submit-btn"
+          data-loading-text="Saving...">
+
+          <span class="btn-content">
+            <span class="btn-spinner"></span>
+            <span class="btn-label">
+              Save Changes
+            </span>
+          </span>
+        </button>
+      </div>
+    </form>
   </div>
 </div>
   <script>
@@ -2420,6 +2677,236 @@ if(menuLayoutForm){
     }
   );
 }
+const editPromoModal =
+  document.getElementById(
+    "editPromoModal"
+  );
+
+const editPromoForm =
+  document.getElementById(
+    "editPromoForm"
+  );
+
+const editPromoTitleInput =
+  document.getElementById(
+    "editPromoTitleInput"
+  );
+
+const editPromoImageInput =
+  document.getElementById(
+    "editPromoImageInput"
+  );
+
+const editPromoCaptionInput =
+  document.getElementById(
+    "editPromoCaptionInput"
+  );
+
+const editPromoPreview =
+  document.getElementById(
+    "editPromoPreview"
+  );
+
+const editPreviewEmpty =
+  document.getElementById(
+    "editPreviewEmpty"
+  );
+
+function updateEditPreview(){
+  const imageUrl =
+    editPromoImageInput.value.trim();
+
+  if(!imageUrl){
+    editPromoPreview.removeAttribute(
+      "src"
+    );
+
+    editPromoPreview.style.display =
+      "none";
+
+    editPreviewEmpty.style.display =
+      "block";
+
+    return;
+  }
+
+  editPromoPreview.src =
+    imageUrl;
+
+  editPromoPreview.style.display =
+    "block";
+
+  editPreviewEmpty.style.display =
+    "none";
+}
+
+function openEditPromoModal(button){
+  const promoId =
+    button.dataset.promoId;
+
+  editPromoTitleInput.value =
+    button.dataset.promoTitle || "";
+
+  editPromoImageInput.value =
+    button.dataset.promoImage || "";
+
+  editPromoCaptionInput.value =
+    button.dataset.promoCaption || "";
+
+  editPromoForm.action =
+    `/admin/promo/${promoId}`;
+
+  updateEditPreview();
+
+  editPromoModal.classList.add(
+    "show"
+  );
+
+  editPromoModal.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.classList.add(
+    "edit-promo-open"
+  );
+
+  setTimeout(function(){
+    editPromoTitleInput.focus();
+  }, 0);
+}
+
+function closeEditPromoModal(){
+  editPromoModal.classList.remove(
+    "show"
+  );
+
+  editPromoModal.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.classList.remove(
+    "edit-promo-open"
+  );
+
+  editPromoForm.reset();
+
+  editPromoForm.removeAttribute(
+    "action"
+  );
+
+  editPromoPreview.removeAttribute(
+    "src"
+  );
+
+  editPromoPreview.style.display =
+    "none";
+
+  editPreviewEmpty.style.display =
+    "block";
+
+  editPromoForm.dataset.submitting =
+    "false";
+
+  const saveButton =
+    editPromoForm.querySelector(
+      ".submit-btn"
+    );
+
+  if(saveButton){
+    saveButton.classList.remove(
+      "loading"
+    );
+
+    saveButton.disabled = false;
+
+    const label =
+      saveButton.querySelector(
+        ".btn-label"
+      );
+
+    if(label){
+      label.textContent =
+        "Save Changes";
+    }
+  }
+}
+
+document
+  .querySelectorAll(".promo-edit-btn")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      function(){
+        openEditPromoModal(this);
+      }
+    );
+
+  });
+
+document
+  .querySelectorAll(
+    "[data-close-edit-promo]"
+  )
+  .forEach(element => {
+
+    element.addEventListener(
+      "click",
+      closeEditPromoModal
+    );
+
+  });
+
+editPromoImageInput.addEventListener(
+  "input",
+  updateEditPreview
+);
+
+editPromoPreview.addEventListener(
+  "error",
+  function(){
+    editPromoPreview.style.display =
+      "none";
+
+    editPreviewEmpty.style.display =
+      "block";
+
+    editPreviewEmpty.textContent =
+      "Image could not be loaded";
+  }
+);
+
+editPromoPreview.addEventListener(
+  "load",
+  function(){
+    editPromoPreview.style.display =
+      "block";
+
+    editPreviewEmpty.style.display =
+      "none";
+
+    editPreviewEmpty.textContent =
+      "No image preview";
+  }
+);
+
+document.addEventListener(
+  "keydown",
+  function(event){
+
+    if(
+      event.key === "Escape" &&
+      editPromoModal.classList.contains(
+        "show"
+      )
+    ){
+      closeEditPromoModal();
+    }
+
+  }
+);
 </script>
 </body>
 </html>
