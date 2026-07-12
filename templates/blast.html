@@ -272,7 +272,13 @@ body{
     input{outline:none;height:32px;width:100%;box-sizing:border-box;margin:6px 0 12px;padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
     select{height:32px;width:100%;box-sizing:border-box;margin:6px 0 12px;padding:4px 11px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.25);color:#fff}
     textarea{min-height:180px;resize:vertical}
-    .btn{width:100%;height:32px;border:0;border-radius:6px;background:#1668dc;color:#fff;cursor:pointer}
+    .btn{width:100%;height:32px;border:0;border-radius:6px;background:#1668dc;color:#fff;cursor:pointer;transition: all 0.3s;}
+    .btn:hover{
+      background:#3c89e8;
+    }
+    .btn:active{
+      background:#1554ad;
+    }
     .btn-small{transition: all 0.3s;padding:7px 10px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);color:#fff;text-decoration:none;font-size:12px;cursor: pointer;}
     .btn-small:hover{
       color:#16b7ff;
@@ -1391,11 +1397,10 @@ html {
 
 .blast-edit-cancel,
 .blast-edit-save{
-  height:36px;
-  border-radius:7px;
+  height:32px;
+  border-radius:6px;
   color:#fff;
   cursor:pointer;
-  font-weight:600;
 }
 
 .blast-edit-cancel{
@@ -1407,7 +1412,20 @@ html {
   border:0;
   background:#1668dc;
 }
-
+    .blast-edit-save:hover{
+      background:#3c89e8;
+    }
+    .blast-edit-save:active{
+      background:#1554ad;
+    }
+    .blast-edit-cancel:hover{
+      color:#16b7ff;
+      border:1px solid #16b7ff;
+    }
+    .blast-edit-cancel:active{
+      color:#148abf;
+      border:1px solid #148abf;
+    }
 body.blast-edit-open{
   overflow:hidden;
 }
