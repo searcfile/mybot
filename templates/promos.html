@@ -1358,6 +1358,111 @@ body.edit-promo-open{
     grid-template-columns:1fr;
   }
 }
+.edit-inline-section{
+  margin-top:14px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;
+  background:rgba(0,0,0,.14);
+}
+
+.edit-inline-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.edit-inline-title{
+  color:#38bdf8;
+  font-size:13px;
+  font-weight:700;
+}
+
+.edit-inline-hint{
+  margin-top:3px;
+  color:rgba(255,255,255,.5);
+  font-size:11px;
+}
+
+.edit-add-button{
+  flex-shrink:0;
+  white-space:nowrap;
+}
+
+.edit-inline-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.edit-inline-row{
+  display:grid;
+  grid-template-columns:
+    minmax(120px,.8fr)
+    minmax(180px,1.4fr)
+    auto;
+  gap:8px;
+  align-items:center;
+  padding:8px;
+  border:1px dashed rgba(255,255,255,.14);
+  border-radius:8px;
+  background:rgba(0,0,0,.12);
+}
+
+.edit-inline-row input{
+  min-width:0;
+  margin:0;
+}
+
+.edit-inline-remove{
+  width:32px;
+  min-width:32px;
+  height:32px;
+  padding:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(239,68,68,.35);
+  background:rgba(239,68,68,.1);
+  color:#ef4444;
+  font-size:18px;
+}
+
+.edit-inline-remove:hover{
+  border-color:#ef4444;
+  background:rgba(239,68,68,.2);
+}
+
+.edit-inline-empty{
+  padding:12px;
+  display:none;
+  border:1px dashed rgba(255,255,255,.12);
+  border-radius:8px;
+  color:rgba(255,255,255,.45);
+  font-size:12px;
+  text-align:center;
+}
+
+@media(max-width:620px){
+  .edit-inline-header{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+
+  .edit-add-button{
+    width:100%;
+  }
+
+  .edit-inline-row{
+    grid-template-columns:1fr;
+  }
+
+  .edit-inline-remove{
+    width:100%;
+  }
+}
   </style>
 </head>
 
@@ -1574,7 +1679,8 @@ body.edit-promo-open{
   data-promo-id="{{ p[0] }}"
   data-promo-title="{{ p[1] | e }}"
   data-promo-image="{{ p[2] | e }}"
-  data-promo-caption="{{ p[3] | e }}">
+  data-promo-caption="{{ p[3] | e }}"
+  data-promo-buttons="{{ promo_buttons_by_promo.get(p[0], []) | tojson | forceescape }}">
   Edit
 </button>
 
@@ -1848,9 +1954,41 @@ body.edit-promo-open{
           id="editPreviewEmpty">
           No image preview
         </div>
-
+      </div>
+      
+<div class="edit-inline-section">
+  <div class="edit-inline-header">
+    <div>
+      <div class="edit-inline-title">
+        Inline Buttons
       </div>
 
+      <div class="edit-inline-hint">
+        Buttons displayed below this promo in Telegram.
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="edit-add-button"
+      id="editAddPromoButton">
+      + Add Button
+    </button>
+
+  </div>
+
+  <div
+    class="edit-inline-list"
+    id="editPromoButtonsList">
+  </div>
+
+  <div
+    class="edit-inline-empty"
+    id="editPromoButtonsEmpty">
+    No inline buttons added.
+  </div>
+</div>
+      
       <div class="edit-promo-actions">
 
         <button
@@ -2711,7 +2849,120 @@ const editPreviewEmpty =
   document.getElementById(
     "editPreviewEmpty"
   );
+const editPromoButtonsList =
+  document.getElementById(
+    "editPromoButtonsList"
+  );
 
+const editPromoButtonsEmpty =
+  document.getElementById(
+    "editPromoButtonsEmpty"
+  );
+
+const editAddPromoButton =
+  document.getElementById(
+    "editAddPromoButton"
+  );
+  function updateEditButtonsEmpty(){
+  const hasRows =
+    editPromoButtonsList.querySelector(
+      ".edit-inline-row"
+    );
+
+  editPromoButtonsEmpty.style.display =
+    hasRows ? "none" : "block";
+}
+
+function createEditPromoButtonRow(
+  text = "",
+  url = ""
+){
+  const row =
+    document.createElement("div");
+
+  row.className =
+    "edit-inline-row";
+
+  row.innerHTML = `
+    <input
+      type="text"
+      name="button_text[]"
+      placeholder="Button name"
+      required>
+
+    <input
+      type="url"
+      name="button_url[]"
+      placeholder="https://yourdomain.com"
+      required>
+
+    <button
+      type="button"
+      class="edit-inline-remove"
+      aria-label="Remove button">
+      ×
+    </button>
+  `;
+
+  const textInput =
+    row.querySelector(
+      'input[name="button_text[]"]'
+    );
+
+  const urlInput =
+    row.querySelector(
+      'input[name="button_url[]"]'
+    );
+
+  const removeButton =
+    row.querySelector(
+      ".edit-inline-remove"
+    );
+
+  textInput.value =
+    text || "";
+
+  urlInput.value =
+    url || "";
+
+  removeButton.addEventListener(
+    "click",
+    function(){
+      row.remove();
+      updateEditButtonsEmpty();
+    }
+  );
+
+  editPromoButtonsList.appendChild(
+    row
+  );
+
+  updateEditButtonsEmpty();
+
+  return row;
+}
+
+function loadEditPromoButtons(buttons){
+  editPromoButtonsList.innerHTML =
+    "";
+
+  if(
+    !Array.isArray(buttons) ||
+    buttons.length === 0
+  ){
+    updateEditButtonsEmpty();
+    return;
+  }
+
+  buttons.forEach(button => {
+    createEditPromoButtonRow(
+      button.text || "",
+      button.url || ""
+    );
+  });
+
+  updateEditButtonsEmpty();
+}
 function updateEditPreview(){
   const imageUrl =
     editPromoImageInput.value.trim();
@@ -2752,6 +3003,25 @@ function openEditPromoModal(button){
 
   editPromoCaptionInput.value =
     button.dataset.promoCaption || "";
+  let promoButtons = [];
+
+try{
+  promoButtons = JSON.parse(
+    button.dataset.promoButtons ||
+    "[]"
+  );
+}catch(error){
+  console.error(
+    "Invalid promo buttons data:",
+    error
+  );
+
+  promoButtons = [];
+}
+
+loadEditPromoButtons(
+  promoButtons
+);
 
   editPromoForm.action =
     `/admin/promo/${promoId}`;
@@ -2791,7 +3061,11 @@ function closeEditPromoModal(){
   );
 
   editPromoForm.reset();
+  
+editPromoButtonsList.innerHTML =
+  "";
 
+updateEditButtonsEmpty();
   editPromoForm.removeAttribute(
     "action"
   );
@@ -2832,7 +3106,21 @@ function closeEditPromoModal(){
     }
   }
 }
+    
+editAddPromoButton.addEventListener(
+  "click",
+  function(){
+    const row =
+      createEditPromoButtonRow();
 
+    const firstInput =
+      row.querySelector("input");
+
+    if(firstInput){
+      firstInput.focus();
+    }
+  }
+);
 document
   .querySelectorAll(".promo-edit-btn")
   .forEach(button => {
