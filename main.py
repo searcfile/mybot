@@ -1,4 +1,4 @@
-fdef get_promo_buttons(promo_id):import os
+def get_promo_buttons(promo_id):import os
 import threading
 import asyncio
 import psycopg2
