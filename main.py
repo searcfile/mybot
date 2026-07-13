@@ -10,7 +10,12 @@ import string
 import json
 from zoneinfo import ZoneInfo
 
-from urllib.request import urlopen
+from urllib.request import (
+    urlopen,
+    Request
+)
+
+from urllib.parse import urlencode
 
 from flask import (
     Flask,
@@ -57,6 +62,24 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASS = os.getenv("ADMIN_PASS", "admin123")
 SECRET_KEY = os.getenv("SECRET_KEY", "secret123")
+
+# =========================
+# CLOUDFLARE TURNSTILE
+# =========================
+TURNSTILE_SITE_KEY = os.getenv(
+    "TURNSTILE_SITE_KEY",
+    ""
+).strip()
+
+TURNSTILE_SECRET_KEY = os.getenv(
+    "TURNSTILE_SECRET_KEY",
+    ""
+).strip()
+
+TURNSTILE_ENABLED = bool(
+    TURNSTILE_SITE_KEY
+    and TURNSTILE_SECRET_KEY
+)
 
 # =========================
 # FLASK APP
@@ -1075,7 +1098,82 @@ def bot_main():
 def run_bot():
     bot_main()
 
+# =========================
+# CLOUDFLARE TURNSTILE VERIFY
+# =========================
+def verify_turnstile(
+    token: str,
+    remote_ip: str = ""
+):
+    if not TURNSTILE_ENABLED:
+        return True, []
 
+    if not token:
+        return False, [
+            "missing-input-response"
+        ]
+
+    payload = {
+        "secret":
+            TURNSTILE_SECRET_KEY,
+
+        "response":
+            token
+    }
+
+    if remote_ip:
+        payload["remoteip"] = remote_ip
+
+    request_data = urlencode(
+        payload
+    ).encode("utf-8")
+
+    turnstile_request = Request(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        data=request_data,
+        headers={
+            "Content-Type":
+                "application/x-www-form-urlencoded"
+        },
+        method="POST"
+    )
+
+    try:
+        with urlopen(
+            turnstile_request,
+            timeout=10
+        ) as response:
+
+            result = json.loads(
+                response
+                .read()
+                .decode("utf-8")
+            )
+
+        success = bool(
+            result.get(
+                "success",
+                False
+            )
+        )
+
+        error_codes = result.get(
+            "error-codes",
+            []
+        )
+
+        return success, error_codes
+
+    except Exception as error:
+        print(
+            "[TURNSTILE VERIFY ERROR]",
+            type(error).__name__,
+            str(error)
+        )
+
+        return False, [
+            "verification-request-failed"
+        ]
 # =========================
 # ADMIN AUTH
 # =========================
@@ -1088,11 +1186,28 @@ def home():
     return redirect("/admin")
 
 
-@flask_app.route("/admin/login", methods=["GET", "POST"])
+@flask_app.route(
+    "/admin/login",
+    methods=["GET", "POST"]
+)
 def admin_login():
-    # Jika sudah login, terus masuk dashboard
+    # Jika sudah login,
+    # terus masuk dashboard.
     if require_login():
         return redirect("/admin")
+
+    def render_login_page(
+        error_message=None
+    ):
+        return render_template(
+            "login.html",
+            error=error_message,
+            turnstile_site_key=(
+                TURNSTILE_SITE_KEY
+                if TURNSTILE_ENABLED
+                else ""
+            )
+        )
 
     if request.method == "POST":
         username = request.form.get(
@@ -1105,23 +1220,74 @@ def admin_login():
             ""
         )
 
+        # Token ini dibuat automatik
+        # oleh widget Cloudflare.
+        turnstile_token = (
+            request.form.get(
+                "cf-turnstile-response",
+                ""
+            )
+            .strip()
+        )
+
+        # =========================
+        # VERIFY CLOUDFLARE
+        # =========================
+        if TURNSTILE_ENABLED:
+            remote_ip = (
+                request.headers.get(
+                    "CF-Connecting-IP"
+                )
+                or request.headers.get(
+                    "X-Forwarded-For",
+                    ""
+                ).split(",")[0].strip()
+                or request.remote_addr
+                or ""
+            )
+
+            verified, error_codes = (
+                verify_turnstile(
+                    turnstile_token,
+                    remote_ip
+                )
+            )
+
+            if not verified:
+                print(
+                    "[TURNSTILE FAILED]",
+                    error_codes
+                )
+
+                return render_login_page(
+                    "Cloudflare verification failed. "
+                    "Please try again."
+                )
+
+        # =========================
+        # VERIFY ADMIN LOGIN
+        # =========================
         if (
             username == ADMIN_USER
             and password == ADMIN_PASS
         ):
             session.clear()
 
-            session["admin_logged_in"] = True
-            session["admin_username"] = username
+            session[
+                "admin_logged_in"
+            ] = True
+
+            session[
+                "admin_username"
+            ] = username
 
             return redirect("/admin")
 
-        return render_template(
-            "login.html",
-            error="Invalid username or password"
+        return render_login_page(
+            "Invalid username or password"
         )
 
-    return render_template("login.html")
+    return render_login_page()
 
 
 @flask_app.route("/admin/logout")
