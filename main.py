@@ -1552,9 +1552,6 @@ def admin_users():
         end_date=end_date
     )
     
-from flask import jsonify
-
-
 @flask_app.route("/admin/users/search")
 def admin_users_search():
     if not require_login():
