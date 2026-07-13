@@ -831,6 +831,16 @@ html {
     font-family: SimSun, sans-serif;
     line-height: 1;
 }
+.upload-error{
+  margin-top:10px;
+  padding:11px 12px;
+  border:1px solid rgba(239,68,68,.45);
+  border-radius:8px;
+  background:rgba(239,68,68,.12);
+  color:#fecaca;
+  font-size:13px;
+  line-height:1.45;
+}
   </style>
 </head>
 
@@ -1114,7 +1124,11 @@ stroke-linecap="round"/>
   </span>
 </button>
           </form>
-
+{% if upload_error %}
+<div class="upload-error">
+  {{ upload_error }}
+</div>
+{% endif %}
 {% if uploaded_url %}
 <div class="success">
   <h3>✅ Upload Success</h3>
