@@ -1330,27 +1330,41 @@ def admin_dashboard():
 
         return redirect("/admin")
 
-    data = {
-        "main_banner": get_setting("main_banner"),
-        "welcome_text": get_setting("welcome_text"),
-        "about_text": get_setting("about_text"),
-        "about_banner": get_setting("about_banner"),
-        "register_url": get_setting("register_url"),
-        "register_banner": get_setting("register_banner"),
-        "register_caption": get_setting("register_caption"),
-        "telegram_support": get_setting("telegram_support"),
-        "whatsapp_url": get_setting("whatsapp_url"),
-        "contact_banner": get_setting("contact_banner"),
-        "contact_caption": get_setting("contact_caption"),
-        "manual_today_add": get_setting("manual_today_add"),
-        "manual_month_add": get_setting("manual_month_add"),
+data = {
+    "main_banner": get_setting("main_banner"),
+    "welcome_text": get_setting("welcome_text"),
+    "about_text": get_setting("about_text"),
+    "about_banner": get_setting("about_banner"),
+    "register_url": get_setting("register_url"),
+    "register_banner": get_setting("register_banner"),
+    "register_caption": get_setting("register_caption"),
+    "telegram_support": get_setting("telegram_support"),
+    "whatsapp_url": get_setting("whatsapp_url"),
+    "contact_banner": get_setting("contact_banner"),
+    "contact_caption": get_setting("contact_caption"),
+    "manual_today_add": get_setting("manual_today_add"),
+    "manual_month_add": get_setting("manual_month_add"),
+    "referral_enabled": get_setting("referral_enabled"),
+    "referral_image": get_setting("referral_image"),
+    "referral_text": get_setting("referral_text")
+}
 
-"referral_enabled": get_setting("referral_enabled"),
-"referral_image": get_setting("referral_image"),
-"referral_text": get_setting("referral_text")
-    }
+uploaded_url = session.pop(
+    "uploaded_url",
+    None
+)
 
-    return render_template("dashboard.html", data=data)
+upload_error = session.pop(
+    "upload_error",
+    None
+)
+
+return render_template(
+    "dashboard.html",
+    data=data,
+    uploaded_url=uploaded_url,
+    upload_error=upload_error
+)
 
 
 # =========================
@@ -2711,44 +2725,69 @@ def admin_delete_banner_button(button_id):
 # =========================
 # UPLOAD BANNER
 # =========================
-@flask_app.route("/admin/upload_banner", methods=["POST"])
+@flask_app.route(
+    "/admin/upload_banner",
+    methods=["POST"]
+)
 def upload_banner():
     if not require_login():
         return redirect("/admin/login")
 
     try:
-        file = request.files.get("image")
-
-        if not file:
-            return "No file uploaded", 400
-
-        url = upload_to_cloudinary(file)
-
-        return render_template("dashboard.html",
-            data={
-                "main_banner": get_setting("main_banner"),
-                "welcome_text": get_setting("welcome_text"),
-                "about_text": get_setting("about_text"),
-                "about_banner": get_setting("about_banner"),
-                "register_url": get_setting("register_url"),
-                "register_banner": get_setting("register_banner"),
-                "register_caption": get_setting("register_caption"),
-                "telegram_support": get_setting("telegram_support"),
-                "whatsapp_url": get_setting("whatsapp_url"),
-                "contact_banner": get_setting("contact_banner"),
-                "contact_caption": get_setting("contact_caption"),
-                "manual_today_add": get_setting("manual_today_add"),
-                "manual_month_add": get_setting("manual_month_add"),
-"referral_enabled": get_setting("referral_enabled"),
-"referral_image": get_setting("referral_image"),
-"referral_text": get_setting("referral_text")
-            },
-            uploaded_url=url
+        file = request.files.get(
+            "image"
         )
 
-    except Exception as e:
-        print("UPLOAD ERROR:", e)
-        return f"Internal Error: {str(e)}", 500
+        # Field file tidak dihantar.
+        if file is None:
+            session["upload_error"] = (
+                "Please choose or paste an image first."
+            )
+
+            return redirect("/admin")
+
+        # Field ada tetapi fail kosong.
+        if not file.filename:
+            session["upload_error"] = (
+                "The selected image is empty."
+            )
+
+            return redirect("/admin")
+
+        # Pastikan file ialah gambar.
+        if not (
+            file.mimetype
+            and file.mimetype.startswith(
+                "image/"
+            )
+        ):
+            session["upload_error"] = (
+                "Only image files are allowed."
+            )
+
+            return redirect("/admin")
+
+        url = upload_to_cloudinary(
+            file
+        )
+
+        session["uploaded_url"] = url
+
+        return redirect("/admin")
+
+    except Exception as error:
+        print(
+            "[UPLOAD ERROR]",
+            type(error).__name__,
+            str(error)
+        )
+
+        session["upload_error"] = (
+            "Image upload failed. "
+            "Please try again."
+        )
+
+        return redirect("/admin")
 
 def blast_scheduler():
     import time
