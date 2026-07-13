@@ -516,15 +516,37 @@ button .btn-content {
   gap:7px;
   border-radius:6px;
   color:#ddd;
-  cursor:pointer;
+  cursor:default;
   text-align:center;
   user-select:none;
 }
-
-.upload-label-title{
+.choose-image-btn{
+  width:auto;
+  height:auto;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
   color:#fff;
   font-size:15px;
   font-weight:600;
+  cursor:pointer;
+}
+
+.choose-image-btn:hover{
+  background:transparent;
+  color:#38bdf8;
+}
+
+.choose-image-btn:active{
+  background:transparent;
+  color:#1668dc;
+}
+
+.upload-box:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 2px rgba(56,189,248,.14);
+  outline:none;
 }
 
 .upload-label-hint{
@@ -1021,23 +1043,28 @@ html {
           <h3>Create Image URL</h3>
 
           <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data" id="uploadForm">
-<div class="upload-box">
+<div
+  class="upload-box"
+  id="uploadBox"
+  tabindex="0"
+  aria-label="Paste or drop image here">
 
-<label
-  for="imageInput"
-  class="upload-label"
-  id="uploadLabel"
-  tabindex="0">
+  <div
+    class="upload-label"
+    id="uploadLabel">
 
-  <span class="upload-label-title">
-    Choose Image
-  </span>
+    <button
+      type="button"
+      class="choose-image-btn"
+      id="chooseImageBtn">
+      Choose Image
+    </button>
 
-  <span class="upload-label-hint">
-    Click, drag & drop, or press Ctrl + V to paste image
-  </span>
+    <span class="upload-label-hint">
+      Drag & drop image here, or press Ctrl + V to paste
+    </span>
 
-</label>
+  </div>
     <input
         type="file"
         id="imageInput"
@@ -1183,8 +1210,13 @@ const imageInput =
   );
 
 const uploadBox =
-  document.querySelector(
-    ".upload-box"
+  document.getElementById(
+    "uploadBox"
+  );
+
+const chooseImageBtn =
+  document.getElementById(
+    "chooseImageBtn"
   );
 
 const uploadLabel =
@@ -1212,7 +1244,18 @@ const selectedImageName =
     "selectedImageName"
   );
 
-
+if(
+  chooseImageBtn &&
+  imageInput
+){
+  chooseImageBtn.addEventListener(
+    "click",
+    function(event){
+      event.stopPropagation();
+      imageInput.click();
+    }
+  );
+}
 function isImageFile(file){
   return Boolean(
     file &&
@@ -1348,25 +1391,6 @@ if(removeBtn){
   );
 }
 
-
-/* Keyboard Enter atau Space buka file explorer */
-if(uploadLabel){
-  uploadLabel.addEventListener(
-    "keydown",
-    function(event){
-
-      if(
-        event.key === "Enter" ||
-        event.key === " "
-      ){
-        event.preventDefault();
-        imageInput.click();
-      }
-    }
-  );
-}
-
-
 /* Drag masuk */
 if(uploadBox){
   uploadBox.addEventListener(
@@ -1447,11 +1471,43 @@ if(uploadBox){
   );
 }
 
+let uploadBoxHovered = false;
 
+if(uploadBox){
+  uploadBox.addEventListener(
+    "mouseenter",
+    function(){
+      uploadBoxHovered = true;
+    }
+  );
+
+  uploadBox.addEventListener(
+    "mouseleave",
+    function(){
+      uploadBoxHovered = false;
+    }
+  );
+
+  uploadBox.addEventListener(
+    "click",
+    function(){
+      uploadBox.focus();
+    }
+  );
+}
 /* Copy gambar lalu Ctrl + V */
 document.addEventListener(
   "paste",
   function(event){
+
+    const uploadBoxActive =
+      document.activeElement ===
+        uploadBox ||
+      uploadBoxHovered;
+
+    if(!uploadBoxActive){
+      return;
+    }
 
     const items =
       event.clipboardData &&
@@ -1522,26 +1578,6 @@ document.addEventListener(
   }
 );
 
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        previewImg.src = e.target.result;
-        preview.style.display = "block";
-        uploadLabel.style.display = "none";
-      };
-
-      reader.readAsDataURL(file);
-    });
-  }
-
-  if (removeBtn) {
-    removeBtn.addEventListener("click", function () {
-      imageInput.value = "";
-      previewImg.src = "";
-      preview.style.display = "none";
-      uploadLabel.style.display = "flex";
-    });
-  }
   const toastClose = document.getElementById("toastClose");
 const toast = document.getElementById("toast");
 
