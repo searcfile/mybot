@@ -556,12 +556,10 @@
 
     .login-btn:hover{
       background:var(--blue-hover);
-      transform:translateY(-1px);
     }
 
     .login-btn:active{
       background:var(--blue-active);
-      transform:translateY(0);
     }
 
     .login-btn.loading{
@@ -778,8 +776,7 @@
   display:none;
   align-items:center;
   justify-content:center;
-  background:rgba(0,0,0,.46);
-  backdrop-filter:blur(3px);
+  background:rgba(0,0,0,.20);
 }
 
 .login-loading.show{
@@ -811,32 +808,10 @@
   animation:dotPulse 1s linear infinite;
 }
 
-.loading-dots span:nth-child(1){
-  top:0;
-  left:50%;
-  transform:translateX(-50%);
-}
-
-.loading-dots span:nth-child(2){
-  right:0;
-  top:50%;
-  transform:translateY(-50%);
-  animation-delay:.25s;
-}
-
-.loading-dots span:nth-child(3){
-  bottom:0;
-  left:50%;
-  transform:translateX(-50%);
-  animation-delay:.5s;
-}
-
-.loading-dots span:nth-child(4){
-  left:0;
-  top:50%;
-  transform:translateY(-50%);
-  animation-delay:.75s;
-}
+.loading-dots span:nth-child(1){ top:0; left:50%; transform:translateX(-50%); }
+.loading-dots span:nth-child(2){ right:0; top:50%; transform:translateY(-50%); animation-delay:.25s; }
+.loading-dots span:nth-child(3){ bottom:0; left:50%; transform:translateX(-50%); animation-delay:.5s; }
+.loading-dots span:nth-child(4){ left:0; top:50%; transform:translateY(-50%); animation-delay:.75s; }
 
 .loading-text{
   color:#fff;
