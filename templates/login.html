@@ -764,6 +764,15 @@
         transform-origin:left center;
       }
     }
+  .label-required::before {
+    content: "*";
+    display: inline-block;
+    margin-right: 4px;
+    color: #dc4446;
+    font-size: 14px;
+    font-family: SimSun, sans-serif;
+    line-height: 1;
+}
   </style>
 </head>
 
@@ -1000,7 +1009,7 @@
 
           <div class="input-box">
 
-            <label for="password">
+            <label class="label-required" for="password">
               Password
             </label>
 
