@@ -342,14 +342,6 @@
     button:active {
       background: #1554ad;
     }
-
-    .upload-box {
-      border: 1px dashed rgba(255,255,255,0.3);
-      padding: 14px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-    }
-
     .success {
       margin-top: 10px;
       padding: 12px;
@@ -482,24 +474,62 @@ button .btn-content {
     transform: rotate(360deg);
   }
 }
-.upload-box {
-  border: 1px dashed rgba(255,255,255,0.3);
-  padding: 14px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-  min-height: 50px;
-  box-sizing: border-box;
-  background: #00000040;
+.upload-box{
+  position:relative;
+  min-height:140px;
+  margin-bottom:10px;
+  padding:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  border:1px dashed rgba(255,255,255,.30);
+  border-radius:8px;
+  background:rgba(0,0,0,.25);
+  transition:
+    border-color .25s,
+    background .25s,
+    box-shadow .25s;
 }
 
-.upload-label {
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 6px;
-  cursor: pointer;
-  color: #ddd;
+/* Bila mouse bawa file masuk */
+.upload-box.drag-over{
+  border-color:#38bdf8;
+  background:rgba(56,189,248,.08);
+  box-shadow:0 0 0 2px rgba(56,189,248,.14);
+}
+
+/* Bila area sedang tunggu paste */
+.upload-box.paste-active{
+  border-color:#1668dc;
+  background:rgba(22,104,220,.08);
+}
+
+.upload-label{
+  width:100%;
+  min-height:110px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border-radius:6px;
+  color:#ddd;
+  cursor:pointer;
+  text-align:center;
+  user-select:none;
+}
+
+.upload-label-title{
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+}
+
+.upload-label-hint{
+  color:rgba(255,255,255,.55);
+  font-size:12px;
 }
 
 .upload-label:hover {
@@ -993,10 +1023,21 @@ html {
           <form method="POST" action="/admin/upload_banner" enctype="multipart/form-data" id="uploadForm">
 <div class="upload-box">
 
-    <label for="imageInput" class="upload-label" id="uploadLabel">
-        Choose Image
-    </label>
+<label
+  for="imageInput"
+  class="upload-label"
+  id="uploadLabel"
+  tabindex="0">
 
+  <span class="upload-label-title">
+    Choose Image
+  </span>
+
+  <span class="upload-label-hint">
+    Click, drag & drop, or press Ctrl + V to paste image
+  </span>
+
+</label>
     <input
         type="file"
         id="imageInput"
@@ -1009,7 +1050,15 @@ html {
   <div class="preview-card">
     <img id="previewImg">
   </div>
-
+<div
+  id="selectedImageName"
+  style="
+    margin-top:8px;
+    color:rgba(255,255,255,.65);
+    font-size:12px;
+    word-break:break-all;
+  ">
+</div>
   <button type="button" class="remove-image" id="removeImage">
 
 <svg
@@ -1128,21 +1177,350 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const imageInput = document.getElementById("imageInput");
-  const uploadLabel = document.getElementById("uploadLabel");
-  const preview = document.getElementById("imagePreview");
-  const previewImg = document.getElementById("previewImg");
-  const removeBtn = document.getElementById("removeImage");
+const imageInput =
+  document.getElementById(
+    "imageInput"
+  );
 
-  if (imageInput) {
-    imageInput.addEventListener("change", function () {
-      const file = this.files[0];
+const uploadBox =
+  document.querySelector(
+    ".upload-box"
+  );
 
-      if (!file) {
-        preview.style.display = "none";
-        uploadLabel.style.display = "flex";
+const uploadLabel =
+  document.getElementById(
+    "uploadLabel"
+  );
+
+const preview =
+  document.getElementById(
+    "imagePreview"
+  );
+
+const previewImg =
+  document.getElementById(
+    "previewImg"
+  );
+
+const removeBtn =
+  document.getElementById(
+    "removeImage"
+  );
+
+const selectedImageName =
+  document.getElementById(
+    "selectedImageName"
+  );
+
+
+function isImageFile(file){
+  return Boolean(
+    file &&
+    file.type &&
+    file.type.startsWith(
+      "image/"
+    )
+  );
+}
+
+
+function showSelectedImage(file){
+  if(!isImageFile(file)){
+    showToast(
+      "Please choose an image file.",
+      "error"
+    );
+
+    return;
+  }
+
+  const reader =
+    new FileReader();
+
+  reader.onload =
+    function(event){
+
+      previewImg.src =
+        event.target.result;
+
+      preview.style.display =
+        "block";
+
+      uploadLabel.style.display =
+        "none";
+
+      if(selectedImageName){
+        selectedImageName.textContent =
+          file.name ||
+          "Pasted image";
+      }
+    };
+
+  reader.onerror =
+    function(){
+      showToast(
+        "Unable to preview this image.",
+        "error"
+      );
+    };
+
+  reader.readAsDataURL(file);
+}
+
+
+function setImageInputFile(file){
+  if(!isImageFile(file)){
+    showToast(
+      "Clipboard or dropped file is not an image.",
+      "error"
+    );
+
+    return;
+  }
+
+  /*
+   * DataTransfer membolehkan file hasil paste
+   * dimasukkan ke input type=file.
+   */
+  const transfer =
+    new DataTransfer();
+
+  transfer.items.add(file);
+
+  imageInput.files =
+    transfer.files;
+
+  showSelectedImage(file);
+}
+
+
+function clearSelectedImage(){
+  imageInput.value = "";
+
+  previewImg.removeAttribute(
+    "src"
+  );
+
+  preview.style.display =
+    "none";
+
+  uploadLabel.style.display =
+    "flex";
+
+  if(selectedImageName){
+    selectedImageName.textContent =
+      "";
+  }
+
+  uploadBox.classList.remove(
+    "drag-over",
+    "paste-active"
+  );
+}
+
+
+/* Pilih dari File Explorer */
+if(imageInput){
+  imageInput.addEventListener(
+    "change",
+    function(){
+
+      const file =
+        this.files &&
+        this.files[0];
+
+      if(!file){
+        clearSelectedImage();
         return;
       }
+
+      showSelectedImage(file);
+    }
+  );
+}
+
+
+/* Buang gambar */
+if(removeBtn){
+  removeBtn.addEventListener(
+    "click",
+    clearSelectedImage
+  );
+}
+
+
+/* Keyboard Enter atau Space buka file explorer */
+if(uploadLabel){
+  uploadLabel.addEventListener(
+    "keydown",
+    function(event){
+
+      if(
+        event.key === "Enter" ||
+        event.key === " "
+      ){
+        event.preventDefault();
+        imageInput.click();
+      }
+    }
+  );
+}
+
+
+/* Drag masuk */
+if(uploadBox){
+  uploadBox.addEventListener(
+    "dragenter",
+    function(event){
+      event.preventDefault();
+
+      uploadBox.classList.add(
+        "drag-over"
+      );
+    }
+  );
+
+  uploadBox.addEventListener(
+    "dragover",
+    function(event){
+      event.preventDefault();
+
+      event.dataTransfer.dropEffect =
+        "copy";
+
+      uploadBox.classList.add(
+        "drag-over"
+      );
+    }
+  );
+
+  uploadBox.addEventListener(
+    "dragleave",
+    function(event){
+
+      if(
+        !uploadBox.contains(
+          event.relatedTarget
+        )
+      ){
+        uploadBox.classList.remove(
+          "drag-over"
+        );
+      }
+    }
+  );
+
+  uploadBox.addEventListener(
+    "drop",
+    function(event){
+      event.preventDefault();
+
+      uploadBox.classList.remove(
+        "drag-over"
+      );
+
+      const files =
+        event.dataTransfer.files;
+
+      if(!files || !files.length){
+        return;
+      }
+
+      const imageFile =
+        [...files].find(
+          isImageFile
+        );
+
+      if(!imageFile){
+        showToast(
+          "Dropped file is not an image.",
+          "error"
+        );
+
+        return;
+      }
+
+      setImageInputFile(
+        imageFile
+      );
+    }
+  );
+}
+
+
+/* Copy gambar lalu Ctrl + V */
+document.addEventListener(
+  "paste",
+  function(event){
+
+    const items =
+      event.clipboardData &&
+      event.clipboardData.items;
+
+    if(!items || !items.length){
+      return;
+    }
+
+    let pastedImage = null;
+
+    for(const item of items){
+      if(
+        item.kind === "file" &&
+        item.type.startsWith(
+          "image/"
+        )
+      ){
+        pastedImage =
+          item.getAsFile();
+
+        break;
+      }
+    }
+
+    if(!pastedImage){
+      return;
+    }
+
+    event.preventDefault();
+
+    /*
+     * Beri nama file kerana screenshot clipboard
+     * kadang-kadang tiada nama yang cantik.
+     */
+    const extension =
+      pastedImage.type === "image/jpeg"
+        ? "jpg"
+        : pastedImage.type === "image/webp"
+          ? "webp"
+          : "png";
+
+    const namedFile =
+      new File(
+        [pastedImage],
+        `pasted-image-${Date.now()}.${extension}`,
+        {
+          type:
+            pastedImage.type ||
+            "image/png",
+
+          lastModified:
+            Date.now()
+        }
+      );
+
+    setImageInputFile(
+      namedFile
+    );
+
+    uploadBox.classList.add(
+      "paste-active"
+    );
+
+    showToast(
+      "Image pasted successfully!"
+    );
+  }
+);
 
       const reader = new FileReader();
 
