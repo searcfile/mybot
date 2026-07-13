@@ -771,11 +771,138 @@
     font-family: SimSun, sans-serif;
     line-height: 1;
 }
+.login-loading{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.46);
+  backdrop-filter:blur(3px);
+}
+
+.login-loading.show{
+  display:flex;
+}
+
+.loading-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  pointer-events:none;
+}
+
+.loading-dots{
+  position:relative;
+  width:32px;
+  height:32px;
+  animation:loadingRotate 1s linear infinite;
+}
+
+.loading-dots span{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,.9);
+  opacity:.25;
+  animation:dotPulse 1s linear infinite;
+}
+
+.loading-dots span:nth-child(1){
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.loading-dots span:nth-child(2){
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+  animation-delay:.25s;
+}
+
+.loading-dots span:nth-child(3){
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  animation-delay:.5s;
+}
+
+.loading-dots span:nth-child(4){
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  animation-delay:.75s;
+}
+
+.loading-text{
+  color:#fff;
+  font-size:13px;
+  font-weight:600;
+  text-align:center;
+}
+
+@keyframes dotPulse{
+  0%{
+    opacity:.2;
+  }
+
+  25%{
+    opacity:1;
+  }
+
+  50%{
+    opacity:.4;
+  }
+
+  100%{
+    opacity:.2;
+  }
+}
+
+@keyframes loadingRotate{
+  from{
+    transform:rotate(0deg);
+  }
+
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+body.page-loading{
+  overflow:hidden;
+}
   </style>
 </head>
 
 <body>
+<div
+  id="pageLoading"
+  class="login-loading show"
+  aria-hidden="false">
 
+  <div class="loading-box">
+
+    <div class="loading-dots">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <div
+      class="loading-text"
+      id="pageLoadingText">
+      Loading secure login...
+    </div>
+
+  </div>
+
+</div>
   <main class="login-page">
 
     <!-- LEFT DASHBOARD PANEL -->
@@ -1107,7 +1234,60 @@
       document.getElementById(
         "passwordEyeIcon"
       );
+const pageLoading =
+  document.getElementById(
+    "pageLoading"
+  );
 
+const pageLoadingText =
+  document.getElementById(
+    "pageLoadingText"
+  );
+  function showPageLoading(
+  message = "Please wait..."
+){
+  if(!pageLoading){
+    return;
+  }
+
+  if(pageLoadingText){
+    pageLoadingText.textContent =
+      message;
+  }
+
+  pageLoading.classList.add(
+    "show"
+  );
+
+  pageLoading.setAttribute(
+    "aria-hidden",
+    "false"
+  );
+
+  document.body.classList.add(
+    "page-loading"
+  );
+}
+
+
+function hidePageLoading(){
+  if(!pageLoading){
+    return;
+  }
+
+  pageLoading.classList.remove(
+    "show"
+  );
+
+  pageLoading.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  document.body.classList.remove(
+    "page-loading"
+  );
+}
 
     if(
       passwordToggle &&
@@ -1153,7 +1333,9 @@
       loginForm.addEventListener(
         "submit",
         function(event){
-
+showPageLoading(
+  "Verifying secure login..."
+);
           if(
             loginForm.dataset.submitting ===
             "true"
@@ -1213,34 +1395,64 @@
         }
       );
     }
-    window.addEventListener(
-      "pageshow",
-      function(){
+function resetLoginPage(){
+  hidePageLoading();
 
-        if(loginForm){
-          loginForm.dataset.submitting =
-            "false";
-        }
+  if(loginForm){
+    loginForm.dataset.submitting =
+      "false";
+  }
 
-        if(loginBtn){
-          loginBtn.classList.remove(
-            "loading"
-          );
-
-          loginBtn.disabled = false;
-
-          const label =
-            loginBtn.querySelector(
-              ".btn-label"
-            );
-
-          if(label){
-            label.textContent =
-              "Log in";
-          }
-        }
-      }
+  if(loginBtn){
+    loginBtn.classList.remove(
+      "loading"
     );
+
+    loginBtn.disabled = false;
+
+    const label =
+      loginBtn.querySelector(
+        ".btn-label"
+      );
+
+    if(label){
+      label.textContent =
+        "Log in";
+    }
+  }
+}
+
+
+window.addEventListener(
+  "load",
+  resetLoginPage
+);
+
+window.addEventListener(
+  "pageshow",
+  resetLoginPage
+);
+window.addEventListener(
+  "beforeunload",
+  function(){
+
+    if(
+      loginForm &&
+      loginForm.dataset.submitting ===
+      "true"
+    ){
+      showPageLoading(
+        "Opening admin dashboard..."
+      );
+
+      return;
+    }
+
+    showPageLoading(
+      "Loading secure page..."
+    );
+  }
+);
   </script>
 
 </body>
