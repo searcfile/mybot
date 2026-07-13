@@ -49,7 +49,50 @@
       min-height:100%;
       margin:0;
     }
+.input-wrap input:autofill{
+  color:#fff;
+  background:rgba(15,35,62,.96);
+}
+/* =========================
+   CHROME / GOOGLE AUTOFILL
+========================= */
 
+.input-wrap input:-webkit-autofill,
+.input-wrap input:-webkit-autofill:hover,
+.input-wrap input:-webkit-autofill:focus,
+.input-wrap input:-webkit-autofill:active{
+  -webkit-text-fill-color:#fff !important;
+
+  /*
+   * Paksa background autofill kekal dark transparent.
+   * Nilai besar ini menutup background putih Chrome.
+   */
+  -webkit-box-shadow:
+    0 0 0 1000px rgba(15,35,62,.96) inset !important;
+
+  box-shadow:
+    0 0 0 1000px rgba(15,35,62,.96) inset !important;
+
+  caret-color:#fff;
+
+  border-color:rgba(255,255,255,.18) !important;
+
+  transition:
+    background-color 9999s ease-out 0s;
+}
+
+/* Autofill semasa focus */
+.input-wrap input:-webkit-autofill:focus{
+  border-color:var(--cyan) !important;
+
+  -webkit-box-shadow:
+    0 0 0 1000px rgba(15,35,62,.96) inset,
+    0 0 0 3px rgba(56,189,248,.16) !important;
+
+  box-shadow:
+    0 0 0 1000px rgba(15,35,62,.96) inset,
+    0 0 0 3px rgba(56,189,248,.16) !important;
+}
     body{
       min-height:100vh;
       padding:28px;
