@@ -1299,72 +1299,246 @@ def admin_logout():
 # =========================
 # DASHBOARD SETTINGS
 # =========================
-@flask_app.route("/admin", methods=["GET", "POST"])
+@flask_app.route(
+    "/admin",
+    methods=["GET", "POST"]
+)
 def admin_dashboard():
     if not require_login():
         return redirect("/admin/login")
 
     if request.method == "POST":
-        main_banner = request.form.get("main_banner")
+        main_banner = request.form.get(
+            "main_banner",
+            ""
+        ).strip()
+
         if main_banner:
-            set_setting("main_banner", main_banner)
+            set_setting(
+                "main_banner",
+                main_banner
+            )
 
-        set_setting("welcome_text", request.form.get("welcome_text", ""))
-        set_setting("about_text", request.form.get("about_text", ""))
-        set_setting("about_banner", request.form.get("about_banner", ""))
-        set_setting("register_url", request.form.get("register_url", ""))
-        set_setting("register_banner", request.form.get("register_banner", ""))
-        set_setting("register_caption", request.form.get("register_caption", ""))
-        set_setting("telegram_support", request.form.get("telegram_support", ""))
-        set_setting("whatsapp_url", request.form.get("whatsapp_url", ""))
-        set_setting("contact_banner", request.form.get("contact_banner", ""))
-        set_setting("contact_caption", request.form.get("contact_caption", ""))
+        set_setting(
+            "welcome_text",
+            request.form.get(
+                "welcome_text",
+                ""
+            )
+        )
 
-        set_setting("manual_today_add", request.form.get("manual_today_add", "0"))
-        set_setting("manual_month_add", request.form.get("manual_month_add", "0"))
+        set_setting(
+            "about_text",
+            request.form.get(
+                "about_text",
+                ""
+            )
+        )
 
-        # referral admin settings
-        set_setting("referral_enabled", request.form.get("referral_enabled", "0"))
-        set_setting("referral_image", request.form.get("referral_image", ""))
-        set_setting("referral_text", request.form.get("referral_text", ""))
+        set_setting(
+            "about_banner",
+            request.form.get(
+                "about_banner",
+                ""
+            )
+        )
+
+        set_setting(
+            "register_url",
+            request.form.get(
+                "register_url",
+                ""
+            )
+        )
+
+        set_setting(
+            "register_banner",
+            request.form.get(
+                "register_banner",
+                ""
+            )
+        )
+
+        set_setting(
+            "register_caption",
+            request.form.get(
+                "register_caption",
+                ""
+            )
+        )
+
+        set_setting(
+            "telegram_support",
+            request.form.get(
+                "telegram_support",
+                ""
+            )
+        )
+
+        set_setting(
+            "whatsapp_url",
+            request.form.get(
+                "whatsapp_url",
+                ""
+            )
+        )
+
+        set_setting(
+            "contact_banner",
+            request.form.get(
+                "contact_banner",
+                ""
+            )
+        )
+
+        set_setting(
+            "contact_caption",
+            request.form.get(
+                "contact_caption",
+                ""
+            )
+        )
+
+        set_setting(
+            "manual_today_add",
+            request.form.get(
+                "manual_today_add",
+                "0"
+            )
+        )
+
+        set_setting(
+            "manual_month_add",
+            request.form.get(
+                "manual_month_add",
+                "0"
+            )
+        )
+
+        set_setting(
+            "referral_enabled",
+            request.form.get(
+                "referral_enabled",
+                "0"
+            )
+        )
+
+        set_setting(
+            "referral_image",
+            request.form.get(
+                "referral_image",
+                ""
+            )
+        )
+
+        set_setting(
+            "referral_text",
+            request.form.get(
+                "referral_text",
+                ""
+            )
+        )
 
         return redirect("/admin")
 
-data = {
-    "main_banner": get_setting("main_banner"),
-    "welcome_text": get_setting("welcome_text"),
-    "about_text": get_setting("about_text"),
-    "about_banner": get_setting("about_banner"),
-    "register_url": get_setting("register_url"),
-    "register_banner": get_setting("register_banner"),
-    "register_caption": get_setting("register_caption"),
-    "telegram_support": get_setting("telegram_support"),
-    "whatsapp_url": get_setting("whatsapp_url"),
-    "contact_banner": get_setting("contact_banner"),
-    "contact_caption": get_setting("contact_caption"),
-    "manual_today_add": get_setting("manual_today_add"),
-    "manual_month_add": get_setting("manual_month_add"),
-    "referral_enabled": get_setting("referral_enabled"),
-    "referral_image": get_setting("referral_image"),
-    "referral_text": get_setting("referral_text")
-}
+    data = {
+        "main_banner":
+            get_setting(
+                "main_banner"
+            ),
 
-uploaded_url = session.pop(
-    "uploaded_url",
-    None
-)
+        "welcome_text":
+            get_setting(
+                "welcome_text"
+            ),
 
-upload_error = session.pop(
-    "upload_error",
-    None
-)
+        "about_text":
+            get_setting(
+                "about_text"
+            ),
 
-return render_template(
-    "dashboard.html",
-    data=data,
-    uploaded_url=uploaded_url,
-    upload_error=upload_error
-)
+        "about_banner":
+            get_setting(
+                "about_banner"
+            ),
+
+        "register_url":
+            get_setting(
+                "register_url"
+            ),
+
+        "register_banner":
+            get_setting(
+                "register_banner"
+            ),
+
+        "register_caption":
+            get_setting(
+                "register_caption"
+            ),
+
+        "telegram_support":
+            get_setting(
+                "telegram_support"
+            ),
+
+        "whatsapp_url":
+            get_setting(
+                "whatsapp_url"
+            ),
+
+        "contact_banner":
+            get_setting(
+                "contact_banner"
+            ),
+
+        "contact_caption":
+            get_setting(
+                "contact_caption"
+            ),
+
+        "manual_today_add":
+            get_setting(
+                "manual_today_add"
+            ),
+
+        "manual_month_add":
+            get_setting(
+                "manual_month_add"
+            ),
+
+        "referral_enabled":
+            get_setting(
+                "referral_enabled"
+            ),
+
+        "referral_image":
+            get_setting(
+                "referral_image"
+            ),
+
+        "referral_text":
+            get_setting(
+                "referral_text"
+            )
+    }
+
+    uploaded_url = session.pop(
+        "uploaded_url",
+        None
+    )
+
+    upload_error = session.pop(
+        "upload_error",
+        None
+    )
+
+    return render_template(
+        "dashboard.html",
+        data=data,
+        uploaded_url=uploaded_url,
+        upload_error=upload_error
+    )
 
 
 # =========================
