@@ -2330,14 +2330,14 @@ addItemBtn.addEventListener("click", () => {
   div.className = "item-box";
 
   div.innerHTML = `
-    <label>Banner Image URL</label>
+    <label class="label-required">Banner Image URL</label>
 
     <input
       type="text"
       name="image_url[]"
       placeholder="https://res.cloudinary.com/...">
 
-    <label>Caption</label>
+    <label class="label-required">Caption</label>
 
     <textarea
       name="caption[]"
