@@ -62,6 +62,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 ADMIN_USER = os.getenv("ADMIN_USER", "admin")
 ADMIN_PASS = os.getenv("ADMIN_PASS", "admin123")
+ADMIN_SECOND_PASS = os.getenv("ADMIN_SECOND_PASS","111111")
 SECRET_KEY = os.getenv("SECRET_KEY", "secret123")
 
 # =========================
@@ -1253,132 +1254,264 @@ def home():
     methods=["GET", "POST"]
 )
 def admin_login():
-    # Kalau session masih aktif,
+    # Kalau login lengkap masih aktif,
     # terus masuk dashboard.
     if require_login():
         return redirect("/admin")
 
-    # Semak sama ada user dihantar keluar
-    # kerana session sudah tamat.
     session_expired = session.pop(
         "admin_session_expired",
         False
     )
 
-    def render_login_page(
-        error_message=None
+    # Tentukan card yang hendak dipaparkan.
+    if session.get(
+        "admin_2fa_pending"
     ):
+        login_step = "second_password"
+    else:
+        login_step = "password"
+
+    error_message = None
+
+    if session_expired:
+        error_message = (
+            "Your login session has expired. "
+            "Please log in again."
+        )
+
+    def render_login_page(
+        error=None,
+        step=None
+    ):
+        current_step = (
+            step
+            if step
+            else login_step
+        )
+
         return render_template(
             "login.html",
-            error=error_message,
+            error=error,
+            login_step=current_step,
+            pending_username=session.get(
+                "pending_admin_username",
+                ""
+            ),
             turnstile_site_key=(
                 TURNSTILE_SITE_KEY
-                if TURNSTILE_ENABLED
+                if (
+                    TURNSTILE_ENABLED
+                    and current_step
+                    == "password"
+                )
                 else ""
             )
         )
 
     if request.method == "POST":
-        username = request.form.get(
-            "username",
-            ""
+        submitted_step = request.form.get(
+            "login_step",
+            "password"
         ).strip()
 
-        password = request.form.get(
-            "password",
-            ""
-        )
+        # =========================
+        # STEP 1
+        # USERNAME + PASSWORD
+        # =========================
+        if submitted_step == "password":
+            username = request.form.get(
+                "username",
+                ""
+            ).strip()
 
-        # Token Cloudflare Turnstile
-        turnstile_token = (
-            request.form.get(
-                "cf-turnstile-response",
+            password = request.form.get(
+                "password",
                 ""
             )
-            .strip()
-        )
 
-        # =========================
-        # VERIFY CLOUDFLARE
-        # =========================
-        if TURNSTILE_ENABLED:
-            remote_ip = (
-                request.headers.get(
-                    "CF-Connecting-IP"
-                )
-                or request.headers.get(
-                    "X-Forwarded-For",
+            turnstile_token = (
+                request.form.get(
+                    "cf-turnstile-response",
                     ""
-                ).split(",")[0].strip()
-                or request.remote_addr
-                or ""
+                )
+                .strip()
             )
 
-            verified, error_codes = (
-                verify_turnstile(
-                    turnstile_token,
-                    remote_ip
+            # Verify Cloudflare pada login pertama.
+            if TURNSTILE_ENABLED:
+                remote_ip = (
+                    request.headers.get(
+                        "CF-Connecting-IP"
+                    )
+                    or request.headers.get(
+                        "X-Forwarded-For",
+                        ""
+                    )
+                    .split(",")[0]
+                    .strip()
+                    or request.remote_addr
+                    or ""
                 )
+
+                verified, error_codes = (
+                    verify_turnstile(
+                        turnstile_token,
+                        remote_ip
+                    )
+                )
+
+                if not verified:
+                    print(
+                        "[TURNSTILE FAILED]",
+                        error_codes
+                    )
+
+                    return render_login_page(
+                        "Cloudflare verification failed. "
+                        "Please try again.",
+                        "password"
+                    )
+
+            # Username dan password pertama betul.
+            if (
+                username == ADMIN_USER
+                and password == ADMIN_PASS
+            ):
+                session.clear()
+
+                # Belum login penuh.
+                # Tunggu second password.
+                session[
+                    "admin_2fa_pending"
+                ] = True
+
+                session[
+                    "pending_admin_username"
+                ] = username
+
+                session[
+                    "admin_2fa_started_at"
+                ] = int(
+                    time.time()
+                )
+
+                return redirect(
+                    "/admin/login"
+                )
+
+            return render_login_page(
+                "Invalid username or password",
+                "password"
             )
-
-            if not verified:
-                print(
-                    "[TURNSTILE FAILED]",
-                    error_codes
-                )
-
-                return render_login_page(
-                    "Cloudflare verification failed. "
-                    "Please try again."
-                )
 
         # =========================
-        # VERIFY ADMIN LOGIN
+        # STEP 2
+        # SECOND PASSWORD
         # =========================
         if (
-            username == ADMIN_USER
-            and password == ADMIN_PASS
+            submitted_step
+            == "second_password"
         ):
-            # Buang session lama
-            session.clear()
+            # Tidak boleh verify kalau
+            # step pertama belum lulus.
+            if not session.get(
+                "admin_2fa_pending"
+            ):
+                session.clear()
 
-            # Tandakan sudah login
-            session[
-                "admin_logged_in"
-            ] = True
+                return redirect(
+                    "/admin/login"
+                )
 
-            session[
-                "admin_username"
-            ] = username
+            second_password = request.form.get(
+                "second_password",
+                ""
+            ).strip()
 
-            # Simpan waktu login
-            session[
-                "admin_login_at"
-            ] = int(
-                time.time()
+            started_at = session.get(
+                "admin_2fa_started_at",
+                0
             )
 
-            # Auto logout selepas 24 jam
-            session[
-                "admin_expires_at"
-            ] = int(
-                time.time()
-            ) + (24 * 60 * 60)
+            try:
+                started_at = int(
+                    started_at
+                )
+            except (
+                TypeError,
+                ValueError
+            ):
+                started_at = 0
 
-            return redirect("/admin")
+            # Second-password card tamat
+            # selepas 5 minit.
+            if (
+                not started_at
+                or int(time.time())
+                - started_at > 300
+            ):
+                session.clear()
 
-        return render_login_page(
-            "Invalid username or password"
+                return render_login_page(
+                    "Verification session expired. "
+                    "Please log in again.",
+                    "password"
+                )
+
+            # Second password betul.
+            if (
+                second_password
+                == ADMIN_SECOND_PASS
+            ):
+                username = session.get(
+                    "pending_admin_username",
+                    ADMIN_USER
+                )
+
+                session.clear()
+
+                session[
+                    "admin_logged_in"
+                ] = True
+
+                session[
+                    "admin_username"
+                ] = username
+
+                session[
+                    "admin_login_at"
+                ] = int(
+                    time.time()
+                )
+
+                # Login tamat selepas 24 jam.
+                session[
+                    "admin_expires_at"
+                ] = (
+                    int(time.time())
+                    + (24 * 60 * 60)
+                )
+
+                return redirect(
+                    "/admin"
+                )
+
+            return render_login_page(
+                "Second password is incorrect.",
+                "second_password"
+            )
+
+        session.clear()
+
+        return redirect(
+            "/admin/login"
         )
 
-    # Paparkan mesej selepas session tamat
-    if session_expired:
-        return render_login_page(
-            "Your login session has expired. "
-            "Please log in again."
-        )
-
-    return render_login_page()
+    return render_login_page(
+        error_message,
+        login_step
+    )
 
 
 @flask_app.route("/admin/logout")
