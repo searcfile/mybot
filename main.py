@@ -1363,7 +1363,7 @@ def admin_login():
                 "admin_expires_at"
             ] = int(
                 time.time()
-            ) + 60
+            ) + (24 * 60 * 60)
 
             return redirect("/admin")
 
