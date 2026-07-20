@@ -1386,6 +1386,32 @@ def admin_logout():
     session.clear()
     return redirect("/admin/login")
 
+# =========================
+# CHECK ADMIN SESSION
+# =========================
+@flask_app.route("/admin/session-status")
+def admin_session_status():
+    if not require_login():
+        return jsonify({
+            "logged_in": False,
+            "redirect": "/admin/login"
+        }), 401
+
+    expires_at = session.get(
+        "admin_expires_at",
+        0
+    )
+
+    remaining_seconds = max(
+        0,
+        int(expires_at) - int(time.time())
+    )
+
+    return jsonify({
+        "logged_in": True,
+        "remaining_seconds": remaining_seconds
+    })
+
 
 # =========================
 # DASHBOARD SETTINGS
