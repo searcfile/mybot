@@ -1,6 +1,7 @@
 import os
 import threading
 import asyncio
+import time
 import psycopg2
 import cloudinary
 import cloudinary.uploader
@@ -87,6 +88,28 @@ TURNSTILE_ENABLED = bool(
 flask_app = Flask(__name__)
 flask_app.secret_key = SECRET_KEY
 
+# =========================
+# ADMIN LOGIN SESSION
+# =========================
+
+# Jangan panjangkan masa login apabila admin refresh halaman
+flask_app.config[
+    "SESSION_REFRESH_EACH_REQUEST"
+] = False
+
+# Lindungi cookie login
+flask_app.config[
+    "SESSION_COOKIE_HTTPONLY"
+] = True
+
+flask_app.config[
+    "SESSION_COOKIE_SAMESITE"
+] = "Lax"
+
+# Railway menggunakan HTTPS
+flask_app.config[
+    "SESSION_COOKIE_SECURE"
+] = True
 
 # =========================
 # TEXT FORMATTER
@@ -1178,7 +1201,46 @@ def verify_turnstile(
 # ADMIN AUTH
 # =========================
 def require_login():
-    return session.get("admin_logged_in")
+    # Kalau belum login
+    if not session.get(
+        "admin_logged_in"
+    ):
+        return False
+
+    # Ambil masa session tamat
+    expires_at = session.get(
+        "admin_expires_at"
+    )
+
+    # Session lama yang belum mempunyai masa tamat
+    if not expires_at:
+        session.clear()
+        return False
+
+    try:
+        expires_at = int(
+            expires_at
+        )
+    except (
+        TypeError,
+        ValueError
+    ):
+        session.clear()
+        return False
+
+    # Kalau sudah lebih 24 jam
+    if int(time.time()) >= expires_at:
+        session.clear()
+
+        # Simpan tanda supaya login page
+        # boleh tunjuk mesej session expired
+        session[
+            "admin_session_expired"
+        ] = True
+
+        return False
+
+    return True
 
 
 @flask_app.route("/")
@@ -1191,10 +1253,17 @@ def home():
     methods=["GET", "POST"]
 )
 def admin_login():
-    # Jika sudah login,
+    # Kalau session masih aktif,
     # terus masuk dashboard.
     if require_login():
         return redirect("/admin")
+
+    # Semak sama ada user dihantar keluar
+    # kerana session sudah tamat.
+    session_expired = session.pop(
+        "admin_session_expired",
+        False
+    )
 
     def render_login_page(
         error_message=None
@@ -1220,8 +1289,7 @@ def admin_login():
             ""
         )
 
-        # Token ini dibuat automatik
-        # oleh widget Cloudflare.
+        # Token Cloudflare Turnstile
         turnstile_token = (
             request.form.get(
                 "cf-turnstile-response",
@@ -1271,8 +1339,10 @@ def admin_login():
             username == ADMIN_USER
             and password == ADMIN_PASS
         ):
+            # Buang session lama
             session.clear()
 
+            # Tandakan sudah login
             session[
                 "admin_logged_in"
             ] = True
@@ -1281,10 +1351,31 @@ def admin_login():
                 "admin_username"
             ] = username
 
+            # Simpan waktu login
+            session[
+                "admin_login_at"
+            ] = int(
+                time.time()
+            )
+
+            # Auto logout selepas 24 jam
+            session[
+                "admin_expires_at"
+            ] = int(
+                time.time()
+            ) + 60
+
             return redirect("/admin")
 
         return render_login_page(
             "Invalid username or password"
+        )
+
+    # Paparkan mesej selepas session tamat
+    if session_expired:
+        return render_login_page(
+            "Your login session has expired. "
+            "Please log in again."
         )
 
     return render_login_page()
