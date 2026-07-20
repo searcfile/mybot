@@ -996,6 +996,57 @@ if(
     }
   );
 }
+(function(){
+  async function checkAdminSession(){
+    try{
+      const response = await fetch(
+        "/admin/session-status",
+        {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin"
+        }
+      );
+
+      if(
+        response.status === 401 ||
+        !response.ok
+      ){
+        window.location.replace(
+          "/admin/login"
+        );
+
+        return;
+      }
+
+      const data = await response.json();
+
+      if(
+        !data.logged_in ||
+        data.remaining_seconds <= 0
+      ){
+        window.location.replace(
+          "/admin/login"
+        );
+      }
+
+    }catch(error){
+      console.error(
+        "Session check failed:",
+        error
+      );
+    }
+  }
+
+  // Check terus apabila halaman dibuka
+  checkAdminSession();
+
+  // Check setiap 5 saat
+  setInterval(
+    checkAdminSession,
+    5000
+  );
+})();
 </script>
 </body>
 </html>
